@@ -196,8 +196,8 @@ const Home: React.FC = () => {
 
       {/* Section Localisation */}
       <LocationSection />
-{/* Section Conseil Expert */}
-<ExpertAdviceSection />
+      {/* Section Conseil Expert */}
+      <ExpertAdviceSection />
       {/* Section Marques Partenaires */}
       <BrandsSection />
 
