@@ -162,7 +162,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 z-50" onClick={onClose}>
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
       
-      <div 
+      <div
         className="absolute left-0 top-0 h-full flex"
         onClick={(e) => e.stopPropagation()}
       >

@@ -73,6 +73,14 @@ const Navbar: React.FC = () => {
                 </div>
                 <span className="ml-3 font-medium">Trouver un magasin</span>
               </Link>
+              <Link to="/favoris" className="relative group">
+                <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
+                  <svg className="w-6 h-6 text-gray-700 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+              </Link>
               <Link to="/panier" className="relative group">
                 <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
                   <svg className="w-6 h-6 text-gray-700 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +105,7 @@ const Navbar: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-14">
             {/* Bouton Tous nos produits */}
-            <button 
+            <button
               className="flex items-center px-6 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
@@ -119,9 +127,12 @@ const Navbar: React.FC = () => {
             {/* Bouton Connexion */}
             <Link 
               to="/connexion" 
-              className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2"
             >
-              Connexion
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>Connexion</span>
             </Link>
           </div>
         </div>
