@@ -1,15 +1,80 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import logo from '/src/assets/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isStoreMenuOpen, setIsStoreMenuOpen] = useState(false);
+  const [selectedStore, setSelectedStore] = useState('Choisir votre magasin');
+  const [scrolled, setScrolled] = useState(false);
+  const storeMenuRef = useRef<HTMLDivElement>(null);
+  const navbarHeight = useRef<number>(0);
+
+  const handleStoreSelect = (store: string) => {
+    setSelectedStore(store);
+    setIsStoreMenuOpen(false);
+  };
+
+  // Détecter le défilement pour appliquer des effets visuels
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Fermer le menu au clic en dehors
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (storeMenuRef.current && !storeMenuRef.current.contains(event.target as Node)) {
+        setIsStoreMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Mettre à jour la hauteur de la navbar pour l'espacement
+  useEffect(() => {
+    const updateNavbarHeight = () => {
+      const navbar = document.getElementById('main-navbar');
+      if (navbar) {
+        const height = navbar.offsetHeight;
+        navbarHeight.current = height;
+        document.documentElement.style.setProperty('--navbar-height', `${height}px`);
+      }
+    };
+
+    updateNavbarHeight();
+    window.addEventListener('resize', updateNavbarHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateNavbarHeight);
+    };
+  }, [scrolled]);
 
   return (
-    <div className="flex flex-col w-full">
+    <div id="main-navbar" className="fixed top-0 left-0 right-0 z-50 flex flex-col w-full">
+      <style>{`
+        .navbar-spacer {
+          height: var(--navbar-height, 0px);
+        }
+      `}</style>
+
       {/* Barre supérieure avec informations de contact */}
-      <div className="bg-gray-900 text-white py-2 hidden md:block">
+      <div className={`bg-gray-900 text-white py-2 hidden md:block transition-all duration-300 ${scrolled ? 'py-1 opacity-90' : 'py-2'}`}>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center text-sm">
             <div className="flex items-center space-x-6">
@@ -36,13 +101,21 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Barre principale avec logo, recherche et boutons */}
-      <div className="bg-white border-b shadow-sm">
+      <div className={`bg-white border-b transition-all duration-300 ${
+        scrolled ? 'shadow-xl' : 'shadow-sm'
+      }`}>
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-24">
+          <div className={`flex items-center justify-between transition-all duration-300 ${
+            scrolled ? 'h-20' : 'h-24'
+          }`}>
             {/* Logo */}
             <div className="flex-shrink-0">
               <Link to="/" className="block py-4">
-                <img src={logo} alt="DistriTherm Services" className="h-14 w-auto" />
+                <img 
+                  src={logo} 
+                  alt="DistriTherm Services" 
+                  className={`transition-all duration-300 ${scrolled ? 'h-12' : 'h-14'} w-auto`} 
+                />
               </Link>
             </div>
 
@@ -52,7 +125,9 @@ const Navbar: React.FC = () => {
                 <input
                   type="text"
                   placeholder="Que recherchez-vous ?"
-                  className="w-full px-6 py-3 pr-12 text-gray-700 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className={`w-full px-6 pr-12 text-gray-700 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ${
+                    scrolled ? 'py-2.5' : 'py-3'
+                  }`}
                 />
                 <button className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors">
                   <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,15 +139,66 @@ const Navbar: React.FC = () => {
 
             {/* Boutons de droite */}
             <div className="flex items-center space-x-6">
-              <Link to="/trouver-magasin" className="hidden md:flex items-center text-gray-700 hover:text-blue-600 transition-colors group">
-                <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              {/* Menu déroulant des magasins */}
+              <div className="relative" ref={storeMenuRef}>
+                <button
+                  onClick={() => setIsStoreMenuOpen(!isStoreMenuOpen)}
+                  className="hidden md:flex items-center text-gray-700 hover:text-blue-600 transition-colors group"
+                >
+                  <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <span className="ml-3 font-medium">{selectedStore}</span>
+                  <svg className={`w-5 h-5 ml-2 transform transition-transform duration-200 ${isStoreMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
-                </div>
-                <span className="ml-3 font-medium">Trouver un magasin</span>
-              </Link>
+                </button>
+
+                {/* Menu déroulant */}
+                {isStoreMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100">
+                    <button
+                      onClick={() => handleStoreSelect('Tous les magasins')}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
+                    >
+                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                      <div>
+                        <span className="font-medium block">Tous les magasins</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleStoreSelect('Magasin Taverny')}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
+                    >
+                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                      <div>
+                        <span className="font-medium block">Magasin Taverny</span>
+                        <span className="text-sm text-gray-500">95150 Taverny</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => handleStoreSelect('Magasin Drancy')}
+                      className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
+                    >
+                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                      <div>
+                        <span className="font-medium block">Magasin Drancy</span>
+                        <span className="text-sm text-gray-500">93700 Drancy</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <Link to="/favoris" className="relative group">
                 <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
                   <svg className="w-6 h-6 text-gray-700 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -101,9 +227,13 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Barre de navigation secondaire */}
-      <div className="bg-white border-b shadow-sm hidden md:block">
+      <div className={`bg-white border-b hidden md:block transition-all duration-300 ${
+        scrolled ? 'shadow-sm' : ''
+      }`}>
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-14">
+          <div className={`flex items-center justify-between transition-all duration-300 ${
+            scrolled ? 'h-12' : 'h-14'
+          }`}>
             {/* Bouton Tous nos produits */}
             <button
               className="flex items-center px-6 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
@@ -127,7 +257,9 @@ const Navbar: React.FC = () => {
             {/* Bouton Connexion */}
             <Link 
               to="/connexion" 
-              className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2"
+              className={`px-6 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2 ${
+                scrolled ? 'py-1.5' : 'py-2'
+              }`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
