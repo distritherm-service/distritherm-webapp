@@ -7,25 +7,25 @@ interface SliderProps {
 const slides = [
   {
     id: 1,
-    image: '/src/assets/slider-1.jpeg',
+    image: '/slider-1.jpeg',
     title: 'Solutions de Chauffage',
     description: 'Des solutions innovantes pour votre confort'
   },
   {
     id: 2,
-    image: '/src/assets/slider-2.jpeg',
+    image: '/slider-2.jpeg',
     title: 'Climatisation',
     description: 'Un air pur et une température idéale'
   },
   {
     id: 3,
-    image: '/src/assets/slider-3.jpg',
+    image: '/slider-3.jpg',
     title: 'Services Professionnels',
     description: "Une équipe d'experts à votre service",
   },
   {
     id: 4,
-    image: '/src/assets/slider-4.jpeg',
+    image: '/slider-4.jpeg',
     title: 'Maintenance',
     description: 'Entretien et suivi régulier de vos installations'
   }

@@ -23,7 +23,7 @@ const ExpertAdviceSection: React.FC = () => {
           </div>
           <div className="absolute right-32 bottom-0 h-[400px]" style={{ transform: 'translateY(-30px)' }}>
             <img 
-              src="/src/assets/image-section-expert.png" 
+              src="/image-section-expert.png" 
               alt="Expert conseil" 
               className="h-full w-auto object-contain"
               style={{ minWidth: '300px' }}

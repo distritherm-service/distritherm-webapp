@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '/src/assets/logo-Transparent.png';
+import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
 import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
 import { useFavorites } from '../contexts/FavoritesContext';

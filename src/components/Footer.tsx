@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import logoImg from '../assets/logo-Transparent.png';
-import androidImg from '../assets/footer-android.jpeg';
-import iosImg from '../assets/footer-ios.jpeg';
+import logoImg from '/logo-Transparent.png';
+import androidImg from '/footer-android.jpeg';
+import iosImg from '/footer-ios.jpeg';
 
 const Footer: React.FC = () => {
   return (
