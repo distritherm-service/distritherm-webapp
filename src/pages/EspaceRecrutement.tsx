@@ -164,6 +164,7 @@ const EspaceRecrutement: React.FC = () => {
                     <input
                       type="text"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="Mohamed"
                     />
                   </div>
                   <div>
@@ -173,6 +174,7 @@ const EspaceRecrutement: React.FC = () => {
                     <input
                       type="text"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="Ali"
                     />
                   </div>
                 </div>
@@ -186,6 +188,7 @@ const EspaceRecrutement: React.FC = () => {
                     <input
                       type="email"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="mohamed@gmail.com"
                     />
                   </div>
                   <div>
@@ -195,6 +198,7 @@ const EspaceRecrutement: React.FC = () => {
                     <input
                       type="tel"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="06 06 06 06 06"
                     />
                   </div>
                 </div>
@@ -207,6 +211,7 @@ const EspaceRecrutement: React.FC = () => {
                   <textarea
                     rows={2}
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                    placeholder="16 rue du condorcet"
                   />
                 </div>
 
@@ -228,6 +233,7 @@ const EspaceRecrutement: React.FC = () => {
                     <input
                       type="text"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="Paris"
                     />
                   </div>
                 </div>
@@ -240,7 +246,8 @@ const EspaceRecrutement: React.FC = () => {
                   <input
                     type="text"
                     className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
-                  />
+                    placeholder="Technicien(ne) de maintenance"
+                    />
                 </div>
 
                 {/* CV et Lettre de motivation */}
@@ -256,6 +263,7 @@ const EspaceRecrutement: React.FC = () => {
                         className="hidden"
                         id="cv-upload"
                         accept=".pdf,.doc,.docx"
+                        placeholder="cv.pdf"
                       />
                       <label
                         htmlFor="cv-upload"
@@ -279,6 +287,7 @@ const EspaceRecrutement: React.FC = () => {
                         className="hidden"
                         id="lettre-upload"
                         accept=".pdf,.doc,.docx"
+                        placeholder="lettre.pdf"
                       />
                       <label
                         htmlFor="lettre-upload"
