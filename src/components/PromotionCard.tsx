@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Promotion, getDaysRemaining } from '../data/promotions';
+import FavoriteButton from './FavoriteButton';
 
 interface PromotionCardProps {
   promotion: Promotion;
@@ -113,45 +114,11 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
           </div>
         )}
         
-        {/* Boutons Favoris et Panier Rapide */}
-        {/* <div className="absolute top-4 right-16 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <button 
-            onClick={handleToggleFavorite}
-            className={`p-2 rounded-full shadow-md transition-all duration-200 transform hover:scale-110 ${
-              inFavorites 
-                ? 'bg-red-500 text-white' 
-                : 'bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-red-50 hover:text-red-500'
-            }`}
-            aria-label={inFavorites ? "Retirer des favoris" : "Ajouter aux favoris"}
-          >
-            <svg className="w-5 h-5" fill={inFavorites ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={inFavorites ? 0 : 2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </button>
-          
-          <button 
-            onClick={handleAddToCart}
-            disabled={!inStock || inCart}
-            className={`p-2 rounded-full shadow-md transition-all duration-200 transform hover:scale-110 ${
-              !inStock 
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
-                : inCart 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-white/90 backdrop-blur-sm text-gray-700 hover:bg-blue-50 hover:text-blue-500'
-            }`}
-            aria-label={inCart ? "Déjà dans le panier" : "Ajouter au panier rapidement"}
-          >
-            {inCart ? (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            )}
-          </button>
-        </div> */}
+        <FavoriteButton
+          item={promotion}
+          type="promotion"
+          className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50"
+        />
         
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent pt-10 pb-4 px-4">
           <div className="flex justify-between items-end">
@@ -217,11 +184,16 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
             )}
             
             <Link 
-              to={`/promotion/${id}`}
-              className="text-teal-600 hover:text-teal-700 font-medium text-sm flex items-center gap-1"
+              to={`/produit/${id}`}
+              className="text-teal-600 hover:text-teal-700 font-medium text-sm flex items-center gap-1 group"
             >
               Détails
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <svg 
+                className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-200" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor"
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>

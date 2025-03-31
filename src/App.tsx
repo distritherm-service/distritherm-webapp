@@ -1,43 +1,64 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import NosProducts from './pages/NosProducts';
-import Promotions from './pages/Promotions';
-import EspaceRecrutement from './pages/EspaceRecrutement';
-import Contact from './pages/Contact';
-import ConditionsVente from './pages/ConditionsVente';
-import ConditionsUtilisation from './pages/ConditionsUtilisation';
-import SAV from './pages/SAV';
-import APropos from './pages/APropos';
-import Connexion from './pages/Connexion';
+import { FavoritesProvider } from './contexts/FavoritesContext';
+import { CartProvider } from './contexts/CartContext';
+import ScrollToTop from './components/ScrollToTop';
+// Composant de chargement simple en attendant de créer le composant LoadingSpinner
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center h-screen">
+    <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-teal-600"></div>
+  </div>
+);
+
+// Lazy loading des pages pour améliorer les performances
+const Home = lazy(() => import('./pages/Home'));
+const NosProducts = lazy(() => import('./pages/NosProducts'));
+const Promotions = lazy(() => import('./pages/Promotions'));
+const EspaceRecrutement = lazy(() => import('./pages/EspaceRecrutement'));
+const Contact = lazy(() => import('./pages/Contact'));
+const ConditionsVente = lazy(() => import('./pages/ConditionsVente'));
+const ConditionsUtilisation = lazy(() => import('./pages/ConditionsUtilisation'));
+const SAV = lazy(() => import('./pages/SAV'));
+const APropos = lazy(() => import('./pages/APropos'));
+const Connexion = lazy(() => import('./pages/Connexion'));
+const Favoris = lazy(() => import('./pages/Favoris'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Cart = lazy(() => import('./pages/Cart'));
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId="201480575290-94hn7fi3lqt72v3fpi4am2s2c3gr8qar.apps.googleusercontent.com">
-      <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Navbar />
-          <div className="navbar-spacer"></div>
-          <main>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/nos-produits" element={<NosProducts />} />
-              <Route path="/promotions" element={<Promotions />} />
-              <Route path="/espace-recrutement" element={<EspaceRecrutement />} />
-              <Route path="/nous-contact" element={<Contact />} />
-              <Route path="/conditions-vente" element={<ConditionsVente />} />
-              <Route path="/conditions-utilisation" element={<ConditionsUtilisation />} />
-              <Route path="/sav" element={<SAV />} />
-              <Route path="/a-propos" element={<APropos />} />
-              <Route path="/panier" element={<div className="container mx-auto px-4 py-8"><h1 className="text-4xl font-bold">Votre Panier</h1></div>} />
-              <Route path="/connexion" element={<Connexion />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </GoogleOAuthProvider>
+    <CartProvider>
+      <FavoritesProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
+            <Navbar />
+            <div className="navbar-spacer"></div>
+            <ScrollToTop />
+            <main>
+              <Suspense fallback={<LoadingSpinner />}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/nos-produits" element={<NosProducts />} />
+                  <Route path="/nos-produits/:id" element={<ProductDetail />} />
+                  <Route path="/produit/:id" element={<ProductDetail />} />
+                  <Route path="/promotions" element={<Promotions />} />
+                  <Route path="/espace-recrutement" element={<EspaceRecrutement />} />
+                  <Route path="/nous-contact" element={<Contact />} />
+                  <Route path="/conditions-vente" element={<ConditionsVente />} />
+                  <Route path="/conditions-utilisation" element={<ConditionsUtilisation />} />
+                  <Route path="/sav" element={<SAV />} />
+                  <Route path="/a-propos" element={<APropos />} />
+                  <Route path="/panier" element={<Cart />} />
+                  <Route path="/connexion" element={<Connexion />} />
+                  <Route path="/favoris" element={<Favoris />} />
+                </Routes>
+              </Suspense>
+            </main>
+          </div>
+        </Router>
+      </FavoritesProvider>
+    </CartProvider>
   );
 };
 

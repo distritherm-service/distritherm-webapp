@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaHeart, FaShoppingCart } from 'react-icons/fa';
 import { Product } from '../data/products';
+import FavoriteButton from './FavoriteButton';
 
 interface ProductCardProps {
   product: Product;
@@ -66,7 +67,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           
           <div className="flex justify-between items-center">
             <Link 
-              to={`/produit/${product.id}`}
+              to={`/nos-produits/${product.id}`}
               className="text-teal-600 hover:text-teal-700 font-medium text-sm flex items-center gap-2"
             >
               En savoir plus
@@ -76,12 +77,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </Link>
             
             <div className="flex gap-3">
-              <button 
+              <FavoriteButton
+                item={product}
+                type="product"
                 className="text-gray-400 hover:text-red-500 transition-colors duration-200"
-                aria-label="Ajouter aux favoris"
-              >
-                <FaHeart className="w-5 h-5" />
-              </button>
+              />
               <button 
                 className={`text-gray-400 hover:text-teal-600 transition-colors duration-200 ${!inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                 disabled={!inStock}
