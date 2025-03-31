@@ -26,7 +26,7 @@ const LocationSection: React.FC = () => {
           <div className="relative">
             <div className="flex justify-end">
               <img 
-                src="/src/assets/taverny.png" 
+                src="/Taverny.png" 
                 alt="Carte des zones d'intervention" 
                 className="w-full max-w-lg h-auto"
               />

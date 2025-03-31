@@ -16,8 +16,8 @@ export const useImageLoader = (
   options: UseImageLoaderOptions = {}
 ) => {
   const {
-    placeholder = '/src/assets/image-placeholder.svg', // Placeholder par défaut
-    errorFallback = '/src/assets/image-error.svg' // Image en cas d'erreur
+    placeholder = '/image-placeholder.svg', // Placeholder par défaut
+    errorFallback = '/image-error.svg' // Image en cas d'erreur
   } = options;
 
   const [imageSrc, setImageSrc] = useState<string>(placeholder);
