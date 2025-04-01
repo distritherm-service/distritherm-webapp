@@ -4,6 +4,7 @@ import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
 import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
 import { useFavorites } from '../contexts/FavoritesContext';
+import { useCart } from '../contexts/CartContext';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -15,6 +16,10 @@ const Navbar: React.FC = () => {
   const storeMenuRef = useRef<HTMLDivElement>(null);
   const navbarHeight = useRef<number>(0);
   const { favorites } = useFavorites();
+  const { cart } = useCart();
+
+  // Calcul du nombre total d'articles dans le panier
+  const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const handleStoreSelect = (store: string) => {
     setSelectedStore(store);
@@ -162,8 +167,16 @@ const Navbar: React.FC = () => {
                   </span>
                 )}
               </Link>
-              <Link to="/panier" className="p-2 text-gray-600 hover:text-teal-600">
-                <FaShoppingCart className="w-5 h-5" />
+              <Link
+                to="/panier"
+                className="relative p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
+              >
+                <FaShoppingCart className="w-6 h-6" />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartItemsCount}
+                  </span>
+                )}
               </Link>
               <button
                 onClick={toggleMobileMenu}
@@ -247,9 +260,14 @@ const Navbar: React.FC = () => {
               </Link>
               <Link
                 to="/panier"
-                className="p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
+                className="relative p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
               >
                 <FaShoppingCart className="w-6 h-6" />
+                {cartItemsCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {cartItemsCount}
+                  </span>
+                )}
               </Link>
               <Link
                 to="/connexion"
