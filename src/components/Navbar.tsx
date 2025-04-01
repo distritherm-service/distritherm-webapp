@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import logo from '/src/assets/logo-Transparent.png';
+import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
+import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt } from 'react-icons/fa';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isStoreMenuOpen, setIsStoreMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState('Choisir votre magasin');
   const [scrolled, setScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const storeMenuRef = useRef<HTMLDivElement>(null);
   const navbarHeight = useRef<number>(0);
+  const { favorites } = useFavorites();
 
   const handleStoreSelect = (store: string) => {
     setSelectedStore(store);
@@ -65,6 +70,16 @@ const Navbar: React.FC = () => {
     };
   }, [scrolled]);
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+    setIsSearchOpen(false);
+  };
+
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <div id="main-navbar" className="fixed top-0 left-0 right-0 z-50 flex flex-col w-full">
       <style>{`
@@ -74,10 +89,10 @@ const Navbar: React.FC = () => {
       `}</style>
 
       {/* Barre supérieure avec informations de contact */}
-      <div className={`bg-gray-900 text-white py-2 hidden md:block transition-all duration-300 ${scrolled ? 'py-1 opacity-90' : 'py-2'}`}>
+      <div className={`bg-gray-900 text-white py-2 transition-all duration-300 ${scrolled ? 'py-1 opacity-90' : 'py-2'}`}>
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center space-x-6">
+            <div className="hidden md:flex items-center space-x-6">
               <a href="tel:+33123456789" className="flex items-center hover:text-blue-400 transition-colors">
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -91,6 +106,21 @@ const Navbar: React.FC = () => {
                 contact@distritherm.fr
               </a>
             </div>
+            
+            {/* Version mobile du téléphone et email */}
+            <div className="flex md:hidden items-center space-x-3">
+              <a href="tel:+33123456789" className="flex items-center hover:text-blue-400 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+              </a>
+              <a href="mailto:contact@distritherm.fr" className="flex items-center hover:text-blue-400 transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </a>
+            </div>
+            
             <div className="flex items-center space-x-4">
               <Link to="/connexion" className="hover:text-blue-400 transition-colors">Mon compte</Link>
               <span className="text-gray-500">|</span>
@@ -100,84 +130,91 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Barre principale avec logo, recherche et boutons */}
-      <div className={`bg-white border-b transition-all duration-300 ${
-        scrolled ? 'shadow-xl' : 'shadow-sm'
-      }`}>
+      {/* Barre principale avec logo et navigation */}
+      <div className={`bg-white border-b transition-all duration-300 ${scrolled ? 'shadow-xl' : 'shadow-sm'}`}>
         <div className="container mx-auto px-4">
-          <div className={`flex items-center justify-between transition-all duration-300 ${
-            scrolled ? 'h-20' : 'h-24'
-          }`}>
+          <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16' : 'h-20'}`}>
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Link to="/" className="block py-4">
+              <Link to="/" className="block">
                 <img 
                   src={logo} 
                   alt="DistriTherm Services" 
-                  className={`transition-all duration-300 ${scrolled ? 'h-12' : 'h-14'} w-auto`} 
+                  className={`transition-all duration-300 ${scrolled ? 'h-10' : 'h-12'} w-auto`} 
                 />
               </Link>
             </div>
 
-            {/* Barre de recherche */}
+            {/* Boutons mobiles */}
+            <div className="flex items-center space-x-3 md:hidden">
+              <button
+                onClick={toggleSearch}
+                className="p-2 text-gray-600 hover:text-teal-600"
+                aria-label="Rechercher"
+              >
+                <FaSearch className="w-5 h-5" />
+              </button>
+              <Link to="/favoris" className="p-2 text-gray-600 hover:text-teal-600 relative">
+                <FaHeart className="w-5 h-5" />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
+                    {favorites.length}
+                  </span>
+                )}
+              </Link>
+              <Link to="/panier" className="p-2 text-gray-600 hover:text-teal-600">
+                <FaShoppingCart className="w-5 h-5" />
+              </Link>
+              <button
+                onClick={toggleMobileMenu}
+                className="p-2 text-gray-600 hover:text-teal-600"
+                aria-label="Menu"
+              >
+                {isMobileMenuOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
+              </button>
+            </div>
+
+            {/* Barre de recherche desktop */}
             <div className="flex-1 max-w-3xl mx-8 hidden md:block">
               <div className="relative">
                 <input
                   type="text"
                   placeholder="Que recherchez-vous ?"
                   className={`w-full px-6 pr-12 text-gray-700 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ${
-                    scrolled ? 'py-2.5' : 'py-3'
+                    scrolled ? 'py-2' : 'py-2.5'
                   }`}
                 />
                 <button className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full transition-colors">
-                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <FaSearch className="w-5 h-5 text-gray-500" />
                 </button>
               </div>
             </div>
 
-            {/* Boutons de droite */}
-            <div className="flex items-center space-x-6">
-              {/* Menu déroulant des magasins */}
+            {/* Navigation desktop */}
+            <div className="hidden md:flex items-center space-x-6">
               <div className="relative" ref={storeMenuRef}>
                 <button
                   onClick={() => setIsStoreMenuOpen(!isStoreMenuOpen)}
-                  className="hidden md:flex items-center text-gray-700 hover:text-blue-600 transition-colors group"
+                  className="flex items-center text-gray-700 hover:text-blue-600 transition-colors group"
                 >
-                  <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <span className="ml-3 font-medium">{selectedStore}</span>
-                  <svg className={`w-5 h-5 ml-2 transform transition-transform duration-200 ${isStoreMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <FaMapMarkerAlt className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+                  <span className="ml-2 font-medium">{selectedStore}</span>
                 </button>
 
-                {/* Menu déroulant */}
                 {isStoreMenuOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100">
                     <button
                       onClick={() => handleStoreSelect('Tous les magasins')}
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
                     >
-                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      </svg>
-                      <div>
-                        <span className="font-medium block">Tous les magasins</span>
-                      </div>
+                      <FaMapMarkerAlt className="w-5 h-5 text-teal-600" />
+                      <span className="font-medium">Tous les magasins</span>
                     </button>
                     <button
                       onClick={() => handleStoreSelect('Magasin Taverny')}
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
                     >
-                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      </svg>
+                      <FaMapMarkerAlt className="w-5 h-5 text-teal-600" />
                       <div>
                         <span className="font-medium block">Magasin Taverny</span>
                         <span className="text-sm text-gray-500">95150 Taverny</span>
@@ -187,9 +224,7 @@ const Navbar: React.FC = () => {
                       onClick={() => handleStoreSelect('Magasin Drancy')}
                       className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3"
                     >
-                      <svg className="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      </svg>
+                      <FaMapMarkerAlt className="w-5 h-5 text-teal-600" />
                       <div>
                         <span className="font-medium block">Magasin Drancy</span>
                         <span className="text-sm text-gray-500">93700 Drancy</span>
@@ -199,73 +234,158 @@ const Navbar: React.FC = () => {
                 )}
               </div>
 
-              <Link to="/favoris" className="relative group">
-                <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
-                  <svg className="w-6 h-6 text-gray-700 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </div>
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+              <Link
+                to="/favoris"
+                className="relative p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
+              >
+                <FaHeart className="w-6 h-6" />
+                {favorites.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                    {favorites.length}
+                  </span>
+                )}
               </Link>
-              <Link to="/panier" className="relative group">
-                <div className="p-2 rounded-full bg-gray-100 group-hover:bg-blue-100 transition-colors">
-                  <svg className="w-6 h-6 text-gray-700 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </div>
-                <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
+              <Link
+                to="/panier"
+                className="p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
+              >
+                <FaShoppingCart className="w-6 h-6" />
               </Link>
-              {/* Menu mobile */}
-              <button className="md:hidden p-2 rounded-lg hover:bg-gray-100" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+              <Link
+                to="/connexion"
+                className="px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2"
+              >
+                <FaUser className="w-5 h-5" />
+                <span>Connexion</span>
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Barre de navigation secondaire */}
-      <div className={`bg-white border-b hidden md:block transition-all duration-300 ${
-        scrolled ? 'shadow-sm' : ''
-      }`}>
+      {/* Barre de recherche mobile */}
+      <div className={`${isSearchOpen ? 'block' : 'hidden'} md:hidden bg-white border-b px-4 py-3`}>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Que recherchez-vous ?"
+            className="w-full px-4 pr-10 py-2 text-gray-700 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
+            <FaSearch className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+      </div>
+
+      {/* Menu mobile */}
+      <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden bg-white border-b`}>
+        <nav className="px-4 py-2">
+          {/* Bouton Tous nos produits */}
+          <button
+            className="flex items-center w-full px-4 py-3 text-gray-700 hover:text-blue-600 font-medium transition-colors border-b border-gray-100"
+            onClick={() => {
+              setIsMenuOpen(!isMenuOpen);
+              setIsMobileMenuOpen(false);
+            }}
+          >
+            <FaBars className="w-5 h-5 mr-2" />
+            <span>Tous nos produits</span>
+          </button>
+
+          <Link to="/" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
+            Accueil
+          </Link>
+          <Link to="/nos-produits" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
+            Nos Produits
+          </Link>
+          <Link to="/promotions" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
+            Promotions
+          </Link>
+          <Link to="/espace-recrutement" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
+            Espace Recrutement
+          </Link>
+          <Link to="/nous-contact" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
+            Nous Contact
+          </Link>
+
+          {/* Sélection du magasin */}
+          <div className="px-4 py-3 border-b border-gray-100">
+            <button
+              onClick={() => setIsStoreMenuOpen(!isStoreMenuOpen)}
+              className="flex items-center w-full text-gray-700 hover:text-blue-600"
+            >
+              <FaMapMarkerAlt className="w-5 h-5 mr-2" />
+              <span>{selectedStore}</span>
+            </button>
+            {isStoreMenuOpen && (
+              <div className="mt-2 space-y-2">
+                <button
+                  onClick={() => handleStoreSelect('Tous les magasins')}
+                  className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded"
+                >
+                  Tous les magasins
+                </button>
+                <button
+                  onClick={() => handleStoreSelect('Magasin Taverny')}
+                  className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded"
+                >
+                  <span className="block font-medium">Magasin Taverny</span>
+                  <span className="text-sm text-gray-500">95150 Taverny</span>
+                </button>
+                <button
+                  onClick={() => handleStoreSelect('Magasin Drancy')}
+                  className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded"
+                >
+                  <span className="block font-medium">Magasin Drancy</span>
+                  <span className="text-sm text-gray-500">93700 Drancy</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <Link
+            to="/connexion"
+            className="block mx-4 mt-4 mb-2 px-6 py-3 bg-blue-600 text-white text-center rounded-lg font-medium hover:bg-blue-700"
+          >
+            <span className="flex items-center justify-center">
+              <FaUser className="w-5 h-5 mr-2" />
+              Connexion
+            </span>
+          </Link>
+        </nav>
+      </div>
+
+      {/* Navigation desktop */}
+      <div className={`bg-white border-b hidden md:block transition-all duration-300 ${scrolled ? 'shadow-sm' : ''}`}>
         <div className="container mx-auto px-4">
-          <div className={`flex items-center justify-between transition-all duration-300 ${
-            scrolled ? 'h-12' : 'h-14'
-          }`}>
+          <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-12' : 'h-14'}`}>
             {/* Bouton Tous nos produits */}
             <button
               className="flex items-center px-6 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <FaBars className="w-5 h-5 mr-2" />
               <span>Tous nos produits</span>
             </button>
 
             {/* Menu principal */}
             <nav className="flex space-x-8">
-              <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">Accueil</Link>
-              <Link to="/nos-produits" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">Nos Produits</Link>
-              <Link to="/promotions" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">Promotions</Link>
-              <Link to="/espace-recrutement" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">Espace Recrutement</Link>
-              <Link to="/nous-contact" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">Nous Contact</Link>
+              <Link to="/" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">
+                Accueil
+              </Link>
+              <Link to="/nos-produits" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">
+                Nos Produits
+              </Link>
+              <Link to="/promotions" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">
+                Promotions
+              </Link>
+              <Link to="/espace-recrutement" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">
+                Espace Recrutement
+              </Link>
+              <Link to="/nous-contact" className="text-gray-700 hover:text-blue-600 font-medium transition-colors py-4 border-b-2 border-transparent hover:border-blue-600">
+                Nous Contact
+              </Link>
             </nav>
-
-            {/* Bouton Connexion */}
-            <Link 
-              to="/connexion" 
-              className={`px-6 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2 ${
-                scrolled ? 'py-1.5' : 'py-2'
-              }`}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <span>Connexion</span>
-            </Link>
           </div>
         </div>
       </div>

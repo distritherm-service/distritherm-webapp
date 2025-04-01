@@ -21,18 +21,18 @@ const BrandsSection: React.FC = () => {
   }, []);
 
   const brands = [
-    { name: 'FHE', src: '/src/assets/fournisseur1.png' },
-    { name: 'FHE', src: '/src/assets/fournisseur2.jpg' },
-    { name: 'DeWalt', src: '/src/assets/fournisseur3.png' },
-    { name: 'Knauf', src: '/src/assets/fournisseur4.png' },
-    { name: 'Rockwool', src: '/src/assets/fournisseur5.jpg' },
-    { name: 'Teddington', src: '/src/assets/fournisseur6.jpg' },
-    { name: 'Watts', src: '/src/assets/fournisseur7.jpg' },
-    { name: 'Multitubo', src: '/src/assets/fournisseur8.png' },
-    { name: 'Stanley', src: '/src/assets/fournisseur9.png' },
-    { name: 'Makita', src: '/src/assets/fournisseur10.png' },
-    { name: 'Ursa', src: '/src/assets/fournisseur11.jpg' },
-    { name: 'Ursa', src: '/src/assets/fournisseur12.jpg' }
+    { name: 'FHE', src: '/fournisseur1.png' },
+    { name: 'FHE', src: '/fournisseur2.jpg' },
+    { name: 'DeWalt', src: '/fournisseur3.png' },
+    { name: 'Knauf', src: '/fournisseur4.png' },
+    { name: 'Rockwool', src: '/fournisseur5.jpg' },
+    { name: 'Teddington', src: '/fournisseur6.jpg' },
+    { name: 'Watts', src: '/fournisseur7.jpg' },
+    { name: 'Multitubo', src: '/fournisseur8.png' },
+    { name: 'Stanley', src: '/fournisseur9.png' },
+    { name: 'Makita', src: '/fournisseur10.png' },
+    { name: 'Ursa', src: '/fournisseur11.jpg' },
+    { name: 'Ursa', src: '/fournisseur12.jpg' }
   ];
 
   return (

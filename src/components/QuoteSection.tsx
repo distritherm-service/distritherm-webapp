@@ -8,7 +8,7 @@ const QuoteSection: React.FC = () => {
       <div 
         className="absolute inset-0 z-0"
         style={{
-          backgroundImage: 'url(/src/assets/image-section-devis.png)',
+          backgroundImage: 'url(/image-section-devis.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}

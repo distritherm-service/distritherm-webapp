@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { useGoogleLogin } from '@react-oauth/google';
-import { authService } from '../services/authService';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { FaBuilding, FaEnvelope, FaLock, FaUser, FaPhone, FaMapMarkerAlt, FaGoogle } from 'react-icons/fa';
@@ -10,20 +8,10 @@ const Connexion: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
 
-  const loginWithGoogle = useGoogleLogin({
-    onSuccess: async (response) => {
-      try {
-        await authService.loginWithGoogle(response.access_token);
-        navigate('/'); // Redirection vers la page d'accueil après connexion réussie
-      } catch (error) {
-        setError('Erreur lors de la connexion avec Google');
-        console.error('Erreur de connexion Google:', error);
-      }
-    },
-    onError: () => {
-      setError('Erreur lors de la connexion avec Google');
-    }
-  });
+  const handleGoogleLogin = () => {
+    // Pour l'instant, on désactive la connexion Google
+    setError("La connexion avec Google n'est pas encore disponible. Veuillez utiliser le formulaire de connexion classique.");
+  };
 
   return (
     <Layout>
@@ -82,7 +70,7 @@ const Connexion: React.FC = () => {
               {/* Bouton Google */}
               <div className="mb-8">
                 <button
-                  onClick={() => loginWithGoogle()}
+                  onClick={handleGoogleLogin}
                   className="w-full flex items-center justify-center px-6 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-[1.02] group"
                 >
                   <FaGoogle className="w-5 h-5 text-red-500 mr-3" />
@@ -173,6 +161,7 @@ const Connexion: React.FC = () => {
                         <input
                           type="text"
                           className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                          placeholder="Mohamed"
                         />
                       </div>
                     </div>
@@ -187,6 +176,7 @@ const Connexion: React.FC = () => {
                         <input
                           type="text"
                           className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                          placeholder="ismael"
                         />
                       </div>
                     </div>
@@ -203,6 +193,7 @@ const Connexion: React.FC = () => {
                       <textarea
                         rows={2}
                         className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="16 rue du condorcet"
                       />
                     </div>
                   </div>
@@ -215,6 +206,7 @@ const Connexion: React.FC = () => {
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="95800"
                       />
                     </div>
                     <div>
@@ -224,6 +216,7 @@ const Connexion: React.FC = () => {
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="Paris"
                       />
                     </div>
                   </div>
@@ -240,6 +233,7 @@ const Connexion: React.FC = () => {
                         <input
                           type="text"
                           className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                          placeholder="Distritherm Services"
                         />
                       </div>
                     </div>
@@ -250,6 +244,7 @@ const Connexion: React.FC = () => {
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="12345678901234"
                       />
                     </div>
                   </div>
@@ -265,6 +260,7 @@ const Connexion: React.FC = () => {
                       <input
                         type="email"
                         className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="mohamed@gmail.com"
                       />
                     </div>
                   </div>
@@ -281,6 +277,7 @@ const Connexion: React.FC = () => {
                         <input
                           type="password"
                           className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                          placeholder="••••••••"
                         />
                       </div>
                     </div>
@@ -295,6 +292,7 @@ const Connexion: React.FC = () => {
                         <input
                           type="password"
                           className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                          placeholder="••••••••"
                         />
                       </div>
                     </div>
@@ -313,20 +311,16 @@ const Connexion: React.FC = () => {
         </div>
       </section>
       {error && (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8">
-              <div className="text-center mb-16">
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 relative inline-block">
-                  <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
-                    Erreur de connexion
-                  </span>
-                </h1>
-                <p className="text-gray-600 max-w-2xl mx-auto mt-8">
-                  {error}
-                </p>
-              </div>
-            </div>
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-8 max-w-md mx-4">
+            <h2 className="text-xl font-bold mb-4 text-red-600">Erreur</h2>
+            <p className="text-gray-700">{error}</p>
+            <button
+              onClick={() => setError('')}
+              className="mt-6 w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+            >
+              Fermer
+            </button>
           </div>
         </div>
       )}
