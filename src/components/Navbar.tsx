@@ -292,19 +292,19 @@ const Navbar: React.FC = () => {
             <span>Tous nos produits</span>
           </button>
 
-          <Link to="/" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100">
+          <Link to="/" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
             Accueil
           </Link>
-          <Link to="/nos-produits" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100">
+          <Link to="/nos-produits" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
             Nos Produits
           </Link>
-          <Link to="/promotions" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100">
+          <Link to="/promotions" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
             Promotions
           </Link>
-          <Link to="/espace-recrutement" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100">
+          <Link to="/espace-recrutement" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
             Espace Recrutement
           </Link>
-          <Link to="/nous-contact" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100">
+          <Link to="/nous-contact" className="block px-4 py-3 text-gray-700 hover:text-blue-600 border-b border-gray-100" onClick={() => setIsMobileMenuOpen(false)}>
             Nous Contact
           </Link>
 
