@@ -120,6 +120,7 @@ const EspaceRecrutement: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Civilité
+                    <span className="text-red-500">*</span>
                   </label>
                   <div className="flex space-x-4">
                     <label className="flex items-center">
@@ -160,6 +161,7 @@ const EspaceRecrutement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Nom
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -170,6 +172,7 @@ const EspaceRecrutement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Prénom
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -184,6 +187,7 @@ const EspaceRecrutement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Adresse e-mail
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
@@ -194,6 +198,7 @@ const EspaceRecrutement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Téléphone
+                    <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -207,6 +212,7 @@ const EspaceRecrutement: React.FC = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Adresse
+                    <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     rows={2}
@@ -220,15 +226,18 @@ const EspaceRecrutement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Code Postal
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="75000"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Ville
+                      <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -255,6 +264,7 @@ const EspaceRecrutement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Votre CV
+                      <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <input

@@ -129,6 +129,7 @@ const Home: React.FC = () => {
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">Nos Expertises</h3>
                   <p className="text-gray-600 leading-relaxed">
                     Spécialistes en climatisation, chauffage, électricité, et installations sanitaires.
+                    Nous vous accompagnons dans la réalisation de vos projets de construction, de rénovation et d'amélioration de votre habitat residenciel ou commercial.
                   </p>
                 </div>
 

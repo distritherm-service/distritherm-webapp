@@ -24,7 +24,7 @@ const APropos = lazy(() => import('./pages/APropos'));
 const Connexion = lazy(() => import('./pages/Connexion'));
 const Favoris = lazy(() => import('./pages/Favoris'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
-const Cart = lazy(() => import('./pages/Cart'));
+const Cart = lazy(() => import('./pages/Cart/index'));
 
 const App: React.FC = () => {
   return (

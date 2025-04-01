@@ -4,13 +4,15 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  priceHT: number;
+  priceTTC: number;
   image: string;
   quantity: number;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (item: CartItem) => void;
+  addToCart: (item: Omit<CartItem, 'priceHT' | 'priceTTC'> & { price: number }) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   isInCart: (id: string) => boolean;
@@ -22,7 +24,11 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const addToCart = (item: CartItem) => {
+  const addToCart = (item: Omit<CartItem, 'priceHT' | 'priceTTC'> & { price: number }) => {
+    // On suppose que le prix passé est TTC
+    const priceTTC = item.price;
+    const priceHT = item.price / 1.2; // TVA à 20%
+    
     setCart(prev => {
       const existingItem = prev.find(i => i.id === item.id);
       if (existingItem) {
@@ -32,7 +38,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             : i
         );
       }
-      return [...prev, item];
+      return [...prev, { ...item, priceHT, priceTTC }];
     });
   };
 

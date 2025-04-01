@@ -103,6 +103,7 @@ const Contact: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Civilité
+                      <span className="text-red-500">*</span>
                     </label>
                     <div className="flex space-x-4">
                       <label className="flex items-center">
@@ -143,19 +144,23 @@ const Contact: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Nom
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="Nom"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Prénom
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="Prénom"
                       />
                     </div>
                   </div>
@@ -165,19 +170,23 @@ const Contact: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Adresse e-mail
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="Adresse e-mail"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Téléphone
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="tel"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="Téléphone"
                       />
                     </div>
                   </div>
@@ -185,11 +194,13 @@ const Contact: React.FC = () => {
                   {/* Adresse */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Adresse
+                      Adresse 
+                      <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       rows={2}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="Adresse"
                     />
                   </div>
 
@@ -198,19 +209,23 @@ const Contact: React.FC = () => {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Code Postal
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="Code Postal"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Ville
+                        <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        placeholder="Ville"
                       />
                     </div>
                   </div>
@@ -223,6 +238,7 @@ const Contact: React.FC = () => {
                     <input
                       type="text"
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="Activité Principale"
                     />
                   </div>
 
@@ -234,6 +250,7 @@ const Contact: React.FC = () => {
                     <textarea
                       rows={4}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      placeholder="Message"
                     />
                   </div>
 

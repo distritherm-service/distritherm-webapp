@@ -20,7 +20,15 @@ const Cart: React.FC = () => {
       <div className="min-h-screen bg-gray-50">
         <Breadcrumb />
         <div className="container mx-auto px-4 py-12">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-8 text-center">Votre Panier</h1>
+        <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 relative inline-block">
+              <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+                Votre panier 
+              </span>
+              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full"></div>
+            </h1>
+         
+          </div>
           <div className="bg-white rounded-xl shadow-md p-6 md:p-10 text-center">
             <div className="mb-6">
               <svg className="w-16 h-16 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,6 +43,7 @@ const Cart: React.FC = () => {
             >
               <FaArrowLeft className="mr-2" />
               Voir nos produits
+              
             </Link>
           </div>
         </div>

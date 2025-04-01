@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Promotion, getDaysRemaining } from '../data/promotions';
 import FavoriteButton from './FavoriteButton';
+import { useCart } from '../contexts/CartContext';
+import { useFavorites } from '../contexts/FavoritesContext';
 
 interface PromotionCardProps {
   promotion: Promotion;
 }
 
 const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
-  const [inFavorites, setInFavorites] = useState(false);
-  const [inCart, setInCart] = useState(false);
   const [showNotification, setShowNotification] = useState<string | null>(null);
+  const { addToCart, isInCart } = useCart();
+  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+  const [inFavorites, setInFavorites] = useState(() => isFavorite(promotion.id));
   
   const { 
     id, 
@@ -31,13 +34,29 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
   
   const daysRemaining = getDaysRemaining(validUntil);
   
-  const formattedOriginalPrice = originalPrice.toLocaleString('fr-FR', {
+  // Calculer les prix HT (en supposant que les prix sont TTC)
+  const originalPriceHT = originalPrice / 1.2; // TVA à 20%
+  const discountPriceHT = discountPrice / 1.2; // TVA à 20%
+  
+  const formattedOriginalPriceHT = originalPriceHT.toLocaleString('fr-FR', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2
   });
   
-  const formattedDiscountPrice = discountPrice.toLocaleString('fr-FR', {
+  const formattedDiscountPriceHT = discountPriceHT.toLocaleString('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2
+  });
+  
+  const formattedOriginalPriceTTC = originalPrice.toLocaleString('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2
+  });
+  
+  const formattedDiscountPriceTTC = discountPrice.toLocaleString('fr-FR', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2
@@ -54,23 +73,36 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
   const handleAddToCart = () => {
     if (!inStock) return;
     
-    setInCart(true);
-    showToast("Ajouté au panier");
+    addToCart({
+      id: promotion.id,
+      name: promotion.title,
+      price: discountPrice,
+      image: promotion.image,
+      quantity: 1
+    });
     
-    // Dans une application réelle, ici on ajouterait la promotion au panier dans un état global ou via une API
+    showToast("Promotion ajoutée au panier");
   };
   
   const handleToggleFavorite = () => {
-    setInFavorites(!inFavorites);
-    showToast(inFavorites ? "Retiré des favoris" : "Ajouté aux favoris");
+    const newState = !inFavorites;
+    setInFavorites(newState);
     
-    // Dans une application réelle, ici on ajouterait/supprimerait la promotion des favoris dans un état global ou via une API
+    if (newState) {
+      addToFavorites(promotion, 'promotion');
+      showToast("Ajouté aux favoris");
+    } else {
+      removeFromFavorites(promotion.id);
+      showToast("Retiré des favoris");
+    }
   };
   
   const showToast = (message: string) => {
     setShowNotification(message);
     setTimeout(() => setShowNotification(null), 2000);
   };
+
+  const promotionInCart = isInCart(promotion.id);
 
   return (
     <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 h-full flex flex-col group relative">
@@ -129,8 +161,8 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
               <h3 className="text-lg font-bold text-white line-clamp-1">{title}</h3>
             </div>
             <div className="text-right">
-              <span className="line-through text-gray-300 text-sm">{formattedOriginalPrice}</span>
-              <div className="text-white font-bold text-xl">{formattedDiscountPrice}</div>
+              <span className="line-through text-gray-300 text-sm">{formattedOriginalPriceTTC}</span>
+              <div className="text-white font-bold text-xl">{formattedDiscountPriceTTC}</div>
             </div>
           </div>
         </div>
@@ -145,6 +177,28 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
         <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">{description}</p>
         
         <div className="mt-auto space-y-4">
+          {/* Prix et économies */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500">Prix original</span>
+                <div className="flex gap-2 items-center">
+                  <span className="line-through text-gray-500 text-sm">{formattedOriginalPriceTTC}</span>
+                  <span className="text-xs text-gray-400">(TTC)</span>
+                </div>
+                <span className="text-xs text-gray-400">HT: {formattedOriginalPriceHT}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-500">Prix promo</span>
+                <div className="flex gap-2 items-center">
+                  <span className="font-bold text-teal-600">{formattedDiscountPriceTTC}</span>
+                  <span className="text-xs text-gray-400">(TTC)</span>
+                </div>
+                <span className="text-xs text-gray-400">HT: {formattedDiscountPriceHT}</span>
+              </div>
+            </div>
+          </div>
+          
           {/* Code promo et économie réalisée */}
           <div className="bg-gray-50 p-3 rounded-lg">
             <div className="flex justify-between items-center mb-1">
@@ -219,18 +273,18 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
             {/* Bouton Panier */}
             <button
               onClick={handleAddToCart}
-              disabled={!inStock || inCart}
-              className={`flex-[3] py-2.5 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 transition-all ${
+              disabled={!inStock || promotionInCart}
+              className={`flex-[2] py-2.5 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-1.5 transition-all ${
                 !inStock 
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : inCart 
+                  : promotionInCart 
                     ? 'bg-green-500 text-white shadow-md' 
                     : 'bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
               }`}
             >
               {!inStock ? (
                 "Indisponible"
-              ) : inCart ? (
+              ) : promotionInCart ? (
                 <>
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
