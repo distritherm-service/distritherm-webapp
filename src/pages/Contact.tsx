@@ -68,7 +68,7 @@ const Contact: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <FaClock className="w-5 h-5 text-teal-600" />
-                    <span className="text-gray-600">Lun-Ven: 8h-18h</span>
+                    <span className="text-gray-600">Lun-Ven: 6h30-17h</span>
                   </div>
                 </div>
               </div>

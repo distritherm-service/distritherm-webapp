@@ -51,13 +51,13 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Nos produits</h3>
             <ul className="space-y-2">
-              <li><Link to="/catalogue" className="hover:text-blue-600">Notre catalogue produits</Link></li>
-              <li><Link to="/boutique" className="hover:text-blue-600">Platerie</Link></li>
-              <li><Link to="/photovoltaique" className="hover:text-blue-600">Plomberie</Link></li>
-              <li><Link to="/genie-electrique" className="hover:text-blue-600">Chauffage</Link></li>
-              <li><Link to="/genie-climatique" className="hover:text-blue-600">climatisation</Link></li>
-              <li><Link to="/isolation" className="hover:text-blue-600">Isolation</Link></li>
-              <li><Link to="/eclairage" className="hover:text-blue-600">Electricité</Link></li>
+              <li><Link to="/nos-produits" className="hover:text-blue-600">Notre catalogue produits</Link></li>
+              <li><Link to="nos-produits" className="hover:text-blue-600">Platerie</Link></li>
+              <li><Link to="/nos-produits" className="hover:text-blue-600">Plomberie</Link></li>
+              <li><Link to="/nos-produits" className="hover:text-blue-600">Chauffage</Link></li>
+              <li><Link to="/nos-produits" className="hover:text-blue-600">climatisation</Link></li>
+              <li><Link to="/nos-produits" className="hover:text-blue-600">Isolation</Link></li>
+              <li><Link to="/nos-produits" className="hover:text-blue-600">Electricité</Link></li>
             </ul>
           </div>
 
@@ -70,7 +70,7 @@ const Footer: React.FC = () => {
               <li><Link to="/conditions-vente" className="hover:text-blue-600">Conditions générales de vente</Link></li>
               <li><Link to="/conditions-utilisation" className="hover:text-blue-600">Conditions générales d'utilisation du site</Link></li>
               <li><Link to="/sav" className="hover:text-blue-600">SAV</Link></li>
-              <li><Link to="/contact" className="hover:text-blue-600">Contact</Link></li>
+              <li><Link to="/nous-contact" className="hover:text-blue-600">Contact</Link></li>
             </ul>
           </div>
         </div>

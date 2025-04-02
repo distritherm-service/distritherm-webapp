@@ -141,6 +141,7 @@ const Home: React.FC = () => {
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">Notre Engagement</h3>
                   <p className="text-gray-600 leading-relaxed">
                     Solutions de haute qualité adaptées aux besoins spécifiques de nos clients.
+                    Tous nos produits sont certifiés et répondent aux normes de qualité les plus strictes.
                   </p>
                 </div>
 

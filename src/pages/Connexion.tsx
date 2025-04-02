@@ -1,21 +1,250 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { FaBuilding, FaEnvelope, FaLock, FaUser, FaPhone, FaMapMarkerAlt, FaGoogle } from 'react-icons/fa';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { FaBuilding, FaEnvelope, FaLock, FaUser, FaPhone, FaMapMarkerAlt, FaGoogle, FaIdCard } from 'react-icons/fa';
+import axiosInstance, { saveAuthData } from '../services/axiosConfig';
+import { useAuth } from '../contexts/AuthContext';
 
 interface ConnexionProps {
   inCart?: boolean;
 }
 
+// Interface pour l'utilisateur Google décodé
+interface GoogleUser {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+  given_name?: string;
+  family_name?: string;
+}
+
+// Interface pour la réponse de connexion réussie
+interface LoginResponse {
+  accessToken: string;
+  user: any;
+  message: string;
+}
+
+// Interface pour les informations supplémentaires d'inscription
+interface AdditionalInfo {
+  phoneNumber: string;
+  companyName: string;
+  siretNumber: string;
+}
+
 const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
+  const [googleUser, setGoogleUser] = useState<GoogleUser | null>(null);
+  const [googleCredential, setGoogleCredential] = useState<string | null>(null);
+  const [additionalInfo, setAdditionalInfo] = useState<AdditionalInfo>({
+    phoneNumber: '',
+    companyName: '',
+    siretNumber: ''
+  });
+  const [showAdditionalInfoForm, setShowAdditionalInfoForm] = useState(false);
+  const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
 
-  const handleGoogleLogin = () => {
-    // Pour l'instant, on désactive la connexion Google
-    setError("La connexion avec Google n'est pas encore disponible. Veuillez utiliser le formulaire de connexion classique.");
+  // Gestion de la réponse Google réussie
+  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
+    try {
+      const formBody = {
+        providerAuthToken: credentialResponse.credential,
+        providerName: "GOOGLE",
+      }
+
+      setGoogleCredential(credentialResponse.credential || null);
+      const response = await axiosInstance.post("/auth/provider-login", formBody);
+      
+      // Gestion de la réponse réussie
+      if (response.status === 200) {
+        // Mettre à jour l'état d'authentification globale
+        login(await response.data);
+        
+        setLoginResponse(response.data);
+        
+        // Si on est dans le panier, on passe à l'étape suivante
+        if (inCart) {
+          setTimeout(() => {
+            navigate('/panier/delivery');
+          }, 2000);
+        } else {
+          // Sinon, on peut rediriger vers la page d'accueil
+          setTimeout(() => {
+            navigate('/');
+          }, 2000);
+        }
+      }
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        setShowAdditionalInfoForm(true);
+      } else {
+        console.error("Erreur lors de la connexion avec Google:", error);
+        setError("Une erreur est survenue lors de la connexion avec Google. Veuillez réessayer.");
+      }
+    }   
+  }
+
+  const handleAdditionalInfoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const formBody = {
+        providerAuthToken: googleCredential,
+        providerName: "GOOGLE",
+        additionalInfo
+      }
+
+      const response = await axiosInstance.post("/auth/provider-register", formBody);
+      
+      if (response.status === 201) {
+        // Mettre à jour l'état d'authentification globale
+        login(response.data);
+        
+        setLoginResponse(response.data);
+        setShowAdditionalInfoForm(false);
+        
+        // Si on est dans le panier, on passe à l'étape suivante
+        if (inCart) {
+          setTimeout(() => {
+            navigate('/panier/delivery');
+          }, 2000); // Redirection après 2 secondes
+        } else {
+          // Sinon, on peut rediriger vers la page d'accueil
+          setTimeout(() => {
+            navigate('/');
+          }, 2000); // Redirection après 2 secondes
+        }
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'inscription avec Google:", error);
+      setError("Une erreur est survenue lors de l'inscription avec Google. Veuillez réessayer.");
+    }
+  }
+
+  const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
+    // Tentative de connexion d'abord
+    handleGoogleLogin(credentialResponse);
   };
+  
+  // Gestion de l'erreur Google
+  const handleGoogleError = () => {
+    setError("La connexion avec Google a échoué. Veuillez réessayer ou utiliser le formulaire de connexion classique.");
+  };
+
+  // Rendu du formulaire d'informations supplémentaires
+  const renderAdditionalInfoForm = () => (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div className="bg-white rounded-lg p-8 max-w-md mx-4 w-full">
+        <h2 className="text-xl font-bold mb-4 text-teal-600">Informations supplémentaires requises</h2>
+        <p className="text-gray-700 mb-4">Pour finaliser votre inscription, veuillez fournir les informations suivantes :</p>
+        
+        <form onSubmit={handleAdditionalInfoSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Numéro de téléphone
+              <span className="text-red-500">*</span> 
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaPhone className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="tel"
+                className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="06 12 34 56 78"
+                value={additionalInfo.phoneNumber}
+                onChange={(e) => setAdditionalInfo({...additionalInfo, phoneNumber: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nom de l'entreprise
+              <span className="text-red-500">*</span> 
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaBuilding className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="Distritherm Services"
+                value={additionalInfo.companyName}
+                onChange={(e) => setAdditionalInfo({...additionalInfo, companyName: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Numéro SIRET
+              <span className="text-red-500">*</span> 
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaIdCard className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="123 456 789 00012"
+                value={additionalInfo.siretNumber}
+                onChange={(e) => setAdditionalInfo({...additionalInfo, siretNumber: e.target.value})}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-4 mt-6">
+            <button
+              type="button"
+              onClick={() => setShowAdditionalInfoForm(false)}
+              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:from-teal-700 hover:to-blue-700"
+            >
+              S'inscrire
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  // Rendu de la réponse de connexion
+  const renderLoginResponse = () => (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+      <div className="bg-white rounded-lg p-8 max-w-md mx-4">
+        <h2 className="text-xl font-bold mb-4 text-teal-600">Connexion réussie</h2>
+        <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-80">
+          <pre className="text-sm">
+            {JSON.stringify(loginResponse, null, 2)}
+          </pre>
+        </div>
+        <button
+          onClick={() => {
+            setLoginResponse(null);
+            navigate('/');
+          }}
+          className="mt-6 w-full px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
+        >
+          Continuer
+        </button>
+      </div>
+    </div>
+  );
 
   const renderContent = () => (
     <section className={`relative ${!inCart ? 'py-20' : 'py-4'} overflow-hidden`}>
@@ -82,13 +311,21 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
 
             {/* Bouton Google */}
             <div className="mb-8">
-              <button
-                onClick={handleGoogleLogin}
-                className="w-full flex items-center justify-center px-6 py-4 bg-white border-2 border-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-[1.02] group"
-              >
-                <FaGoogle className="w-5 h-5 text-red-500 mr-3" />
-                <span>{isLogin ? 'Se connecter avec Google' : "S'inscrire avec Google"}</span>
-              </button>
+              <div className="flex justify-center w-full">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  useOneTap
+                  theme="outline"
+                  shape="rectangular"
+                  size="large"
+                  text={isLogin ? "signin_with" : "signup_with"}
+                  locale="fr"
+                  context={isLogin ? "signin" : "signup"}
+                />
+              </div>
+              <p className="text-xs text-center mt-2 text-gray-500">
+              </p>
             </div>
 
             {/* Séparateur */}
@@ -198,49 +435,22 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
                     </div>
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Adresse
-                    <span className="text-red-500">*</span> 
+                    Numéro SIRET
+                    <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaMapMarkerAlt className="h-5 w-5 text-gray-400" />
+                      <FaIdCard className="h-5 w-5 text-gray-400" />
                     </div>
-                    <textarea
-                      rows={2}
+                    <input
+                      type="text"
                       className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
-                      placeholder="16 rue du condorcet"
+                      placeholder="123 456 789 00012"
                     />
                   </div>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Code Postal
-                      <span className="text-red-500">*</span> 
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
-                      placeholder="95800"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Ville
-                      <span className="text-red-500">*</span> 
-                    </label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
-                      placeholder="Paris"
-                    />
-                  </div>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -342,11 +552,16 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
     </section>
   );
 
-  return inCart ? (
-    renderContent()
-  ) : (
-    <Layout>
-      {renderContent()}
+  return (
+    <>
+      {inCart ? (
+        renderContent()
+      ) : (
+        <Layout>
+          {renderContent()}
+        </Layout>
+      )}
+      
       {error && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-8 max-w-md mx-4">
@@ -361,7 +576,10 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
           </div>
         </div>
       )}
-    </Layout>
+      
+      {showAdditionalInfoForm && renderAdditionalInfoForm()}
+      {loginResponse && renderLoginResponse()}
+    </>
   );
 };
 
