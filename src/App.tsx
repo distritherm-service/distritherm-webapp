@@ -45,6 +45,7 @@ const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Cart = lazy(() => import('./pages/Cart/index'));
 const MonProfil = lazy(() => import('./pages/MonProfil'));
 const MesCommandes = lazy(() => import('./pages/MesCommandes'));
+const RegisterSuccess = lazy(() => import('./pages/RegisterSuccess'));
 
 // Page 404 simple
 const NotFound = () => (
@@ -79,6 +80,7 @@ const AppRoutes = () => {
       <Route path="/mes-commandes" element={<MesCommandes />} />
       <Route path="/panier/delivery" element={<div>Page de livraison</div>} />
       <Route path="/panier/payment" element={<div>Page de paiement</div>} />
+      <Route path="/inscription-reussie" element={<RegisterSuccess />} />
       
       {/* Page de connexion - inaccessible si déjà connecté */}
       <Route path="/connexion" element={<LoginPage />} />

@@ -1,5 +1,6 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
+// URL de l'API backend
 export const BASE_API_URL = 'https://distritherm-backend.onrender.com';
 // export const BASE_API_URL = '192.168.1.8';
 
@@ -12,6 +13,7 @@ export const STORAGE_KEYS = {
 // Interface pour la réponse d'authentification
 interface AuthResponse {
   accessToken: string;
+  refreshToken?: string;
   user?: any;
   message: string;
 }
@@ -22,12 +24,14 @@ interface RefreshTokenResponse {
   message: string;
 }
 
+// Création de l'instance axios avec la configuration de base
 const axiosInstance = axios.create({
   baseURL: BASE_API_URL,
   timeout: 30000, // 30 secondes
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Important pour les cookies de session et refresh token
 });
 
 // Fonction pour sauvegarder les données d'authentification
@@ -37,14 +41,35 @@ export const saveAuthData = (data: AuthResponse): void => {
   }
   
   if (data.user) {
+    // Vérifier s'il existe déjà des données utilisateur
+    const existingUserData = getUserData();
+    
+    if (existingUserData) {
+      // Préserver companyName et siretNumber s'ils ne sont pas présents dans les nouvelles données
+      if (!data.user.companyName && existingUserData.companyName) {
+        data.user.companyName = existingUserData.companyName;
+      }
+      
+      if (!data.user.siretNumber && existingUserData.siretNumber) {
+        data.user.siretNumber = existingUserData.siretNumber;
+      }
+    }
+    
     localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user));
   }
+  
+  // Log pour débogage
+  console.log('Données d\'authentification sauvegardées:', {
+    token: !!data.accessToken,
+    user: !!data.user
+  });
 };
 
 // Fonction pour supprimer les données d'authentification
 export const clearAuthData = (): void => {
   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+  console.log('Données d\'authentification supprimées');
 };
 
 // Fonction pour récupérer le token d'accès
@@ -66,6 +91,7 @@ let refreshSubscribers: Array<(token: string) => void> = [];
 // Fonction pour rafraîchir le token
 const refreshToken = async (): Promise<string> => {
   try {
+    console.log('Tentative de rafraîchissement du token...');
     const response = await axios.post<RefreshTokenResponse>(
       `${BASE_API_URL}/auth/refresh-token`,
       {},
@@ -76,8 +102,10 @@ const refreshToken = async (): Promise<string> => {
     
     const { accessToken } = response.data;
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    console.log('Token rafraîchi avec succès');
     return accessToken;
   } catch (error) {
+    console.error('Échec du rafraîchissement du token:', error);
     clearAuthData();
     throw error;
   }
@@ -109,6 +137,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Erreur dans l\'intercepteur de requête:', error);
     return Promise.reject(error);
   }
 );
@@ -124,18 +153,27 @@ axiosInstance.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalRequest: any = error.config;
+    const errorResponse = error.response?.data as any;
+    
+    console.error('Erreur de réponse:', {
+      status: error.response?.status,
+      message: errorResponse?.message || error.message
+    });
     
     // Vérifier si l'erreur est liée à un token invalide (401)
     if (
       error.response?.status === 401 &&
-      (error.response?.data as any)?.message === 'Token invalide' &&
+      (errorResponse?.message === 'Token invalide' || errorResponse?.message === 'Non autorisé') &&
       !originalRequest._retry
     ) {
+      console.log('Token invalide détecté, tentative de rafraîchissement...');
+      
       // Marquer la requête pour éviter les boucles infinies
       originalRequest._retry = true;
       
       // Si un rafraîchissement est déjà en cours, mettre la requête en attente
       if (isRefreshing) {
+        console.log('Rafraîchissement déjà en cours, mise en file d\'attente de la requête');
         try {
           // Attendre le nouveau token et réessayer la requête
           const newToken = await new Promise<string>((resolve) => {
@@ -148,6 +186,7 @@ axiosInstance.interceptors.response.use(
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
+          console.error('Erreur lors de l\'attente du rafraîchissement:', refreshError);
           return Promise.reject(refreshError);
         }
       }
@@ -168,7 +207,9 @@ axiosInstance.interceptors.response.use(
         // Réessayer la requête originale
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        // Gérer les erreurs de rafraîchissement (redirection vers la page de connexion, etc.)
+        // Gérer les erreurs de rafraîchissement
+        console.error('Échec du processus de rafraîchissement:', refreshError);
+        
         // Déclencher un événement pour informer l'application
         const event = new CustomEvent('auth:logout', { detail: 'Session expirée' });
         window.dispatchEvent(event);
@@ -178,18 +219,6 @@ axiosInstance.interceptors.response.use(
         // Réinitialiser l'indicateur
         isRefreshing = false;
       }
-    }
-    
-    // Gestion globale des erreurs
-    if (error.response) {
-      // La requête a été faite et le serveur a répondu avec un code d'état
-      console.error('Erreur de réponse:', error.response.status, error.response.data);
-    } else if (error.request) {
-      // La requête a été faite mais aucune réponse n'a été reçue
-      console.error('Erreur de requête:', error.request);
-    } else {
-      // Une erreur s'est produite lors de la configuration de la requête
-      console.error('Erreur:', error.message);
     }
     
     return Promise.reject(error);
