@@ -222,7 +222,8 @@ const NosProducts: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-center text-gray-800 mb-3">Service rapide</h3>
                 <p className="text-gray-600 text-center">
-                  Livraison rapide et service après-vente de qualité pour tous nos produits.
+                  Livraison rapide et service après-vente de qualité pour tous nos produits. 
+                  Nous vous livrons vos produits dans les meilleures conditions et dans les détails les plus courts, en général dans les 48 heures ou en 72 heures dans tout la France.
                 </p>
               </div>
             </div>

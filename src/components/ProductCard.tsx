@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaShoppingCart } from 'react-icons/fa';
+import { FaHeart, FaShoppingCart, FaCheck } from 'react-icons/fa';
 import { Product } from '../data/products';
 import FavoriteButton from './FavoriteButton';
+import { useCart } from '../contexts/CartContext';
 
 interface ProductCardProps {
   product: Product;
@@ -10,15 +11,55 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { title, description, image, category, subcategory, brand, price, inStock, featured } = product;
+  const { addToCart, isInCart } = useCart();
+  const [showNotification, setShowNotification] = useState<string | null>(null);
   
-  const formattedPrice = price.toLocaleString('fr-FR', {
+  // Calculer le prix HT (en supposant que le prix actuel est TTC)
+  const prixTTC = price;
+  const prixHT = price / 1.2; // TVA à 20%
+  
+  const formattedPriceHT = prixHT.toLocaleString('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 2
+  });
+  
+  const formattedPriceTTC = prixTTC.toLocaleString('fr-FR', {
     style: 'currency',
     currency: 'EUR',
     minimumFractionDigits: 2
   });
 
+  const handleAddToCart = () => {
+    if (!inStock) return;
+    
+    addToCart({
+      id: product.id,
+      name: product.title,
+      price: price,
+      image: product.image,
+      quantity: 1
+    });
+    
+    showToast("Produit ajouté au panier");
+  };
+  
+  const showToast = (message: string) => {
+    setShowNotification(message);
+    setTimeout(() => setShowNotification(null), 2000);
+  };
+
+  const productInCart = isInCart(product.id);
+
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 h-full flex flex-col">
+    <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 h-full flex flex-col relative">
+      {/* Toast notification */}
+      {showNotification && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm z-50 animate-fade-in-down">
+          {showNotification}
+        </div>
+      )}
+      
       <div className="relative aspect-[4/3]">
         <img 
           src={image} 
@@ -63,7 +104,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">{description}</p>
         
         <div className="mt-auto">
-          <div className="text-2xl font-bold text-teal-600 mb-4">{formattedPrice}</div>
+          <div className="space-y-1 mb-4">
+            <div className="text-2xl font-bold text-teal-600">{formattedPriceTTC}</div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-gray-500">Prix HT:</div>
+              <div className="text-sm font-semibold">{formattedPriceHT}</div>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-medium text-gray-500">Prix TTC:</div>
+              <div className="text-sm font-semibold">{formattedPriceTTC}</div>
+            </div>
+          </div>
           
           <div className="flex justify-between items-center">
             <Link 
@@ -83,11 +134,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 className="text-gray-400 hover:text-red-500 transition-colors duration-200"
               />
               <button 
-                className={`text-gray-400 hover:text-teal-600 transition-colors duration-200 ${!inStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={handleAddToCart}
+                className={`${!inStock ? 'opacity-50 cursor-not-allowed text-gray-400' : 
+                  productInCart ? 'text-green-500' : 'text-gray-400 hover:text-teal-600'} 
+                  transition-colors duration-200`}
                 disabled={!inStock}
                 aria-label="Ajouter au panier"
               >
-                <FaShoppingCart className="w-5 h-5" />
+                {productInCart ? <FaCheck className="w-5 h-5" /> : <FaShoppingCart className="w-5 h-5" />}
               </button>
             </div>
           </div>
