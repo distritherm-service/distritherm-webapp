@@ -38,24 +38,43 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onCancel }) => 
     try {
       setLoading(true);
       
-      // Vérifier que l'email est renseigné
+      // Vérifier que l'email est renseigné et valide
       if (!forgotPasswordFormData.email) {
         setError('Veuillez renseigner votre adresse email.');
         return;
       }
       
-      const response = await authService.forgotPassword(forgotPasswordFormData);
+      // Validation basique du format email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(forgotPasswordFormData.email)) {
+        setError('Veuillez saisir une adresse email valide.');
+        return;
+      }
       
-      setSuccess('Un email de réinitialisation a été envoyé à votre adresse.');
+      await authService.forgotPassword(forgotPasswordFormData);
+      
+      setSuccess(
+        'Un email de réinitialisation a été envoyé à votre adresse. ' +
+        'Veuillez vérifier votre boîte de réception et vos spams. ' +
+        'Le lien est valable pendant 1 heure.'
+      );
+      
       // Réinitialiser le formulaire
       setForgotPasswordFormData({ email: '' });
     } catch (error: any) {
-      console.error('Erreur de récupération mot de passe:', error);
+      console.error('Erreur détaillée:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       
       if (error.response?.status === 404) {
-        setError('Aucun compte n\'est associé à cette adresse email.');
+        setError('Aucun compte n\'est associé à cette adresse email. Veuillez vérifier votre saisie ou créer un compte.');
       } else if (error.response?.status === 400) {
         setError('Veuillez vérifier votre adresse email.');
+      } else if (error.response?.status === 429) {
+        setError('Trop de tentatives. Veuillez patienter quelques minutes avant de réessayer.');
       } else {
         setError(error.response?.data?.message || 'Une erreur est survenue. Veuillez réessayer plus tard.');
       }
@@ -69,7 +88,8 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onCancel }) => 
       <div className="bg-white rounded-lg p-8 max-w-md mx-4 w-full">
         <h2 className="text-xl font-bold mb-4 text-teal-600">Mot de passe oublié</h2>
         <p className="text-gray-700 mb-4">
-          Veuillez saisir votre adresse email. Vous recevrez un lien pour créer un nouveau mot de passe.
+          Veuillez saisir votre adresse email. Vous recevrez un lien pour créer un nouveau mot de passe. 
+          Ce lien sera valable pendant 1 heure.
         </p>
         
         {error && (

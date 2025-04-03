@@ -214,15 +214,22 @@ export const authService = {
   async forgotPassword(data: ForgotPasswordRequest) {
     try {
       console.log('Demande de réinitialisation de mot de passe');
-      const response = await axiosInstance.post('/auth/forgot-password', data, {
+      const response = await axiosInstance.post('/users/send-update-password-forgot', data, {
         headers: {
-          'x-platform': 'web'
+          'x-platform': 'web',
+          'Content-Type': 'application/json'
         }
       });
       
+      console.log('Réponse de la demande de réinitialisation:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('Erreur lors de la demande de réinitialisation:', error);
+    } catch (error: any) {
+      console.error('Erreur détaillée:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       throw error;
     }
   },
@@ -233,13 +240,20 @@ export const authService = {
       console.log('Réinitialisation de mot de passe');
       const response = await axiosInstance.post('/auth/reset-password', data, {
         headers: {
-          'x-platform': 'web'
+          'x-platform': 'web',
+          'Content-Type': 'application/json'
         }
       });
       
+      console.log('Réponse de la réinitialisation:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+    } catch (error: any) {
+      console.error('Erreur détaillée:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       throw error;
     }
   },

@@ -44,15 +44,30 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token, onCancel, 
     try {
       setLoading(true);
       
+      // Vérifier que le token est présent
+      if (!resetPasswordFormData.token) {
+        setError('Le lien de réinitialisation est invalide. Veuillez utiliser le lien envoyé par email.');
+        return;
+      }
+      
       // Vérifier que les mots de passe correspondent
       if (resetPasswordFormData.password !== resetPasswordFormData.confirmPassword) {
         setError('Les mots de passe ne correspondent pas.');
         return;
       }
       
-      // Vérifier que le mot de passe est assez complexe
+      // Vérifier la complexité du mot de passe
       if (resetPasswordFormData.password.length < 8) {
         setError('Le mot de passe doit contenir au moins 8 caractères.');
+        return;
+      }
+      
+      // Vérifier que le mot de passe contient au moins une majuscule et un chiffre
+      const hasUpperCase = /[A-Z]/.test(resetPasswordFormData.password);
+      const hasNumber = /\d/.test(resetPasswordFormData.password);
+      
+      if (!hasUpperCase || !hasNumber) {
+        setError('Le mot de passe doit contenir au moins une majuscule et un chiffre.');
         return;
       }
       
@@ -61,19 +76,24 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token, onCancel, 
         token: resetPasswordFormData.token
       });
       
-      setSuccess('Votre mot de passe a été réinitialisé avec succès.');
+      setSuccess('Votre mot de passe a été réinitialisé avec succès. Vous allez être redirigé vers la page de connexion.');
       
       // Rediriger vers la page de connexion après 2 secondes
       setTimeout(() => {
         onSuccess();
       }, 2000);
     } catch (error: any) {
-      console.error('Erreur de réinitialisation mot de passe:', error);
+      console.error('Erreur détaillée:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
       
       if (error.response?.status === 400) {
-        setError('Le lien de réinitialisation est invalide ou a expiré.');
+        setError('Le lien de réinitialisation est invalide ou a expiré. Veuillez faire une nouvelle demande.');
       } else if (error.response?.status === 401) {
-        setError('Le lien de réinitialisation a expiré.');
+        setError('Le lien de réinitialisation a expiré. Veuillez faire une nouvelle demande.');
       } else {
         setError(error.response?.data?.message || 'Une erreur est survenue. Veuillez réessayer plus tard.');
       }
@@ -124,7 +144,7 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token, onCancel, 
               />
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              Le mot de passe doit contenir au moins 8 caractères.
+              Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.
             </p>
           </div>
           
