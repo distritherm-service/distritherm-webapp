@@ -19,6 +19,7 @@ interface User {
   role?: string;
   createdAt?: string;
   updatedAt?: string;
+  isEmailVerified?: boolean;
   [key: string]: any;
 }
 
@@ -29,10 +30,11 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (data: any) => void;
+  login: (data: any) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
   clearError: () => void;
+  verifyEmail: (token: string) => Promise<void>;
 }
 
 // Création du contexte
@@ -110,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Fonction de connexion
-  const login = (data: any) => {
+  const login = async (data: any) => {
     try {
       if (data.accessToken && data.user) {
         console.log('Connexion réussie, données utilisateur reçues:', data.user);
@@ -181,6 +183,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Fonction pour vérifier l'email
+  const verifyEmail = async (token: string) => {
+    try {
+      const response = await authService.verifyEmail(token);
+      if (response.success) {
+        // Mettre à jour l'état de vérification de l'email dans le user
+        if (user) {
+          const updatedUser = { ...user, isEmailVerified: true };
+          setUser(updatedUser);
+          localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de l\'email:', error);
+      throw error;
+    }
+  };
+
   // Valeur du contexte
   const value = {
     user,
@@ -191,7 +211,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     updateUser,
-    clearError
+    clearError,
+    verifyEmail
   };
 
   return (

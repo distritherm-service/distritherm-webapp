@@ -1,12 +1,44 @@
 import React, { useState } from 'react';
 import Layout from '../components/Layout';
 import { FaUsers, FaGraduationCap, FaHandshake, FaChartLine, FaFileUpload } from 'react-icons/fa';
+import { toast } from 'react-toastify';
+import axiosInstance from '../services/axiosConfig';
+
+interface FormData {
+  poste: string;
+  civilite: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  adresse: string;
+  codePostal: string;
+  ville: string;
+  posteActuel: string;
+  message: string;
+}
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_FILE_TYPES = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
 const EspaceRecrutement: React.FC = () => {
-  const [selectedPoste, setSelectedPoste] = useState('');
-  const [civilite, setCivilite] = useState('');
+  const [formData, setFormData] = useState<FormData>({
+    poste: '',
+    civilite: '',
+    nom: '',
+    prenom: '',
+    email: '',
+    telephone: '',
+    adresse: '',
+    codePostal: '',
+    ville: '',
+    posteActuel: '',
+    message: ''
+  });
   const [cv, setCv] = useState<File | null>(null);
   const [lettre, setLettre] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const postes = [
     "Commercial(e) B2B",
@@ -40,14 +72,117 @@ const EspaceRecrutement: React.FC = () => {
     }
   ];
 
+  const validateFile = (file: File): string | null => {
+    if (file.size > MAX_FILE_SIZE) {
+      return 'Le fichier ne doit pas dépasser 5MB';
+    }
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      return 'Format de fichier non supporté. Utilisez PDF, DOC ou DOCX';
+    }
+    return null;
+  };
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'cv' | 'lettre') => {
     const file = event.target.files?.[0];
     if (file) {
+      const error = validateFile(file);
+      if (error) {
+        toast.error(error);
+        event.target.value = '';
+        return;
+      }
+
       if (type === 'cv') {
         setCv(file);
+        setErrors({ ...errors, cv: '' });
       } else {
         setLettre(file);
+        setErrors({ ...errors, lettre: '' });
       }
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!formData.poste) newErrors.poste = 'Veuillez sélectionner un poste';
+    if (!formData.civilite) newErrors.civilite = 'Veuillez sélectionner une civilité';
+    if (!formData.nom) newErrors.nom = 'Le nom est requis';
+    if (!formData.prenom) newErrors.prenom = 'Le prénom est requis';
+    if (!formData.email) newErrors.email = 'L\'email est requis';
+    if (!formData.telephone) newErrors.telephone = 'Le téléphone est requis';
+    if (!formData.adresse) newErrors.adresse = 'L\'adresse est requise';
+    if (!formData.codePostal) newErrors.codePostal = 'Le code postal est requis';
+    if (!formData.ville) newErrors.ville = 'La ville est requise';
+    if (!cv) newErrors.cv = 'Le CV est requis';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const resetForm = () => {
+    setFormData({
+      poste: '',
+      civilite: '',
+      nom: '',
+      prenom: '',
+      email: '',
+      telephone: '',
+      adresse: '',
+      codePostal: '',
+      ville: '',
+      posteActuel: '',
+      message: ''
+    });
+    setCv(null);
+    setLettre(null);
+    // Reset file inputs
+    const cvInput = document.getElementById('cv-upload') as HTMLInputElement;
+    const lettreInput = document.getElementById('lettre-upload') as HTMLInputElement;
+    if (cvInput) cvInput.value = '';
+    if (lettreInput) lettreInput.value = '';
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
+      toast.error('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    setIsLoading(true);
+    const formDataToSend = new FormData();
+
+    // Append form data
+    Object.entries(formData).forEach(([key, value]) => {
+      formDataToSend.append(key, value);
+    });
+
+    // Append files
+    if (cv) formDataToSend.append('cv', cv);
+    if (lettre) formDataToSend.append('lettre', lettre);
+
+    try {
+      const response = await axiosInstance.post('/recruitment/apply', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      toast.success('Votre candidature a été envoyée avec succès !');
+      resetForm();
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi de la candidature:', error);
+      toast.error('Une erreur est survenue lors de l\'envoi de votre candidature');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,16 +231,18 @@ const EspaceRecrutement: React.FC = () => {
             <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8">
               <h2 className="text-2xl font-bold text-gray-800 mb-6">Formulaire de recrutement</h2>
               
-              <form className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Poste souhaité */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Poste Souhaité
+                    <span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={selectedPoste}
-                    onChange={(e) => setSelectedPoste(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                    name="poste"
+                    value={formData.poste}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.poste ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                   >
                     <option value="">Sélectionnez un poste</option>
                     {postes.map((poste) => (
@@ -114,6 +251,7 @@ const EspaceRecrutement: React.FC = () => {
                       </option>
                     ))}
                   </select>
+                  {errors.poste && <p className="text-red-500 text-sm mt-1">{errors.poste}</p>}
                 </div>
 
                 {/* Civilité */}
@@ -127,8 +265,8 @@ const EspaceRecrutement: React.FC = () => {
                       <input
                         type="radio"
                         value="M."
-                        checked={civilite === 'M.'}
-                        onChange={(e) => setCivilite(e.target.value)}
+                        checked={formData.civilite === 'M.'}
+                        onChange={(e) => handleInputChange(e)}
                         className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
                       />
                       <span className="ml-2 text-gray-700">M.</span>
@@ -137,8 +275,8 @@ const EspaceRecrutement: React.FC = () => {
                       <input
                         type="radio"
                         value="Mme"
-                        checked={civilite === 'Mme'}
-                        onChange={(e) => setCivilite(e.target.value)}
+                        checked={formData.civilite === 'Mme'}
+                        onChange={(e) => handleInputChange(e)}
                         className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
                       />
                       <span className="ml-2 text-gray-700">Mme</span>
@@ -147,8 +285,8 @@ const EspaceRecrutement: React.FC = () => {
                       <input
                         type="radio"
                         value="Non précisé"
-                        checked={civilite === 'Non précisé'}
-                        onChange={(e) => setCivilite(e.target.value)}
+                        checked={formData.civilite === 'Non précisé'}
+                        onChange={(e) => handleInputChange(e)}
                         className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
                       />
                       <span className="ml-2 text-gray-700">Non précisé</span>
@@ -165,9 +303,13 @@ const EspaceRecrutement: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      name="nom"
+                      value={formData.nom}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.nom ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                       placeholder="Mohamed"
                     />
+                    {errors.nom && <p className="text-red-500 text-sm mt-1">{errors.nom}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -176,9 +318,13 @@ const EspaceRecrutement: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      name="prenom"
+                      value={formData.prenom}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.prenom ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                       placeholder="Ali"
                     />
+                    {errors.prenom && <p className="text-red-500 text-sm mt-1">{errors.prenom}</p>}
                   </div>
                 </div>
 
@@ -191,9 +337,13 @@ const EspaceRecrutement: React.FC = () => {
                     </label>
                     <input
                       type="email"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                       placeholder="mohamed@gmail.com"
                     />
+                    {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -202,9 +352,13 @@ const EspaceRecrutement: React.FC = () => {
                     </label>
                     <input
                       type="tel"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      name="telephone"
+                      value={formData.telephone}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.telephone ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                       placeholder="06 06 06 06 06"
                     />
+                    {errors.telephone && <p className="text-red-500 text-sm mt-1">{errors.telephone}</p>}
                   </div>
                 </div>
 
@@ -216,9 +370,13 @@ const EspaceRecrutement: React.FC = () => {
                   </label>
                   <textarea
                     rows={2}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                    name="adresse"
+                    value={formData.adresse}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.adresse ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                     placeholder="16 rue du condorcet"
                   />
+                  {errors.adresse && <p className="text-red-500 text-sm mt-1">{errors.adresse}</p>}
                 </div>
 
                 {/* Code Postal et Ville */}
@@ -230,9 +388,13 @@ const EspaceRecrutement: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      name="codePostal"
+                      value={formData.codePostal}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.codePostal ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                       placeholder="75000"
                     />
+                    {errors.codePostal && <p className="text-red-500 text-sm mt-1">{errors.codePostal}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -241,9 +403,13 @@ const EspaceRecrutement: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      name="ville"
+                      value={formData.ville}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.ville ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                       placeholder="Paris"
                     />
+                    {errors.ville && <p className="text-red-500 text-sm mt-1">{errors.ville}</p>}
                   </div>
                 </div>
 
@@ -254,9 +420,13 @@ const EspaceRecrutement: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                    name="posteActuel"
+                    value={formData.posteActuel}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.posteActuel ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                     placeholder="Technicien(ne) de maintenance"
-                    />
+                  />
+                  {errors.posteActuel && <p className="text-red-500 text-sm mt-1">{errors.posteActuel}</p>}
                 </div>
 
                 {/* CV et Lettre de motivation */}
@@ -273,17 +443,19 @@ const EspaceRecrutement: React.FC = () => {
                         className="hidden"
                         id="cv-upload"
                         accept=".pdf,.doc,.docx"
-                        placeholder="cv.pdf"
                       />
                       <label
                         htmlFor="cv-upload"
-                        className="flex items-center justify-center w-full px-4 py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-teal-500 cursor-pointer bg-white/70 transition-colors duration-200"
+                        className={`flex items-center justify-center w-full px-4 py-3 rounded-lg border-2 border-dashed ${
+                          errors.cv ? 'border-red-500' : 'border-gray-300'
+                        } hover:border-teal-500 cursor-pointer bg-white/70 transition-colors duration-200`}
                       >
                         <FaFileUpload className="w-5 h-5 text-gray-400 mr-2" />
                         <span className="text-gray-600">
                           {cv ? cv.name : "Choisir un fichier"}
                         </span>
                       </label>
+                      {errors.cv && <p className="text-red-500 text-sm mt-1">{errors.cv}</p>}
                     </div>
                   </div>
                   <div>
@@ -297,7 +469,6 @@ const EspaceRecrutement: React.FC = () => {
                         className="hidden"
                         id="lettre-upload"
                         accept=".pdf,.doc,.docx"
-                        placeholder="lettre.pdf"
                       />
                       <label
                         htmlFor="lettre-upload"
@@ -319,18 +490,35 @@ const EspaceRecrutement: React.FC = () => {
                   </label>
                   <textarea
                     rows={4}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.message ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
                     placeholder="Présentez-vous brièvement et expliquez-nous votre motivation..."
                   />
+                  {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
                 </div>
 
                 {/* Bouton d'envoi */}
                 <div>
                   <button
                     type="submit"
-                    className="w-full px-6 py-4 bg-gradient-to-r from-teal-600 to-blue-600 text-white font-medium rounded-lg hover:from-teal-700 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02]"
+                    disabled={isLoading}
+                    className={`w-full px-6 py-4 bg-gradient-to-r from-teal-600 to-blue-600 text-white font-medium rounded-lg transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] ${
+                      isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:from-teal-700 hover:to-blue-700'
+                    }`}
                   >
-                    Envoyer ma candidature
+                    {isLoading ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Envoi en cours...
+                      </span>
+                    ) : (
+                      'Envoyer ma candidature'
+                    )}
                   </button>
                 </div>
               </form>

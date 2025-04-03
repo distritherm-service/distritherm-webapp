@@ -406,5 +406,66 @@ export const authService = {
       console.error('Erreur lors de la mise à jour du mot de passe:', error);
       throw error;
     }
-  }
+  },
+
+  // Vérifier l'email avec le token
+  async verifyEmail(token: string) {
+    try {
+      console.log('Environnement:', process.env.NODE_ENV);
+      console.log('URL de base:', axiosInstance.defaults.baseURL);
+      console.log('Vérification de l\'email avec le token:', token);
+      
+      const response = await axiosInstance.get(`/users/verify-email?token=${token}`, {
+        headers: {
+          'x-platform': 'web',
+          'Origin': process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : window.location.origin
+        }
+      });
+      
+      console.log('Réponse complète:', response);
+      console.log('Données de réponse:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Erreur détaillée:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      throw error;
+    }
+  },
+
+  // Renvoyer l'email de vérification
+  async resendVerificationEmail() {
+    try {
+      console.log('Environnement:', process.env.NODE_ENV);
+      console.log('URL de base:', axiosInstance.defaults.baseURL);
+      console.log('Demande de renvoi de l\'email de vérification');
+      
+      const response = await axiosInstance.get('/users/verify-email', {
+        headers: {
+          'x-platform': 'web',
+          'Origin': process.env.NODE_ENV === 'development' ? 'http://localhost:5173' : window.location.origin
+        },
+        params: {
+          redirectUrl: process.env.NODE_ENV === 'development' 
+            ? 'http://localhost:5173/email-verification'
+            : `${window.location.origin}/email-verification`
+        }
+      });
+      
+      console.log('Réponse complète:', response);
+      console.log('Données de réponse:', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('Erreur détaillée:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      });
+      throw error;
+    }
+  },
 }; 

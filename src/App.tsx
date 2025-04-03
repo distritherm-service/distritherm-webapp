@@ -8,6 +8,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ScrollToTop from './components/ScrollToTop';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from './contexts/AuthContext';
+import EmailVerification from './pages/EmailVerification';
 
 // Composant de chargement simple en attendant de créer le composant LoadingSpinner
 const LoadingSpinner = () => (
@@ -81,6 +82,7 @@ const AppRoutes = () => {
       <Route path="/panier/delivery" element={<div>Page de livraison</div>} />
       <Route path="/panier/payment" element={<div>Page de paiement</div>} />
       <Route path="/inscription-reussie" element={<RegisterSuccess />} />
+      <Route path="/verification-email" element={<EmailVerification />} />
       
       {/* Page de connexion - inaccessible si déjà connecté */}
       <Route path="/connexion" element={<LoginPage />} />

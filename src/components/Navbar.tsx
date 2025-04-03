@@ -9,6 +9,9 @@ import { useSearch } from '../contexts/SearchContext';
 import { useAuth } from '../contexts/AuthContext';
 import SearchBar from './SearchBar';
 import UserProfileModal from './UserProfileModal';
+import CartPreview from './CartPreview';
+import FavoritesPreview from './FavoritesPreview';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,6 +29,10 @@ const Navbar: React.FC = () => {
   const { openSearch, isSearchOpen } = useSearch();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
+  const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
+  const [isFavoritesPreviewOpen, setIsFavoritesPreviewOpen] = useState(false);
+  const cartPreviewRef = useRef<HTMLDivElement>(null);
+  const favoritesPreviewRef = useRef<HTMLDivElement>(null);
 
   // Calcul du nombre total d'articles dans le panier
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -188,6 +195,27 @@ const Navbar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
+  const handleCartMouseEnter = () => {
+    setIsCartPreviewOpen(true);
+    setIsFavoritesPreviewOpen(false);
+  };
+
+  const handleFavoritesMouseEnter = () => {
+    setIsFavoritesPreviewOpen(true);
+    setIsCartPreviewOpen(false);
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent) => {
+    const cartPreview = cartPreviewRef.current;
+    const favoritesPreview = favoritesPreviewRef.current;
+    const target = e.relatedTarget as Node;
+
+    if (cartPreview && !cartPreview.contains(target) && favoritesPreview && !favoritesPreview.contains(target)) {
+      setIsCartPreviewOpen(false);
+      setIsFavoritesPreviewOpen(false);
+    }
+  };
+
   return (
     <>
       <div id="main-navbar" className="fixed top-0 left-0 right-0 z-50 flex flex-col w-full">
@@ -274,25 +302,46 @@ const Navbar: React.FC = () => {
                 >
                   <FaSearch className="w-5 h-5" />
                 </button>
-                <Link to="/favoris" className="p-2 text-gray-600 hover:text-teal-600 relative">
-                  <FaHeart className="w-5 h-5" />
-                  {favorites.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-                      {favorites.length}
-                    </span>
-                  )}
-                </Link>
-                <Link
-                  to="/panier"
-                  className="relative p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
-                >
-                  <FaShoppingCart className="w-6 h-6" />
-                  {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                      {cartItemsCount}
-                    </span>
-                  )}
-                </Link>
+                <div className="relative">
+                  <button
+                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+                    onMouseEnter={handleFavoritesMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <FaHeart className="h-6 w-6" />
+                    {favorites.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {favorites.length}
+                      </span>
+                    )}
+                  </button>
+                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
+                    <FavoritesPreview 
+                      isOpen={isFavoritesPreviewOpen} 
+                      onClose={() => setIsFavoritesPreviewOpen(false)} 
+                    />
+                  </div>
+                </div>
+                <div className="relative">
+                  <button
+                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+                    onMouseEnter={handleCartMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <FaShoppingCart className="h-6 w-6" />
+                    {cart.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {cart.length}
+                      </span>
+                    )}
+                  </button>
+                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
+                    <CartPreview 
+                      isOpen={isCartPreviewOpen} 
+                      onClose={() => setIsCartPreviewOpen(false)} 
+                    />
+                  </div>
+                </div>
                 <button
                   onClick={toggleMobileMenu}
                   className="p-2 text-gray-600 hover:text-teal-600"
@@ -358,31 +407,47 @@ const Navbar: React.FC = () => {
                   )}
                 </div>
                 
-                <Link 
-                  to="/favoris"
-                  className="relative p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
-                  aria-label="Mes favoris"
-                >
-                  <FaHeart className="w-5 h-5" />
-                  {favorites.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-                      {favorites.length}
-                    </span>
-                  )}
-                </Link>
+                <div className="relative">
+                  <button
+                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+                    onMouseEnter={handleFavoritesMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <FaHeart className="h-6 w-6" />
+                    {favorites.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {favorites.length}
+                      </span>
+                    )}
+                  </button>
+                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
+                    <FavoritesPreview 
+                      isOpen={isFavoritesPreviewOpen} 
+                      onClose={() => setIsFavoritesPreviewOpen(false)} 
+                    />
+                  </div>
+                </div>
                 
-                <Link
-                  to="/panier"
-                  className="relative p-2 text-gray-600 hover:text-teal-600 transition-colors duration-200"
-                  aria-label="Mon panier"
-                >
-                  <FaShoppingCart className="w-5 h-5" />
-                  {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">
-                      {cartItemsCount}
-                    </span>
-                  )}
-                </Link>
+                <div className="relative">
+                  <button
+                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+                    onMouseEnter={handleCartMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    <FaShoppingCart className="h-6 w-6" />
+                    {cart.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {cart.length}
+                      </span>
+                    )}
+                  </button>
+                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
+                    <CartPreview 
+                      isOpen={isCartPreviewOpen} 
+                      onClose={() => setIsCartPreviewOpen(false)} 
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -419,7 +484,7 @@ const Navbar: React.FC = () => {
                   to="/nos-produits"
                   className={`px-3 py-2 ${isActive('/nos-produits') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
                 >
-                  Nos Produits
+                Produits
                 </Link>
                 <Link
                   to="/promotions"
@@ -431,7 +496,7 @@ const Navbar: React.FC = () => {
                   to="/espace-recrutement"
                   className={`px-3 py-2 ${isActive('/espace-recrutement') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
                 >
-                  Espace Recrutement
+                  Recrutement
                 </Link>
                 <Link
                   to="/nous-contact"
@@ -447,15 +512,27 @@ const Navbar: React.FC = () => {
                   <div className="relative" ref={userMenuRef}>
                     <button
                       onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className="flex items-center px-4 py-2 bg-teal-600 text-white hover:bg-teal-700 transition-colors duration-200 rounded-md"
+                      className="flex items-center px-4 py-2 bg-teal-600 text-white hover:bg-teal-700 transition-colors duration-200 rounded-md relative"
                       aria-label="Mon compte"
                       aria-expanded={isUserMenuOpen}
                       aria-haspopup="true"
                       id="user-menu-button"
                     >
-                      <FaUser className="w-4 h-4 mr-2" />
+                      <div className="relative inline-block">
+                        <FaUser className="w-4 h-4 mr-2" />
+                        {user && !user.isEmailVerified && (
+                          <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-teal-600">
+                            <span className="text-[10px] text-teal-600 font-bold">!</span>
+                          </div>
+                        )}
+                      </div>
                       <span>{formatUserName()}</span>
-                      <svg className={`h-4 w-4 ml-1 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg 
+                        className={`h-4 w-4 ml-1 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} 
+                        fill="none" 
+                        viewBox="0 0 24 24" 
+                        stroke="currentColor"
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
@@ -469,6 +546,23 @@ const Navbar: React.FC = () => {
                         <div className="px-4 py-3 border-b border-gray-100">
                           <p className="text-sm font-medium text-gray-700">Profil utilisateur</p>
                           <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                          {user && !user.isEmailVerified && (
+                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                              <div className="flex items-center justify-between">
+                                <p className="text-xs text-yellow-700 flex items-center">
+                                  <span className="mr-1">⚠️</span>
+                                  Email non vérifié
+                                </p>
+                                <Link
+                                  to="/verification-email"
+                                  className="text-xs font-medium text-teal-600 hover:text-teal-500"
+                                  onClick={() => setIsUserMenuOpen(false)}
+                                >
+                                  Vérifier
+                                </Link>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         
                         <Link
@@ -534,7 +628,7 @@ const Navbar: React.FC = () => {
                 className={`block py-2 ${isActive('/nos-produits') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Nos Produits
+               Produits
               </Link>
               <Link
                 to="/promotions"
@@ -548,7 +642,7 @@ const Navbar: React.FC = () => {
                 className={`block py-2 ${isActive('/espace-recrutement') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                Espace Recrutement
+               Recrutement
               </Link>
               <Link
                 to="/nous-contact"

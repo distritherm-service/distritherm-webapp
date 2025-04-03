@@ -348,13 +348,20 @@ const MonProfil: React.FC = () => {
                       type="email"
                       name="email"
                       value={formData.email}
-                      onChange={handleChange}
-                      disabled={true} // Email toujours désactivé
-                      className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-gray-100"
-                      placeholder="email@exemple.com"
+                      disabled
+                      className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 bg-gray-100 cursor-not-allowed"
+                      placeholder="Email"
                     />
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">L'adresse e-mail ne peut pas être modifiée.</p>
+                  <p className="mt-1 text-sm text-gray-500">L'adresse e-mail ne peut pas être modifiée.</p>
+                  {user && !user.isEmailVerified && (
+                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                      <p className="text-sm text-yellow-700 flex items-center">
+                        <span className="mr-2">⚠️</span>
+                        Votre email n'est pas vérifié. Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification.
+                      </p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="mb-6">
