@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaSpinner, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
-import * as authService from '../services/authService';
+import { authService } from '../services/authService';
 
 const EmailVerification: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -14,6 +14,7 @@ const EmailVerification: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'verifying' | 'sending' | 'sent' | 'verified' | 'error'>('idle');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   // Vérifier le token automatiquement si présent dans l'URL
   useEffect(() => {
@@ -27,11 +28,14 @@ const EmailVerification: React.FC = () => {
       setIsLoading(true);
       setStatus('verifying');
       setError('');
+      setMessage('');
       
       console.log('Vérification du token...');
       const response = await authService.verifyEmail(verificationToken);
       
       setStatus('verified');
+      setMessage(response.message || 'Votre email a été vérifié avec succès !');
+      
       // Mettre à jour le statut de vérification de l'utilisateur
       if (user) {
         updateUser({ ...user, emailVerified: true });
@@ -62,16 +66,20 @@ const EmailVerification: React.FC = () => {
       setIsLoading(true);
       setStatus('sending');
       setError('');
+      setMessage('');
       
-      console.log('Tentative de renvoi de l\'email de vérification...');
-      await authService.resendVerificationEmail();
+      console.log('Envoi de l\'email de vérification...');
+      const response = await authService.resendVerificationEmail();
       
       setStatus('sent');
+      setMessage(response.message || 'Un nouvel email de vérification vous a été envoyé !');
+      
       setTimeout(() => {
         setStatus('idle');
+        setMessage('');
       }, 5000);
     } catch (err: any) {
-      console.error('Erreur complète:', err);
+      console.error('Erreur lors de l\'envoi:', err);
       const errorMessage = err.response?.data?.message || 
                          err.response?.data?.error ||
                          err.message ||
@@ -116,7 +124,7 @@ const EmailVerification: React.FC = () => {
             </p>
           </div>
 
-          {(status === 'sent' || status === 'verified') && (
+          {(status === 'sent' || status === 'verified') && message && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -128,16 +136,14 @@ const EmailVerification: React.FC = () => {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-green-800">
-                    {status === 'verified' 
-                      ? 'Email vérifié avec succès ! Redirection vers votre profil...'
-                      : 'Email de vérification envoyé avec succès !'}
+                    {message}
                   </p>
                 </div>
               </div>
             </motion.div>
           )}
 
-          {status === 'error' && (
+          {status === 'error' && error && (
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -156,7 +162,7 @@ const EmailVerification: React.FC = () => {
             </motion.div>
           )}
 
-          {!token && (
+          {!token && !user.emailVerified && (
             <div className="bg-yellow-50 border border-yellow-100 p-4 rounded-lg mb-6">
               <div className="flex">
                 <div className="flex-shrink-0">
