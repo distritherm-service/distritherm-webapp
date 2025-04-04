@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaLock } from 'react-icons/fa';
 import { authService } from '../../services/authService';
 
@@ -6,27 +7,26 @@ import { authService } from '../../services/authService';
 interface ResetPasswordFormData {
   password: string;
   confirmPassword: string;
-  token: string;
 }
 
-interface ResetPasswordFormProps {
-  token: string;
-  onCancel: () => void;
-  onSuccess: () => void;
-}
+const MAX_ATTEMPTS = 3; // Nombre maximum de tentatives autorisées
 
-const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token, onCancel, onSuccess }) => {
+const ResetPasswordForm: React.FC = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [attempts, setAttempts] = useState(0);
   
   const [resetPasswordFormData, setResetPasswordFormData] = useState<ResetPasswordFormData>({
     password: '',
-    confirmPassword: '',
-    token: token
+    confirmPassword: ''
   });
 
-  // Gestion du changement dans le formulaire de réinitialisation de mot de passe
+  // Gestion du changement dans le formulaire
   const handleResetPasswordFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setResetPasswordFormData({
@@ -35,65 +35,68 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token, onCancel, 
     });
   };
 
-  // Fonction pour gérer la réinitialisation de mot de passe
+  // Fonction pour gérer la réinitialisation du mot de passe
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     
+    // Vérifier le nombre de tentatives
+    if (attempts >= MAX_ATTEMPTS) {
+      setError('Trop de tentatives. Veuillez réessayer plus tard.');
+      setTimeout(() => {
+        navigate('/connexion');
+      }, 2000);
+      return;
+    }
+    
     try {
       setLoading(true);
+      setAttempts(prev => prev + 1);
       
-      // Vérifier que le token est présent
-      if (!resetPasswordFormData.token) {
-        setError('Le lien de réinitialisation est invalide. Veuillez utiliser le lien envoyé par email.');
+      // Vérifications de base
+      if (!token) {
+        setError('Token de réinitialisation invalide ou manquant.');
         return;
       }
-      
-      // Vérifier que les mots de passe correspondent
+
+      if (!resetPasswordFormData.password || !resetPasswordFormData.confirmPassword) {
+        setError('Veuillez remplir tous les champs.');
+        return;
+      }
+
       if (resetPasswordFormData.password !== resetPasswordFormData.confirmPassword) {
         setError('Les mots de passe ne correspondent pas.');
         return;
       }
-      
-      // Vérifier la complexité du mot de passe
-      if (resetPasswordFormData.password.length < 8) {
-        setError('Le mot de passe doit contenir au moins 8 caractères.');
+
+      // Validation du mot de passe
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(resetPasswordFormData.password)) {
+        setError(
+          'Le mot de passe doit contenir au moins 8 caractères, ' +
+          'une majuscule, une minuscule, un chiffre et un caractère spécial.'
+        );
         return;
       }
       
-      // Vérifier que le mot de passe contient au moins une majuscule et un chiffre
-      const hasUpperCase = /[A-Z]/.test(resetPasswordFormData.password);
-      const hasNumber = /\d/.test(resetPasswordFormData.password);
+      await authService.updatePasswordForgot(token, resetPasswordFormData.password);
       
-      if (!hasUpperCase || !hasNumber) {
-        setError('Le mot de passe doit contenir au moins une majuscule et un chiffre.');
-        return;
-      }
+      setSuccess('Votre mot de passe a été mis à jour avec succès.');
       
-      await authService.resetPassword({
-        password: resetPasswordFormData.password,
-        token: resetPasswordFormData.token
-      });
-      
-      setSuccess('Votre mot de passe a été réinitialisé avec succès. Vous allez être redirigé vers la page de connexion.');
-      
-      // Rediriger vers la page de connexion après 2 secondes
+      // Rediriger vers la page de connexion après 3 secondes
       setTimeout(() => {
-        onSuccess();
-      }, 2000);
-    } catch (error: any) {
-      console.error('Erreur détaillée:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data
-      });
+        navigate('/connexion');
+      }, 3000);
       
+    } catch (error: any) {
       if (error.response?.status === 400) {
-        setError('Le lien de réinitialisation est invalide ou a expiré. Veuillez faire une nouvelle demande.');
-      } else if (error.response?.status === 401) {
-        setError('Le lien de réinitialisation a expiré. Veuillez faire une nouvelle demande.');
+        setError('Le lien de réinitialisation est invalide ou a expiré.');
+        if (attempts >= MAX_ATTEMPTS - 1) {
+          setTimeout(() => {
+            navigate('/connexion');
+          }, 2000);
+        }
       } else {
         setError(error.response?.data?.message || 'Une erreur est survenue. Veuillez réessayer plus tard.');
       }
@@ -103,86 +106,85 @@ const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token, onCancel, 
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg p-8 max-w-md mx-4 w-full">
-        <h2 className="text-xl font-bold mb-4 text-teal-600">Réinitialisation du mot de passe</h2>
-        <p className="text-gray-700 mb-4">
-          Veuillez saisir votre nouveau mot de passe.
-        </p>
-        
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+        <div>
+          <h2 className="text-center text-3xl font-extrabold text-teal-600">
+            Réinitialisation du mot de passe
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Veuillez saisir votre nouveau mot de passe
+          </p>
+          {attempts > 0 && (
+            <p className="mt-2 text-center text-sm text-orange-600">
+              Tentative {attempts}/{MAX_ATTEMPTS}
+            </p>
+          )}
+        </div>
+
         {error && (
-          <div className="p-3 bg-red-100 border border-red-200 rounded-md text-red-600 text-sm mb-4">
+          <div className="p-3 bg-red-100 border border-red-200 rounded-md text-red-600 text-sm">
             {error}
           </div>
         )}
-        
+
         {success && (
-          <div className="p-3 bg-green-100 border border-green-200 rounded-md text-green-600 text-sm mb-4">
+          <div className="p-3 bg-green-100 border border-green-200 rounded-md text-green-600 text-sm">
             {success}
           </div>
         )}
-        
-        <form onSubmit={handleResetPassword} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nouveau mot de passe
-              <span className="text-red-500">*</span> 
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaLock className="h-5 w-5 text-gray-400" />
+
+        <form className="mt-8 space-y-6" onSubmit={handleResetPassword}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="password" className="sr-only">Nouveau mot de passe</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaLock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
+                  placeholder="Nouveau mot de passe"
+                  value={resetPasswordFormData.password}
+                  onChange={handleResetPasswordFormChange}
+                />
               </div>
-              <input
-                type="password"
-                name="password"
-                className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="********"
-                value={resetPasswordFormData.password}
-                onChange={handleResetPasswordFormChange}
-                required
-                minLength={8}
-              />
             </div>
-            <p className="mt-1 text-xs text-gray-500">
-              Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.
-            </p>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirmer le mot de passe
-              <span className="text-red-500">*</span> 
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaLock className="h-5 w-5 text-gray-400" />
+            <div>
+              <label htmlFor="confirmPassword" className="sr-only">Confirmer le mot de passe</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaLock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
+                  placeholder="Confirmer le mot de passe"
+                  value={resetPasswordFormData.confirmPassword}
+                  onChange={handleResetPasswordFormChange}
+                />
               </div>
-              <input
-                type="password"
-                name="confirmPassword"
-                className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="********"
-                value={resetPasswordFormData.confirmPassword}
-                onChange={handleResetPasswordFormChange}
-                required
-              />
             </div>
           </div>
-          
-          <div className="flex gap-4 mt-6">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-            >
-              Annuler
-            </button>
+
+          <div>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:from-teal-700 hover:to-blue-700"
-              disabled={loading}
+              disabled={loading || attempts >= MAX_ATTEMPTS}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+                attempts >= MAX_ATTEMPTS
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
+              }`}
             >
-              {loading ? 'Chargement...' : 'Réinitialiser'}
+              {loading ? 'Chargement...' : 'Réinitialiser le mot de passe'}
             </button>
           </div>
         </form>
