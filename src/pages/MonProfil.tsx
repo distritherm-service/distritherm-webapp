@@ -354,7 +354,7 @@ const MonProfil: React.FC = () => {
                     />
                   </div>
                   <p className="mt-1 text-sm text-gray-500">L'adresse e-mail ne peut pas être modifiée.</p>
-                  {user && !user.isEmailVerified && (
+                  {user && !user?.client?.emailVerified && (
                     <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                       <p className="text-sm text-yellow-700 flex items-center">
                         <span className="mr-2">⚠️</span>

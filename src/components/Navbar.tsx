@@ -520,7 +520,7 @@ const Navbar: React.FC = () => {
                     >
                       <div className="relative inline-block">
                         <FaUser className="w-4 h-4 mr-2" />
-                        {user && !user.isEmailVerified && (
+                        {user && !user?.client?.emailVerified && (
                           <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-teal-600">
                             <span className="text-[10px] text-teal-600 font-bold">!</span>
                           </div>
@@ -546,7 +546,7 @@ const Navbar: React.FC = () => {
                         <div className="px-4 py-3 border-b border-gray-100">
                           <p className="text-sm font-medium text-gray-700">Profil utilisateur</p>
                           <p className="text-sm text-gray-500 truncate">{user?.email}</p>
-                          {user && !user.isEmailVerified && (
+                          {user && !user?.client?.emailVerified && (
                             <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
                               <div className="flex items-center justify-between">
                                 <p className="text-xs text-yellow-700 flex items-center">

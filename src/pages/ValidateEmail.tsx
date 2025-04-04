@@ -39,7 +39,7 @@ const ValidateEmail: React.FC = () => {
       
       // Rediriger vers la page de connexion après 5 secondes
       setTimeout(() => {
-        navigate('/connexion', { 
+        navigate('/', { 
           state: { message: 'Email vérifié avec succès ! Vous pouvez maintenant vous connecter.' }
         });
       }, 5000);
@@ -100,7 +100,7 @@ const ValidateEmail: React.FC = () => {
                     {message}
                   </p>
                   <p className="mt-2 text-sm text-green-700">
-                    Vous allez être redirigé vers la page de connexion dans quelques secondes...
+                    Vous allez être redirigé vers la page d'accueil dans quelques secondes...
                   </p>
                 </div>
               </div>
@@ -128,10 +128,10 @@ const ValidateEmail: React.FC = () => {
 
           <div className="mt-6">
             <button
-              onClick={() => navigate('/connexion')}
+              onClick={() => navigate('/')}
               className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
             >
-              Aller à la page de connexion
+              Aller à la page d'accueil
             </button>
           </div>
         </motion.div>
