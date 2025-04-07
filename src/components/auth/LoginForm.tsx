@@ -103,7 +103,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           <input
             type="email"
             name="email"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="votreemail@exemple.com"
             value={loginFormData.email}
             onChange={handleLoginFormChange}
@@ -124,7 +124,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           <input
             type="password"
             name="password"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="********"
             value={loginFormData.password}
             onChange={handleLoginFormChange}
@@ -137,7 +137,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <button
           type="button"
           onClick={onShowForgotPassword}
-          className="text-sm text-teal-600 hover:underline"
+          className="text-sm text-[#007FFF] hover:underline"
         >
           Mot de passe oublié ?
         </button>
@@ -146,7 +146,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       <div className="mt-6">
         <button
           type="submit"
-          className="w-full px-4 py-3 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:from-teal-700 hover:to-blue-700"
+          className="w-full px-4 py-3 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] text-white rounded-lg hover:from-[#6ba9d8] hover:to-[#0065cc]"
           disabled={loading}
         >
           {loading ? 'Chargement...' : 'Se connecter'}
@@ -181,7 +181,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           <button
             type="button"
             onClick={onSwitchForm}
-            className="text-teal-600 hover:underline font-medium"
+            className="text-[#007FFF] hover:underline font-medium"
           >
             Créer un compte
           </button>

@@ -5,55 +5,49 @@ import { FaShoppingCart, FaShieldAlt } from 'react-icons/fa';
 const ValueProposition: React.FC = () => {
   const features = [
     {
-      icon: <FaRulerCombined className="w-12 h-12 text-teal-600" />,
-      title: 'Étude et dimensionnement',
-      description: 'de vos projets'
+      icon: <FaRulerCombined className="w-12 h-12 text-[#007FFF]" />,
+      title: 'Étude et dimensionnement de vos projets',
     },
     {
-      icon: <FaBoxOpen className="w-12 h-12 text-teal-600" />,
-      title: 'Produits en stock',
-      description: 'disponibilité immédiate'
+      icon: <FaBoxOpen className="w-12 h-12 text-[#007FFF]" />,
+      title: 'Produits en stock disponibilité immédiate',
     },
     {
-      icon: <FaShoppingCart className="w-12 h-12 text-teal-600" />,
-      title: 'E-commerce',
-      description: 'commandez vos produits en ligne'
+      icon: <FaShoppingCart className="w-12 h-12 text-[#007FFF]" />,
+      title: 'E-commerce commandez vos produits en ligne',
     },
     {
-      icon: <FaShieldAlt className="w-12 h-12 text-teal-600" />,
-      title: 'Garantie et services',
-      description: 'assurés'
+      icon: <FaShieldAlt className="w-12 h-12 text-[#007FFF]" />,
+      title: 'Garantie et services assurés',
     },
     {
-      icon: <FaTruckFast className="w-12 h-12 text-teal-600" />,
-      title: 'Livraison rapide',
-      description: 'sous 24 ou 72h'
+      icon: <FaTruckFast className="w-12 h-12 text-[#007FFF]" />,
+      title: 'Livraison rapide sous 24 ou 72h',
     },
     {
-      icon: <FaLock className="w-12 h-12 text-teal-600" />,
-      title: 'Paiement',
-      description: 'sécurisé'
+      icon: <FaLock className="w-12 h-12 text-[#007FFF]" />,
+      title: 'Paiement sécurisé',
     }
   ];
 
   return (
     <section className="relative py-20 overflow-hidden">
       {/* Arrière-plan décoratif */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-teal-50/30">
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-[#7CB9E8]/30">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.2]" />
-        <div className="absolute w-96 h-96 -top-48 -left-48 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-        <div className="absolute w-96 h-96 -top-48 -right-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
-        <div className="absolute w-96 h-96 -bottom-48 -left-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
-        <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+        <div className="absolute w-96 h-96 -top-48 -left-48 bg-[#7CB9E8] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+        <div className="absolute w-96 h-96 -top-48 -right-48 bg-[#007FFF] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
+        <div className="absolute w-96 h-96 -bottom-48 -left-48 bg-[#007FFF] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
+        <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-[#7CB9E8] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
       </div>
 
       <div className="container relative mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4 relative inline-block">
-            <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
               Notre valeur ajoutée
             </span>
-            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full"></div>
+            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto mt-8">
             Découvrez nos services exclusifs conçus pour répondre à tous vos besoins
@@ -66,18 +60,16 @@ const ValueProposition: React.FC = () => {
               key={index}
               className="flex flex-col items-center text-center group hover:transform hover:scale-105 transition-all duration-300"
             >
-              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-white to-teal-50 shadow-lg flex items-center justify-center mb-6 group-hover:shadow-2xl group-hover:bg-gradient-to-br group-hover:from-teal-50 group-hover:to-blue-50 transition-all duration-300 relative">
+              <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-white to-[#7CB9E8]/20 shadow-lg flex items-center justify-center mb-6 group-hover:shadow-2xl group-hover:bg-gradient-to-br group-hover:from-[#7CB9E8]/20 group-hover:to-[#007FFF]/20 transition-all duration-300 relative">
                 <div className="absolute inset-0 bg-white/40 rounded-xl backdrop-blur-sm group-hover:bg-white/0 transition-all duration-300" />
                 <div className="relative">
                   {feature.icon}
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-teal-600 transition-colors duration-300">
+              <h3 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-[#007FFF] transition-colors duration-300">
                 {feature.title}
               </h3>
-              <p className="text-sm text-gray-600 px-4">
-                {feature.description}
-              </p>
+            
             </div>
           ))}
         </div>

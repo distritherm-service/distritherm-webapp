@@ -25,6 +25,7 @@ interface ContactFormData {
   principal_activity: string;
   message: string;
   agency_id: number | null;
+  attachments: File[];
 }
 
 const Contact: React.FC = () => {
@@ -46,7 +47,8 @@ const Contact: React.FC = () => {
     city: '',
     principal_activity: '',
     message: '',
-    agency_id: null
+    agency_id: null,
+    attachments: []
   });
 
   // Récupérer les agences depuis l'API
@@ -95,6 +97,33 @@ const Contact: React.FC = () => {
       ...formData,
       agency_id: value ? parseInt(value, 10) : null
     });
+  };
+
+  // Gérer l'ajout de pièces jointes
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      // Convertir FileList en Array pour pouvoir le manipuler
+      const filesArray = Array.from(e.target.files);
+      
+      // Vérifier la taille des fichiers (limite à 5MB par fichier)
+      const validFiles = filesArray.filter(file => file.size <= 5 * 1024 * 1024);
+      
+      if (validFiles.length !== filesArray.length) {
+        setError('Certains fichiers dépassent la limite de 5MB et ont été ignorés.');
+      }
+      
+      // Maximum 3 fichiers
+      const limitedFiles = validFiles.slice(0, 3);
+      
+      if (validFiles.length > 3) {
+        setError('Vous pouvez joindre jusqu\'à 3 fichiers maximum.');
+      }
+      
+      setFormData({
+        ...formData,
+        attachments: limitedFiles
+      });
+    }
   };
 
   // Soumettre le formulaire
@@ -154,7 +183,29 @@ const Contact: React.FC = () => {
     try {
       setFormLoading(true);
       console.log('Données envoyées:', contactData);
-      const response = await axiosInstance.post('/contact', contactData);
+      
+      // Créer un FormData pour envoyer les fichiers
+      const formDataToSend = new FormData();
+      
+      // Ajouter toutes les données du formulaire
+      Object.entries(contactData).forEach(([key, value]) => {
+        // Ne pas ajouter les pièces jointes ici, on les traite séparément
+        if (key !== 'attachments') {
+          formDataToSend.append(key, String(value));
+        }
+      });
+      
+      // Ajouter les pièces jointes
+      formData.attachments.forEach((file, index) => {
+        formDataToSend.append(`attachments[${index}]`, file);
+      });
+      
+      // Envoyer les données
+      const response = await axiosInstance.post('/contact', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       console.log('Réponse:', response.data);
       setSuccess('Votre message a été envoyé avec succès. Notre équipe vous contactera prochainement.');
       
@@ -170,7 +221,8 @@ const Contact: React.FC = () => {
         city: '',
         principal_activity: '',
         message: '',
-        agency_id: null
+        agency_id: null,
+        attachments: []
       });
     } catch (err: any) {
       console.error('Erreur lors de l\'envoi du message:', err);
@@ -187,20 +239,20 @@ const Contact: React.FC = () => {
     <Layout>
       <section className="relative py-20 overflow-hidden">
         {/* Arrière-plan décoratif */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-teal-50/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-[#7CB9E8]/30">
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.2]" />
-          <div className="absolute w-96 h-96 -top-48 -left-48 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+          <div className="absolute w-96 h-96 -top-48 -left-48 bg-[#7CB9E8] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-[#007FFF] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
         </div>
 
         <div className="container relative mx-auto px-4">
           {/* En-tête de la page */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 relative inline-block">
-              <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
                 Contacter votre agence
               </span>
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full"></div>
+              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto mt-8">
               Notre équipe est à votre disposition pour répondre à toutes vos questions
@@ -215,7 +267,7 @@ const Contact: React.FC = () => {
                 
                 {loading ? (
                   <div className="flex justify-center py-8">
-                    <FaSpinner className="animate-spin h-8 w-8 text-teal-600" />
+                    <FaSpinner className="animate-spin h-8 w-8 text-[#007FFF]" />
                   </div>
                 ) : error ? (
                   <div className="p-4 bg-red-50 rounded-lg text-red-700 mb-6">
@@ -227,7 +279,7 @@ const Contact: React.FC = () => {
                     <div key={agency.id} className="mb-8 last:mb-0">
                       <div className="flex items-start space-x-4 p-4 rounded-xl bg-gradient-to-br from-white to-gray-50 shadow-md">
                         <div className="flex-shrink-0">
-                          <FaBuilding className="w-6 h-6 text-teal-600" />
+                          <FaBuilding className="w-6 h-6 text-[#007FFF]" />
                         </div>
                         <div>
                           <h4 className="font-semibold text-gray-800">{agency.name}</h4>
@@ -248,15 +300,15 @@ const Contact: React.FC = () => {
                 {/* Autres informations de contact */}
                 <div className="space-y-4 mt-8">
                   <div className="flex items-center space-x-4">
-                    <FaPhone className="w-5 h-5 text-teal-600" />
+                    <FaPhone className="w-5 h-5 text-[#007FFF]" />
                     <span className="text-gray-600">01 23 45 67 89</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <FaEnvelope className="w-5 h-5 text-teal-600" />
+                    <FaEnvelope className="w-5 h-5 text-[#007FFF]" />
                     <span className="text-gray-600">contact@distritherm.fr</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <FaClock className="w-5 h-5 text-teal-600" />
+                    <FaClock className="w-5 h-5 text-[#007FFF]" />
                     <span className="text-gray-600">Lun-Ven: 6h30-17h</span>
                   </div>
                 </div>
@@ -292,7 +344,7 @@ const Contact: React.FC = () => {
                       name="agency_id"
                       value={formData.agency_id || ''}
                       onChange={handleAgencyChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                       required
                     >
                       <option value="">Choisissez votre Agence</option>
@@ -317,7 +369,7 @@ const Contact: React.FC = () => {
                           value="M."
                           checked={formData.civility === 'M.'}
                           onChange={() => handleCivilityChange('M.')}
-                          className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                          className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
                           required
                         />
                         <span className="ml-2 text-gray-700">M.</span>
@@ -328,7 +380,7 @@ const Contact: React.FC = () => {
                           value="Mme"
                           checked={formData.civility === 'Mme'}
                           onChange={() => handleCivilityChange('Mme')}
-                          className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                          className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
                         />
                         <span className="ml-2 text-gray-700">Mme</span>
                       </label>
@@ -338,7 +390,7 @@ const Contact: React.FC = () => {
                           value="Non précisé"
                           checked={formData.civility === 'Non précisé'}
                           onChange={() => handleCivilityChange('Non précisé')}
-                          className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                          className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
                         />
                         <span className="ml-2 text-gray-700">Non précisé</span>
                       </label>
@@ -357,7 +409,7 @@ const Contact: React.FC = () => {
                         name="last_name"
                         value={formData.last_name}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                         placeholder="Nom"
                         required
                       />
@@ -372,7 +424,7 @@ const Contact: React.FC = () => {
                         name="first_name"
                         value={formData.first_name}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                         placeholder="Prénom"
                         required
                       />
@@ -391,7 +443,7 @@ const Contact: React.FC = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                         placeholder="Adresse e-mail"
                         required
                       />
@@ -406,7 +458,7 @@ const Contact: React.FC = () => {
                         name="phone_number"
                         value={formData.phone_number}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                         placeholder="Téléphone"
                         required
                       />
@@ -424,7 +476,7 @@ const Contact: React.FC = () => {
                       value={formData.address}
                       onChange={handleChange}
                       rows={2}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                       placeholder="Adresse"
                       required
                     />
@@ -442,7 +494,7 @@ const Contact: React.FC = () => {
                         name="postal_code"
                         value={formData.postal_code}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                         placeholder="Code Postal"
                         required
                       />
@@ -457,7 +509,7 @@ const Contact: React.FC = () => {
                         name="city"
                         value={formData.city}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                         placeholder="Ville"
                         required
                       />
@@ -474,7 +526,7 @@ const Contact: React.FC = () => {
                       name="principal_activity"
                       value={formData.principal_activity}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                       placeholder="Activité Principale"
                     />
                   </div>
@@ -489,9 +541,53 @@ const Contact: React.FC = () => {
                       value={formData.message}
                       onChange={handleChange}
                       rows={4}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                       placeholder="Message"
                     />
+                  </div>
+
+                  {/* Pièces jointes */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Pièces jointes
+                      <span className="text-xs text-gray-500 ml-2">(3 fichiers max, 5MB par fichier)</span>
+                    </label>
+                    <div className="flex flex-col space-y-2">
+                      <input
+                        type="file"
+                        multiple
+                        onChange={handleFileChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+                      />
+                      {formData.attachments.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-sm font-medium text-gray-700 mb-1">Fichiers sélectionnés :</p>
+                          <ul className="list-disc pl-5 text-sm text-gray-600">
+                            {formData.attachments.map((file, index) => (
+                              <li key={index} className="flex items-center justify-between">
+                                <span>{file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newAttachments = [...formData.attachments];
+                                    newAttachments.splice(index, 1);
+                                    setFormData({
+                                      ...formData,
+                                      attachments: newAttachments
+                                    });
+                                  }}
+                                  className="text-red-500 hover:text-red-700 text-sm ml-2"
+                                >
+                                  Supprimer
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">Formats acceptés: PDF, JPEG, PNG, DOC, DOCX, XLS, XLSX</p>
                   </div>
 
                   {/* Bouton d'envoi */}
@@ -499,7 +595,7 @@ const Contact: React.FC = () => {
                     <button
                       type="submit"
                       disabled={formLoading}
-                      className="w-full px-6 py-4 bg-gradient-to-r from-teal-600 to-blue-600 text-white font-medium rounded-lg hover:from-teal-700 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
+                      className="w-full px-6 py-4 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] text-white font-medium rounded-lg hover:from-[#6ba9d8] hover:to-[#0065cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
                     >
                       {formLoading ? (
                         <span className="flex items-center justify-center">

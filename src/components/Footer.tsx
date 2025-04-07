@@ -36,14 +36,11 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">Nous Contacter</h3>
             <div className="space-y-2">
-              <h4 className="font-medium">Siège social</h4>
+              <h4 className="font-medium">Siège social & Magasin Taverny</h4>
               <p>16 Rue du condrocel 95000 Taverny</p>
               
               <h4 className="font-medium mt-4">Magasin Drancy</h4>
-              <p>16 Rue du condrocel 95000 Taverny</p>
-              
-              <h4 className="font-medium mt-4">Magasin Taverny</h4>
-              <p>16 Rue du condrocel 95000 Taverny</p>
+              <p>151 rue Diderot 93700 Drancy</p>
             </div>
           </div>
 

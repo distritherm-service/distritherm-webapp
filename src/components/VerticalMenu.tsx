@@ -137,6 +137,11 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Log pour le débogage
+  useEffect(() => {
+    console.log("VerticalMenu isOpen:", isOpen);
+  }, [isOpen]);
+
   // Gérer la détection du mode mobile
   useEffect(() => {
     const handleResize = () => {
@@ -144,6 +149,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     };
 
     window.addEventListener('resize', handleResize);
+    handleResize(); // Exécuter immédiatement pour définir la vue correcte
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -156,7 +162,10 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     };
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      // Ajout d'un petit délai pour éviter les conflits avec d'autres gestionnaires d'événements
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
     }
     
     return () => {
@@ -164,16 +173,37 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen, onClose]);
 
+  // Ajouter un gestionnaire pour fermer le menu avec la touche Escape
+  useEffect(() => {
+    const handleEscKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscKey);
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isOpen, onClose]);
+
   // Si le menu est fermé, ne rien afficher
-  if (!isOpen) return null;
+  // if (!isOpen) return null;
 
   const handleCategoryClick = (slug: string) => {
+    // Sur mobile, on bascule l'état de la catégorie sélectionnée
     if (isMobileView) {
       if (selectedCategory === slug) {
         setSelectedCategory(null);
       } else {
         setSelectedCategory(slug);
       }
+    } else {
+      // Sur desktop, on définit simplement la catégorie sélectionnée
+      setSelectedCategory(slug);
     }
   };
 
@@ -195,34 +225,43 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
 
   // Animations pour le menu
   const menuVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { duration: 0.3 }
-    },
-    exit: { 
+    hidden: {
       opacity: 0,
-      transition: { duration: 0.2 }
-    }
+    },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.3,
+      },
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        duration: 0.2,
+      },
+    },
   };
 
   // Animations pour les sous-menus
   const submenuVariants = {
-    hidden: { x: -30, opacity: 0 },
-    visible: { 
-      x: 0, 
-      opacity: 1,
-      transition: { 
-        type: "spring", 
-        stiffness: 300,
-        damping: 24
-      }
-    },
-    exit: { 
-      x: 30, 
+    hidden: {
       opacity: 0,
-      transition: { duration: 0.2 }
-    }
+      x: -10,
+    },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.2,
+      },
+    },
+    exit: {
+      opacity: 0,
+      x: -10,
+      transition: {
+        duration: 0.1,
+      },
+    },
   };
 
   return (
@@ -233,19 +272,23 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
           animate="visible"
           exit="exit"
           variants={menuVariants}
-          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-start justify-start"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-start"
+          id="vertical-menu-container"
         >
           <div 
             ref={menuRef}
-            className="flex h-[90vh] max-h-[700px] mt-20 ml-4 md:ml-10 rounded-2xl overflow-hidden shadow-2xl"
+            className="flex h-[90vh] max-h-[700px] mt-20 sm:mt-20 ml-0 sm:ml-4 md:ml-10 w-full sm:w-auto rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl bg-white"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Catégories */}
-            <div className="w-[280px] md:w-[320px] bg-white rounded-l-2xl flex flex-col">
-              <div className="p-5 border-b border-gray-100 flex justify-between items-center">
+            <div className="w-[280px] md:w-[320px] bg-white rounded-l-2xl flex flex-col border-r border-gray-100">
+              <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-white sticky top-0 z-10">
                 <h2 className="text-xl font-semibold text-gray-800">Nos Catégories</h2>
                 <button 
-                  onClick={onClose}
+                  onClick={() => {
+                    console.log("Fermeture du menu");
+                    onClose();
+                  }}
                   className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                   aria-label="Fermer le menu"
                 >
@@ -295,7 +338,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                   initial="hidden"
                   animate="visible"
                   exit="exit"
-                  className="w-[300px] md:w-[400px] h-full bg-gray-50 rounded-r-2xl"
+                  className="w-[300px] md:w-[400px] h-full bg-white rounded-r-2xl border-l border-gray-100 shadow-lg overflow-auto sm:overflow-visible"
                   onMouseLeave={handleMouseLeave}
                 >
                   <div className="p-5 border-b border-gray-100">
