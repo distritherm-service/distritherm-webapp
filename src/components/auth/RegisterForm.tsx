@@ -118,7 +118,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <input
               type="text"
               name="firstName"
-              className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
               placeholder="Jean"
               value={registerFormData.firstName}
               onChange={handleRegisterFormChange}
@@ -139,7 +139,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
             <input
               type="text"
               name="lastName"
-              className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
               placeholder="Dupont"
               value={registerFormData.lastName}
               onChange={handleRegisterFormChange}
@@ -161,7 +161,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           <input
             type="email"
             name="email"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="votreemail@exemple.com"
             value={registerFormData.email}
             onChange={handleRegisterFormChange}
@@ -182,7 +182,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           <input
             type="password"
             name="password"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="********"
             value={registerFormData.password}
             onChange={handleRegisterFormChange}
@@ -207,7 +207,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           <input
             type="tel"
             name="phoneNumber"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="06 12 34 56 78"
             value={registerFormData.phoneNumber}
             onChange={handleRegisterFormChange}
@@ -228,7 +228,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           <input
             type="text"
             name="companyName"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="Votre entreprise"
             value={registerFormData.companyName}
             onChange={handleRegisterFormChange}
@@ -249,7 +249,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           <input
             type="text"
             name="siretNumber"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="123 456 789 00012"
             value={registerFormData.siretNumber}
             onChange={handleRegisterFormChange}
@@ -261,7 +261,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       <div className="mt-6">
         <button
           type="submit"
-          className="w-full px-4 py-3 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:from-teal-700 hover:to-blue-700"
+          className="w-full px-4 py-3 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] text-white rounded-lg hover:from-[#6ba9d8] hover:to-[#0065cc]"
           disabled={loading}
         >
           {loading ? 'Chargement...' : 'Créer un compte'}
@@ -296,7 +296,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           <button
             type="button"
             onClick={onSwitchForm}
-            className="text-teal-600 hover:underline font-medium"
+            className="text-[#007FFF] hover:underline font-medium"
           >
             Se connecter
           </button>

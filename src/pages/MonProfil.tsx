@@ -257,17 +257,19 @@ const MonProfil: React.FC = () => {
               <FaUserEdit className="mr-2" />
               Informations personnelles
             </button>
-            <button
-              className={`flex items-center px-6 py-4 text-sm font-medium ${
-                activeTab === 'motDePasse'
-                  ? 'border-b-2 border-teal-500 text-teal-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => switchTab('motDePasse')}
-            >
-              <FaKey className="mr-2" />
-              Changer de mot de passe
-            </button>
+            {user && user.type !== 'PROVIDER' && (
+              <button
+                className={`flex items-center px-6 py-4 text-sm font-medium ${
+                  activeTab === 'motDePasse'
+                    ? 'border-b-2 border-teal-500 text-teal-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+                onClick={() => switchTab('motDePasse')}
+              >
+                <FaKey className="mr-2" />
+                Changer de mot de passe
+              </button>
+            )}
           </div>
           
           <div className="p-6">
