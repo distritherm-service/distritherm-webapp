@@ -1,8 +1,8 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 // URL de l'API backend
-export const BASE_API_URL = 'https://distritherm-backend.onrender.com';
-// export const BASE_API_URL = 'http://192.168.1.8:3000';
+// export const BASE_API_URL = 'https://distritherm-backend.onrender.com';
+export const BASE_API_URL = 'http://192.168.1.8:3000';
 
 // Clés pour le localStorage
 export const STORAGE_KEYS = {

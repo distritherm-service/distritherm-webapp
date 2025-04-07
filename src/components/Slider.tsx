@@ -26,8 +26,8 @@ const slides = [
   {
     id: 4,
     image: '/slider-4.jpeg',
-    title: 'Maintenance',
-    description: 'Entretien et suivi régulier de vos installations'
+    title: 'Ranovation énergetique',
+    description: 'Nous vous accompagnons dans la renovation'
   }
 ];
 

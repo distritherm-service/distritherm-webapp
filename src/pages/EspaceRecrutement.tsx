@@ -53,22 +53,22 @@ const EspaceRecrutement: React.FC = () => {
 
   const avantages = [
     {
-      icon: <FaUsers className="w-8 h-8 text-teal-600" />,
+      icon: <FaUsers className="w-8 h-8 text-[#007FFF]" />,
       title: "Équipe dynamique",
       description: "Rejoignez une équipe passionnée et collaborative"
     },
     {
-      icon: <FaGraduationCap className="w-8 h-8 text-teal-600" />,
+      icon: <FaGraduationCap className="w-8 h-8 text-[#007FFF]" />,
       title: "Formation continue",
       description: "Développez vos compétences avec nos programmes de formation"
     },
     {
-      icon: <FaHandshake className="w-8 h-8 text-teal-600" />,
+      icon: <FaHandshake className="w-8 h-8 text-[#007FFF]" />,
       title: "Environnement stimulant",
       description: "Travaillez dans un cadre moderne et innovant"
     },
     {
-      icon: <FaChartLine className="w-8 h-8 text-teal-600" />,
+      icon: <FaChartLine className="w-8 h-8 text-[#007FFF]" />,
       title: "Évolution de carrière",
       description: "Des opportunités d'évolution au sein de l'entreprise"
     }
@@ -310,20 +310,20 @@ const EspaceRecrutement: React.FC = () => {
     <Layout>
       <section className="relative py-20 overflow-hidden">
         {/* Arrière-plan décoratif */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-teal-50/30">
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-[#7CB9E8]/30">
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.2]" />
-          <div className="absolute w-96 h-96 -top-48 -left-48 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+          <div className="absolute w-96 h-96 -top-48 -left-48 bg-[#7CB9E8] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-[#007FFF] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
         </div>
 
         <div className="container relative mx-auto px-4">
           {/* En-tête de la page */}
           <div className="text-center mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 relative inline-block">
-              <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
                 Rejoignez notre équipe
               </span>
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full"></div>
+              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto mt-8">
               Découvrez les opportunités de carrière chez Distritherm Services et participez à notre développement
@@ -337,7 +337,7 @@ const EspaceRecrutement: React.FC = () => {
                 key={index}
                 className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
               >
-                <div className="w-16 h-16 rounded-lg bg-teal-50 flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-lg bg-[#7CB9E8]/20 flex items-center justify-center mb-4">
                   {avantage.icon}
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">{avantage.title}</h3>
@@ -378,7 +378,7 @@ const EspaceRecrutement: React.FC = () => {
                     name="desired_position"
                     value={formData.desired_position}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-lg border ${errors.desired_position ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.desired_position ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                   >
                     <option value="">Sélectionnez un poste</option>
                     {postes.map((poste) => (
@@ -401,7 +401,7 @@ const EspaceRecrutement: React.FC = () => {
                     name="current_position"
                     value={formData.current_position}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-lg border ${errors.current_position ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.current_position ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                     placeholder="Votre poste actuel"
                   />
                   {errors.current_position && <p className="text-red-500 text-sm mt-1">{errors.current_position}</p>}
@@ -421,7 +421,7 @@ const EspaceRecrutement: React.FC = () => {
                         value="M."
                         checked={formData.civility === 'M.'}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                        className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
                       />
                       <span className="ml-2 text-gray-700">M.</span>
                     </label>
@@ -432,7 +432,7 @@ const EspaceRecrutement: React.FC = () => {
                         value="Mme"
                         checked={formData.civility === 'Mme'}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                        className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
                       />
                       <span className="ml-2 text-gray-700">Mme</span>
                     </label>
@@ -443,7 +443,7 @@ const EspaceRecrutement: React.FC = () => {
                         value="Non précisé"
                         checked={formData.civility === 'Non précisé'}
                         onChange={handleInputChange}
-                        className="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500"
+                        className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
                       />
                       <span className="ml-2 text-gray-700">Non précisé</span>
                     </label>
@@ -463,7 +463,7 @@ const EspaceRecrutement: React.FC = () => {
                       name="last_name"
                       value={formData.last_name}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${errors.last_name ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.last_name ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                       placeholder="Nom"
                     />
                     {errors.last_name && <p className="text-red-500 text-sm mt-1">{errors.last_name}</p>}
@@ -478,7 +478,7 @@ const EspaceRecrutement: React.FC = () => {
                       name="first_name"
                       value={formData.first_name}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${errors.first_name ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.first_name ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                       placeholder="Prénom"
                     />
                     {errors.first_name && <p className="text-red-500 text-sm mt-1">{errors.first_name}</p>}
@@ -497,7 +497,7 @@ const EspaceRecrutement: React.FC = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.email ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                       placeholder="Email"
                     />
                     {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
@@ -512,7 +512,7 @@ const EspaceRecrutement: React.FC = () => {
                       name="phone_number"
                       value={formData.phone_number}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${errors.phone_number ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.phone_number ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                       placeholder="Téléphone"
                     />
                     {errors.phone_number && <p className="text-red-500 text-sm mt-1">{errors.phone_number}</p>}
@@ -530,7 +530,7 @@ const EspaceRecrutement: React.FC = () => {
                     name="address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 rounded-lg border ${errors.address ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.address ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                     placeholder="Adresse"
                   />
                   {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
@@ -548,7 +548,7 @@ const EspaceRecrutement: React.FC = () => {
                       name="postal_code"
                       value={formData.postal_code}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${errors.postal_code ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.postal_code ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                       placeholder="Code Postal"
                     />
                     {errors.postal_code && <p className="text-red-500 text-sm mt-1">{errors.postal_code}</p>}
@@ -563,7 +563,7 @@ const EspaceRecrutement: React.FC = () => {
                       name="city"
                       value={formData.city}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${errors.city ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                      className={`w-full px-4 py-3 rounded-lg border ${errors.city ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                       placeholder="Ville"
                     />
                     {errors.city && <p className="text-red-500 text-sm mt-1">{errors.city}</p>}
@@ -581,7 +581,7 @@ const EspaceRecrutement: React.FC = () => {
                     value={formData.message}
                     onChange={handleInputChange}
                     rows={5}
-                    className={`w-full px-4 py-3 rounded-lg border ${errors.message ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white/70`}
+                    className={`w-full px-4 py-3 rounded-lg border ${errors.message ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                     placeholder="Votre message / motivation"
                   ></textarea>
                   {errors.message && <p className="text-red-500 text-sm mt-1">{errors.message}</p>}
@@ -604,7 +604,7 @@ const EspaceRecrutement: React.FC = () => {
                       <label
                         className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 ${
                           errors.cvFile ? 'border-red-500 bg-red-50' : 
-                          dragActive.cv ? 'border-teal-500 bg-teal-50/50' : 
+                          dragActive.cv ? 'border-[#007FFF] bg-[#7CB9E8]/20' : 
                           'border-gray-300 bg-white/70'
                         } transition-colors duration-200 relative`}
                       >
@@ -623,7 +623,7 @@ const EspaceRecrutement: React.FC = () => {
                           </button>
                         )}
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <FaFileUpload className={`w-8 h-8 mb-3 ${dragActive.cv ? 'text-teal-700' : 'text-teal-600'}`} />
+                          <FaFileUpload className={`w-8 h-8 mb-3 ${dragActive.cv ? 'text-[#007FFF]' : 'text-[#007FFF]'}`} />
                           {!cvFile ? (
                             <>
                               <p className="mb-2 text-sm text-gray-500">
@@ -633,7 +633,7 @@ const EspaceRecrutement: React.FC = () => {
                             </>
                           ) : (
                             <div className="text-center">
-                              <p className="text-sm font-medium text-teal-600 mb-1">
+                              <p className="text-sm font-medium text-[#007FFF] mb-1">
                                 Fichier sélectionné:
                               </p>
                               <p className="text-xs text-gray-700 font-medium">
@@ -669,7 +669,7 @@ const EspaceRecrutement: React.FC = () => {
                     >
                       <label
                         className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 ${
-                          dragActive.motivation ? 'border-teal-500 bg-teal-50/50' : 'border-gray-300 bg-white/70'
+                          dragActive.motivation ? 'border-[#007FFF] bg-[#7CB9E8]/20' : 'border-gray-300 bg-white/70'
                         } transition-colors duration-200 relative`}
                       >
                         {motivationFile && (
@@ -687,7 +687,7 @@ const EspaceRecrutement: React.FC = () => {
                           </button>
                         )}
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <FaFileUpload className={`w-8 h-8 mb-3 ${dragActive.motivation ? 'text-teal-700' : 'text-teal-600'}`} />
+                          <FaFileUpload className={`w-8 h-8 mb-3 ${dragActive.motivation ? 'text-[#007FFF]' : 'text-[#007FFF]'}`} />
                           {!motivationFile ? (
                             <>
                               <p className="mb-2 text-sm text-gray-500">
@@ -697,7 +697,7 @@ const EspaceRecrutement: React.FC = () => {
                             </>
                           ) : (
                             <div className="text-center">
-                              <p className="text-sm font-medium text-teal-600 mb-1">
+                              <p className="text-sm font-medium text-[#007FFF] mb-1">
                                 Fichier sélectionné:
                               </p>
                               <p className="text-xs text-gray-700 font-medium">
@@ -731,7 +731,7 @@ const EspaceRecrutement: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full px-6 py-4 bg-gradient-to-r from-teal-600 to-blue-600 text-white font-medium rounded-lg hover:from-teal-700 hover:to-blue-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="w-full px-6 py-4 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] text-white font-medium rounded-lg hover:from-[#6ba9d8] hover:to-[#0065cc] transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <span className="flex items-center justify-center">

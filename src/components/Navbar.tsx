@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
-import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt, FaSignOutAlt } from 'react-icons/fa';
+import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt, FaSignOutAlt, FaPhone } from 'react-icons/fa';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { useCart } from '../contexts/CartContext';
 import { useSearch } from '../contexts/SearchContext';
@@ -11,7 +11,9 @@ import SearchBar from './SearchBar';
 import UserProfileModal from './UserProfileModal';
 import CartPreview from './CartPreview';
 import FavoritesPreview from './FavoritesPreview';
+import CallbackForm from './CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
+import { AnimatePresence } from 'framer-motion';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,6 +23,7 @@ const Navbar: React.FC = () => {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState('Choisir votre magasin');
   const [scrolled, setScrolled] = useState(false);
+  const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
   const storeMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const navbarHeight = useRef<number>(0);
@@ -152,7 +155,29 @@ const Navbar: React.FC = () => {
   }, [scrolled]);
 
   const toggleMobileMenu = () => {
+    // Si le menu des produits est ouvert, on le ferme d'abord
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  // Version simplifiée de la fonction pour ouvrir/fermer le menu des produits
+  const toggleProductsMenu = (e: React.MouseEvent) => {
+    // Empêcher l'événement de se propager et de déclencher d'autres gestionnaires
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Basculer l'état du menu
+    setIsMenuOpen(!isMenuOpen);
+    
+    // Fermer le menu mobile s'il est ouvert
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+    
+    // Ajouter un log pour déboguer
+    console.log("Menu des produits toggled:", !isMenuOpen);
   };
 
   const handleSearchClick = () => {
@@ -234,13 +259,13 @@ const Navbar: React.FC = () => {
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
-                  01 23 45 67 89
+                  01 48 30 45 70
                 </a>
                 <a href="mailto:contact@distritherm.fr" className="flex items-center hover:text-blue-400 transition-colors">
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  contact@distritherm.fr
+                  info@distritherm.fr 
                 </a>
               </div>
               
@@ -267,12 +292,23 @@ const Navbar: React.FC = () => {
                   <span>Mon compte</span>
                 </Link>
                 <span className="text-gray-500">|</span>
-                <Link 
-                  to="/nous-contact" 
-                  className="hover:text-blue-400 transition-colors"
-                >
-                  Aide
-                </Link>
+                <div className="border-r pr-4 mr-4">
+                  <Link 
+                    to="/nous-contact" 
+                    className="hover:text-blue-400 transition-colors"
+                  >
+                    Contact
+                  </Link>
+                </div>
+                <div>
+                  <button 
+                    onClick={() => setIsCallbackFormOpen(true)}
+                    className="flex items-center text-teal-600 hover:text-teal-700 transition-colors font-medium"
+                  >
+                    <FaPhone className="mr-1 text-xs" />
+                    Rappel-moi
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -455,21 +491,30 @@ const Navbar: React.FC = () => {
         
         {/* Barre de navigation catégories */}
         <div 
-          className={`bg-gray-100 relative transition-all duration-300 ${
+          className={`relative transition-all duration-300 ${
             scrolled ? 'py-2' : 'py-3'
-          } ${isMobileMenuOpen ? 'block' : 'hidden sm:block'}`}
+          } ${isMobileMenuOpen ? 'block bg-white shadow-lg' : 'hidden sm:block bg-gray-100'}`}
         >
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between">
-              {/* Bouton "Tous nos produits" à gauche */}
-              <div>
+              {/* Bouton "Tous nos produits" à gauche - visible uniquement sur desktop */}
+              <div className="hidden sm:block">
                 <button 
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  onClick={toggleProductsMenu}
                   className="px-4 py-2 text-gray-700 hover:text-teal-600 transition-colors rounded-lg flex items-center space-x-2 focus:outline-none"
+                  aria-label="Tous nos produits"
+                  aria-expanded={isMenuOpen}
+                  aria-controls="vertical-menu"
+                  data-testid="all-products-button"
                 >
                   <FaBars className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-90' : ''}`} />
                   <span>Tous nos produits</span>
                 </button>
+              </div>
+              
+              {/* Pour mobile, on affiche un titre simple */}
+              <div className="sm:hidden font-medium text-gray-700">
+                Menu
               </div>
               
               {/* Liens de navigation au centre - Desktop */}
@@ -479,6 +524,12 @@ const Navbar: React.FC = () => {
                   className={`px-3 py-2 ${isActive('/') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
                 >
                   Accueil
+                </Link>
+                <Link
+                  to="/a-propos"
+                  className={`px-3 py-2 ${isActive('/a-propos') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                >
+                  À propos
                 </Link>
                 <Link
                   to="/nos-produits"
@@ -616,12 +667,39 @@ const Navbar: React.FC = () => {
               id="mobile-menu" 
               className={`sm:hidden mt-4 space-y-2 ${isMobileMenuOpen ? 'block' : 'hidden'}`}
             >
+              {/* Bouton mobile pour afficher le menu des produits */}
+              <div className="mb-4">
+                <button
+                  onClick={(e) => {
+                    setIsMobileMenuOpen(false);
+                    setTimeout(() => {
+                      setIsMenuOpen(true);
+                      console.log("Ouverture du menu vertical depuis le bouton mobile");
+                    }, 100);
+                  }}
+                  className="flex w-full items-center justify-center py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-md"
+                  id="mobile-categories-button"
+                  aria-label="Voir toutes les catégories"
+                  data-testid="mobile-categories-button"
+                >
+                  <FaBars className="mr-2" />
+                  <span>Voir toutes les catégories</span>
+                </button>
+              </div>
+
               <Link
                 to="/"
                 className={`block py-2 ${isActive('/') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Accueil
+              </Link>
+              <Link
+                to="/a-propos"
+                className={`block py-2 ${isActive('/a-propos') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                À propos
               </Link>
               <Link
                 to="/nos-produits"
@@ -706,13 +784,14 @@ const Navbar: React.FC = () => {
         </div>
         
         {/* Menu vertical déroulant */}
-        {isMenuOpen && <VerticalMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />}
+        {isMenuOpen && <VerticalMenu isOpen={true} onClose={() => setIsMenuOpen(false)} />}
       </div>
       
       {/* Overlay pour la recherche */}
       {isSearchOpen && <SearchBar />}
 
-      {/* Menu déroulant remplace la modal */}
+      {/* Formulaire de rappel */}
+      <CallbackForm isOpen={isCallbackFormOpen} onClose={() => setIsCallbackFormOpen(false)} />
     </>
   );
 };

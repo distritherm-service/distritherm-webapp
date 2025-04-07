@@ -12,7 +12,9 @@ const LocationSection: React.FC = () => {
               Acteur de la transition énergétique en France
             </h2>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              La société a pour objet, en France et à l'étranger toute opération pouvant se rattacher directement ou indirectement au commerce de tous matériaux de construction, aux études, installation, réparation, maintenance et service après-vente de climatisation chauffage électricité, pièce à tous sanitaires solaires et tous autres travaux en lien avec le traitement de l'eau et le sanitaire.
+            Distritherm Services est plus qu'une société de distribution de matériaux pour le résidentiel ou le tertiaire. Soucieux de notre impact sur la planète, notre entreprise, basée sur des principes
+            solides et une passion pour l'innovation, s'engage à fournir à nos clients une expérience remarquable à chaque chantier grâce à des produits de choix et de qualité respectant les normes
+            environnementales en s’entourant des fabricants français et européens partageant les mêmes valeurs.
             </p>
             <Link 
               to="/a-propos"
