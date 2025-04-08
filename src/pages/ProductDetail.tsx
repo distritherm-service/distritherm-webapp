@@ -231,9 +231,15 @@ const ProductDetail: React.FC = () => {
           description: promo.description,
           longDescription: promo.description,
           image: promo.image,
-          category: promo.category,
-          subcategory: promo.subcategory,
-          brand: promo.brand,
+          category: {
+            id: promo.category,
+            name: promo.category
+          },
+          brand: {
+            id: promo.brand,
+            name: promo.brand,
+            logo: `/brands/${promo.brand}.png`
+          },
           price: promo.discountPrice,
           inStock: promo.inStock,
           model: `MOD-${promo.id}`,
@@ -290,8 +296,17 @@ const ProductDetail: React.FC = () => {
     // Créer un objet ProductDetails à partir du produit trouvé
     const productDetails: ProductDetails = {
       ...foundProduct,
-      name: foundProduct.title, // Mapper title vers name
+      name: foundProduct.title,
       longDescription: foundProduct.description,
+      category: {
+        id: foundProduct.category,
+        name: foundProduct.category
+      },
+      brand: {
+        id: foundProduct.brand,
+        name: foundProduct.brand,
+        logo: `/brands/${foundProduct.brand}.png`
+      },
       model: `MOD-${foundProduct.id}`,
       reference: `REF-${foundProduct.id}`,
       specifications: [
@@ -372,16 +387,15 @@ const ProductDetail: React.FC = () => {
     } else {
       const productForFavorites = {
         id: product.id,
-        title: product.name,
+        name: product.name,
         description: product.description,
         image: product.image,
-        category: product.category,
-        subcategory: product.subcategory,
-        brand: product.brand,
+        category: product.category.name,
+        brand: product.brand.name,
         price: product.price,
         inStock: product.inStock
       };
-      addToFavorites(productForFavorites, 'product');
+      addToFavorites(productForFavorites);
     }
   };
 
@@ -491,7 +505,7 @@ const ProductDetail: React.FC = () => {
                   </div>
                   <div className="flex items-center text-gray-600">
                     <span className="font-medium">MARQUE:</span>
-                    <span className="ml-2 text-[#007FFF]">{product.brand}</span>
+                    <span className="ml-2 text-[#007FFF]">{product.brand.name}</span>
                   </div>
                 </div>
               </div>
@@ -589,7 +603,7 @@ const ProductDetail: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider text-gray-400">Dimensions</div>
-                    <div className="text-sm font-medium">{product.dimensions.height}×{product.dimensions.width}×{product.dimensions.depth} cm</div>
+                    <div className="text-sm font-medium">{product.dimensions?.height}×{product.dimensions?.width}×{product.dimensions?.depth} cm</div>
                   </div>
                 </div>
                 <div className="flex items-center">
@@ -598,7 +612,7 @@ const ProductDetail: React.FC = () => {
                   </div>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider text-gray-400">Poids</div>
-                    <div className="text-sm font-medium">{product.dimensions.weight} kg</div>
+                    <div className="text-sm font-medium">{product.dimensions?.weight} kg</div>
                   </div>
                 </div>
               </div>
@@ -660,8 +674,8 @@ const ProductDetail: React.FC = () => {
 
           {/* Produits similaires */}
           <div className="mt-12 md:mt-16">
-            {product.relatedProducts.length > 0 && (
-              <ProductRelatedSlider relatedProductIds={product.relatedProducts} />
+            {(product.relatedProducts ?? []).length > 0 && (
+              <ProductRelatedSlider relatedProductIds={product.relatedProducts ?? []} />
             )}
           </div>
           
