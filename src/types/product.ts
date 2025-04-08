@@ -17,18 +17,31 @@ export interface ProductDetails {
   longDescription: string;
   price: number;
   image: string;
-  category: string;
-  subcategory: string;
-  brand: string;
-  model: string;
-  reference: string;
   inStock: boolean;
-  specifications: ProductSpecification[];
-  documents: ProductDocument[];
+  model?: string;
+  reference?: string;
   features: string[];
-  relatedProducts: string[]; // IDs des produits connexes
-  warranty: string;
-  dimensions: {
+  specifications: Array<{
+    key: string;
+    value: string;
+  }>;
+  documents: Array<{
+    id: string;
+    name: string;
+    type: string;
+    url: string;
+  }>;
+  category: {
+    id: string;
+    name: string;
+  };
+  brand: {
+    id: string;
+    name: string;
+    logo: string;
+  };
+  warranty?: string;
+  dimensions?: {
     height: number;
     width: number;
     depth: number;
@@ -36,4 +49,5 @@ export interface ProductDetails {
   };
   energyClass?: string;
   installationRequirements?: string;
+  relatedProducts?: string[];
 } 
