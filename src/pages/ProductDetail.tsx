@@ -455,7 +455,6 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <Slider showOnPages={[`/nos-produits/${id}`, `/produit/${id}`]} />
       <Breadcrumb />
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -464,29 +463,6 @@ const ProductDetail: React.FC = () => {
       >
         {/* En-tête du produit */}
         <div className="max-w-7xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-6 md:mb-8"
-          >
-            <div className="flex flex-wrap items-center text-sm text-gray-500 mb-3 md:mb-4">
-              <span>{product.category}</span>
-              <FaChevronRight className="mx-2 w-3 h-3" />
-              <span>{product.subcategory}</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
-            <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm">
-              <div className="flex items-center text-gray-600">
-                <span className="font-medium">RÉF:</span>
-                <span className="ml-2">{product.reference}</span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <span className="font-medium">MARQUE:</span>
-                <span className="ml-2 text-teal-600">{product.brand}</span>
-              </div>
-            </div>
-          </motion.div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-16">
             {/* Colonne gauche - Image */}
             <motion.div 
@@ -499,43 +475,56 @@ const ProductDetail: React.FC = () => {
               </div>
             </motion.div>
 
-            {/* Colonne droite - Informations */}
+            {/* Colonne droite - Toutes les informations */}
             <motion.div 
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="space-y-6 md:space-y-8"
+              className="bg-white rounded-2xl p-6 md:p-8 shadow-lg space-y-6"
             >
+              {/* Titre et informations principales */}
+              <div className="space-y-4">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">{product.name}</h1>
+                <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm">
+                  <div className="flex items-center text-gray-600">
+                    <span className="font-medium">RÉF:</span>
+                    <span className="ml-2">{product.reference}</span>
+                  </div>
+                  <div className="flex items-center text-gray-600">
+                    <span className="font-medium">MARQUE:</span>
+                    <span className="ml-2 text-[#007FFF]">{product.brand}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Description */}
-              <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg">
+              <div>
                 <p className="text-base md:text-lg text-gray-600 leading-relaxed">{product.description}</p>
               </div>
 
               {/* Prix et stock */}
-              <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <div className="text-2xl md:text-4xl font-bold text-gray-900">
-                      {product.price.toFixed(2)} €
-                    </div>
-                    <div className="text-xs md:text-sm text-gray-500 mt-1">Prix HT</div>
+              <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-t border-gray-100">
+                <div>
+                  <div className="text-2xl md:text-4xl font-bold text-gray-900">
+                    {product.price.toFixed(2)} €
                   </div>
-                  <motion.div whileHover={{ scale: 1.05 }}>
-                    <span className={`inline-flex items-center px-4 md:px-6 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium ${
-                      product.inStock
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      <span className={`w-2 h-2 rounded-full mr-2 ${
-                        product.inStock ? 'bg-green-500' : 'bg-red-500'
-                      }`}></span>
-                      {product.inStock ? 'En stock' : 'Rupture de stock'}
-                    </span>
-                  </motion.div>
+                  <div className="text-xs md:text-sm text-gray-500 mt-1">Prix HT</div>
                 </div>
+                <motion.div whileHover={{ scale: 1.05 }}>
+                  <span className={`inline-flex items-center px-4 md:px-6 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium ${
+                    product.inStock
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full mr-2 ${
+                      product.inStock ? 'bg-green-500' : 'bg-red-500'
+                    }`}></span>
+                    {product.inStock ? 'En stock' : 'Rupture de stock'}
+                  </span>
+                </motion.div>
               </div>
 
-              {/* Actions */}
-              <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-8 shadow-lg space-y-6">
+              {/* Quantité et ajout au panier */}
+              <div className="space-y-4 py-4 border-t border-gray-100">
                 <div className="flex items-center space-x-4">
                   <div className="flex-1">
                     <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-2">
@@ -554,7 +543,7 @@ const ProductDetail: React.FC = () => {
                         id="quantity"
                         min="1"
                         value={quantity}
-                        onChange={handleQuantityChange}
+                        onChange={(e) => handleQuantityChange(e)}
                         className="block w-full border-0 focus:ring-0 text-center text-lg py-2"
                       />
                       <button 
@@ -566,40 +555,22 @@ const ProductDetail: React.FC = () => {
                       </button>
                     </div>
                   </div>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={toggleFavorite}
-                    className={`p-3 md:p-4 rounded-xl md:rounded-2xl transition-colors duration-200 ${
-                      isFavorite(product.id)
-                        ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                        : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
-                    }`}
-                    aria-label={isFavorite(product.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
-                  >
-                    <FaHeart className="w-5 h-5 md:w-6 md:h-6" />
-                  </motion.button>
                 </div>
 
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
-                  disabled={!product.inStock || isInCart(product.id)}
-                  className={`w-full flex items-center justify-center space-x-3 px-6 md:px-8 py-3 md:py-4 rounded-xl md:rounded-2xl text-white font-medium transition-all duration-200 ${
+                  disabled={!product.inStock}
+                  className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-medium transition-all ${
                     !product.inStock
                       ? 'bg-gray-300 cursor-not-allowed'
                       : isInCart(product.id)
-                      ? 'bg-green-600 hover:bg-green-700'
-                      : 'bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 shadow-lg hover:shadow-xl'
+                      ? 'bg-green-500 hover:bg-green-600'
+                      : 'bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] hover:from-[#007FFF] hover:to-[#0056b3]'
                   }`}
-                  aria-label={!product.inStock 
-                    ? "Produit indisponible" 
-                    : isInCart(product.id) 
-                      ? "Déjà dans le panier" 
-                      : "Ajouter au panier"}
                 >
-                  <FaShoppingCart className="w-5 h-5 md:w-6 md:h-6" />
+                  <FaShoppingCart className="w-5 h-5" />
                   <span className="text-base md:text-lg">
                     {!product.inStock
                       ? 'Produit indisponible'
@@ -610,27 +581,24 @@ const ProductDetail: React.FC = () => {
                 </motion.button>
               </div>
 
-              {/* Caractéristiques */}
-              <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-7 shadow-lg">
-                <h3 className="text-sm font-medium text-gray-500 mb-4">Caractéristiques techniques</h3>
-                <div className="flex flex-wrap gap-6">
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-500 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                      <FaRuler className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-wider text-gray-400">Dimensions</div>
-                      <div className="text-sm font-medium">{product.dimensions.height}×{product.dimensions.width}×{product.dimensions.depth} cm</div>
-                    </div>
+              {/* Dimensions */}
+              <div className="flex flex-wrap gap-6 py-4 border-t border-gray-100">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#7CB9E8] to-[#007FFF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                    <FaRuler className="w-4 h-4 text-white" />
                   </div>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-500 rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                      <FaWeight className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-[10px] uppercase tracking-wider text-gray-400">Poids</div>
-                      <div className="text-sm font-medium">{product.dimensions.weight} kg</div>
-                    </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-gray-400">Dimensions</div>
+                    <div className="text-sm font-medium">{product.dimensions.height}×{product.dimensions.width}×{product.dimensions.depth} cm</div>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#7CB9E8] to-[#007FFF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                    <FaWeight className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-gray-400">Poids</div>
+                    <div className="text-sm font-medium">{product.dimensions.weight} kg</div>
                   </div>
                 </div>
               </div>
