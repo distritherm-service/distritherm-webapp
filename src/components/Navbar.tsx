@@ -289,7 +289,7 @@ const Navbar: React.FC = () => {
                   className="flex items-center hover:text-blue-400 transition-colors"
                 >
                   <FaUser className="h-4 w-4 mr-1 text-blue-400" />
-                  <span>Mon compte</span>
+                  <span></span>
                 </Link>
                 <span className="text-gray-500">|</span>
                 <div className="border-r pr-4 mr-4">
@@ -339,18 +339,19 @@ const Navbar: React.FC = () => {
                   <FaSearch className="w-5 h-5" />
                 </button>
                 <div className="relative">
-                  <button
+                  <Link
+                    to="/favoris"
                     className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
                     onMouseEnter={handleFavoritesMouseEnter}
                     onMouseLeave={handleMouseLeave}
                   >
                     <FaHeart className="h-6 w-6" />
                     {favorites.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                         {favorites.length}
                       </span>
                     )}
-                  </button>
+                  </Link>
                   <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
                     <FavoritesPreview 
                       isOpen={isFavoritesPreviewOpen} 
@@ -359,18 +360,19 @@ const Navbar: React.FC = () => {
                   </div>
                 </div>
                 <div className="relative">
-                  <button
+                  <Link
+                    to="/panier"
                     className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
                     onMouseEnter={handleCartMouseEnter}
                     onMouseLeave={handleMouseLeave}
                   >
                     <FaShoppingCart className="h-6 w-6" />
                     {cart.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {cart.length}
+                      <span className="absolute -top-2 -right-2 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartItemsCount}
                       </span>
                     )}
-                  </button>
+                  </Link>
                   <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
                     <CartPreview 
                       isOpen={isCartPreviewOpen} 
@@ -444,18 +446,19 @@ const Navbar: React.FC = () => {
                 </div>
                 
                 <div className="relative">
-                  <button
+                  <Link
+                    to="/favoris"
                     className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
                     onMouseEnter={handleFavoritesMouseEnter}
                     onMouseLeave={handleMouseLeave}
                   >
                     <FaHeart className="h-6 w-6" />
                     {favorites.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                      <span className="absolute -top-8 -right-8 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                         {favorites.length}
                       </span>
                     )}
-                  </button>
+                  </Link>
                   <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
                     <FavoritesPreview 
                       isOpen={isFavoritesPreviewOpen} 
@@ -465,18 +468,19 @@ const Navbar: React.FC = () => {
                 </div>
                 
                 <div className="relative">
-                  <button
+                  <Link
+                    to="/panier"
                     className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
                     onMouseEnter={handleCartMouseEnter}
                     onMouseLeave={handleMouseLeave}
                   >
                     <FaShoppingCart className="h-6 w-6" />
                     {cart.length > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {cart.length}
+                      <span className="absolute -top-8 -right-8 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartItemsCount}
                       </span>
                     )}
-                  </button>
+                  </Link>
                   <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
                     <CartPreview 
                       isOpen={isCartPreviewOpen} 
