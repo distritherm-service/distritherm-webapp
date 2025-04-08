@@ -272,7 +272,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
           animate="visible"
           exit="exit"
           variants={menuVariants}
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-start"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-start justify-start transition-all duration-300"
           id="vertical-menu-container"
         >
           <div 
