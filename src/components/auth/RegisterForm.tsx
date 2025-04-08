@@ -278,15 +278,18 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           </div>
         </div>
         
-        <div className="mt-6">
-          <GoogleLogin
-            width="100%"
-            size="large"
-            text="signup_with"
-            shape="rectangular"
-            onSuccess={onGoogleSuccess}
-            onError={onGoogleError}
-          />
+        <div className="mt-6 flex justify-center">
+          <div className="w-full max-w-full">
+            <GoogleLogin
+              width="100%"
+              size="large"
+              text="signup_with"
+              shape="rectangular"
+              onSuccess={onGoogleSuccess}
+              onError={onGoogleError}
+              useOneTap={false}
+            />
+          </div>
         </div>
       </div>
       
