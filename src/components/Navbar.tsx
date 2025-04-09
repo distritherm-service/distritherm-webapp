@@ -522,40 +522,40 @@ const Navbar: React.FC = () => {
               </div>
               
               {/* Liens de navigation au centre - Desktop */}
-              <div className="hidden sm:flex space-x-4 md:space-x-8">
+              <div className="hidden sm:flex space-x-2 lg:space-x-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
                 <Link
                   to="/"
-                  className={`px-3 py-2 ${isActive('/') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
                 >
                   Accueil
                 </Link>
                 <Link
                   to="/a-propos"
-                  className={`px-3 py-2 ${isActive('/a-propos') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/a-propos') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
                 >
                   À propos
                 </Link>
                 <Link
                   to="/nos-produits"
-                  className={`px-3 py-2 ${isActive('/nos-produits') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/nos-produits') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
                 >
                 Produits
                 </Link>
                 <Link
                   to="/promotions"
-                  className={`px-3 py-2 ${isActive('/promotions') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/promotions') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
                 >
                   Promotions
                 </Link>
                 <Link
                   to="/espace-recrutement"
-                  className={`px-3 py-2 ${isActive('/espace-recrutement') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/espace-recrutement') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
                 >
                   Recrutement
                 </Link>
                 <Link
                   to="/nous-contact"
-                  className={`px-3 py-2 ${isActive('/nous-contact') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/nous-contact') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
                 >
                   Contact
                 </Link>
