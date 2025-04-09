@@ -68,7 +68,6 @@ const AppRoutes = () => {
       {/* Routes publiques accessibles à tous */}
       <Route path="/" element={<Home />} />
       <Route path="/nos-produits" element={<NosProducts />} />
-      <Route path="/nos-produits/:id" element={<ProductDetail />} />
       <Route path="/produit/:id" element={<ProductDetail />} />
       <Route path="/promotions" element={<Promotions />} />
       <Route path="/espace-recrutement" element={<EspaceRecrutement />} />

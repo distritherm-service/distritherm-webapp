@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 // URL de l'API backend
-export const BASE_API_URL = 'https://lucent-tapioca-0152d3.netlify.app';
+export const BASE_API_URL = 'https://distritherm-backend.onrender.com/';
 // export const BASE_API_URL = 'http://192.168.1.8:3000';
 
 // Clés pour le localStorage
