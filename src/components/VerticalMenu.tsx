@@ -296,11 +296,50 @@ const menuItems: MenuItem[] = [
     slug: 'climatisation',
     icon: '❄️',
     subItems: [
-      { title: 'Pompe à chaleur AIR/AIR', slug: 'pompe-air-air' },
-      { title: 'Climatiseur', slug: 'climatiseur' },
-      { title: 'VRV VRF', slug: 'vrv-vrf' },
-      { title: 'Ventilation', slug: 'ventilation' },
-      { title: 'Accessoires', slug: 'accessoires-clim' }
+      { 
+        title: 'Pompe à chaleur AIR/AIR', 
+        slug: 'pompe-a-chaleur-air-air',
+        level3Items: [
+          { title: 'Monobloc', slug: 'monobloc-air-air' },
+          { title: 'Monosplit', slug: 'monosplit' },
+          { title: 'Multisplit', slug: 'multisplit' }
+        ]
+      },
+      { 
+        title: 'Climatiseur', 
+        slug: 'climatiseur',
+        level3Items: [
+          { title: 'Gainable', slug: 'gainable' },
+          { title: 'Zoning', slug: 'zoning' },
+          { title: 'Mobile', slug: 'mobile' }
+        ]
+      },
+      { 
+        title: 'VRV VRF', 
+        slug: 'vrv-vrf' 
+      },
+      { 
+        title: 'Ventilation', 
+        slug: 'ventilation',
+        level3Items: [
+          { title: 'Système VMC', slug: 'systeme-vmc' },
+          { title: 'Aérateur', slug: 'aerateur' },
+          { title: 'Extracteur', slug: 'extracteur' },
+          { title: 'Grilles', slug: 'grilles' }
+        ]
+      },
+      { 
+        title: 'Accessoires', 
+        slug: 'accessoires-clim',
+        level3Items: [
+          { title: 'Cuivre frigorifique', slug: 'cuivre-frigorifique' },
+          { title: 'Supports et chaises', slug: 'supports-chaises' },
+          { title: 'Rubber foot', slug: 'rubber-foot' },
+          { title: 'Tube à condensats', slug: 'tube-condensats' },
+          { title: 'Pompes à condensats', slug: 'pompes-condensats' },
+          { title: 'Goulotte', slug: 'goulotte' }
+        ]
+      }
     ]
   },
   {
@@ -308,11 +347,64 @@ const menuItems: MenuItem[] = [
     slug: 'sanitaire',
     icon: '🚿',
     subItems: [
-      { title: 'Chauffe-eaux et ballons', slug: 'chauffe-eaux' },
-      { title: 'Mobilier', slug: 'mobilier' },
-      { title: 'Robinetterie', slug: 'robinetterie' },
-      { title: 'Sèche serviette', slug: 'seche-serviette' },
-      { title: 'Espace douche', slug: 'espace-douche' }
+      { 
+        title: 'Chauffe-eaux et ballons', 
+        slug: 'chauffe-eaux-ballons',
+        level3Items: [
+          { title: 'Ballon thermodynamique', slug: 'ballon-thermodynamique' },
+          { title: 'Ballon électrique', slug: 'ballon-electrique' },
+          { title: 'Ballon ECS', slug: 'ballon-ecs' },
+          { title: 'Chauffe-eau thermodynamique', slug: 'chauffe-eau-thermodynamique' },
+          { title: 'Chauffe-eau électrique', slug: 'chauffe-eau-electrique' },
+          { title: 'Chauffe-eau solaire', slug: 'chauffe-eau-solaire' },
+          { title: 'Système solaire combiné', slug: 'systeme-solaire-combine' }
+        ]
+      },
+      { 
+        title: 'Mobilier', 
+        slug: 'mobilier',
+        level3Items: [
+          { title: 'Meuble casque', slug: 'meuble-casque' },
+          { title: 'Lave-mains', slug: 'lave-mains' }
+        ]
+      },
+      { 
+        title: 'Robinetterie', 
+        slug: 'robinetterie',
+        level3Items: [
+          { title: 'Colonne de douche', slug: 'colonne-douche' },
+          { title: 'Robinet', slug: 'robinet' },
+          { title: 'Mitigeur', slug: 'mitigeur' }
+        ]
+      },
+      { 
+        title: 'Sèche serviette', 
+        slug: 'seche-serviette',
+        level3Items: [
+          { title: 'Électrique', slug: 'electrique-seche-serviette' },
+          { title: 'À eau', slug: 'a-eau-seche-serviette' }
+        ]
+      },
+      { 
+        title: 'Espace douche', 
+        slug: 'espace-douche',
+        level3Items: [
+          { title: 'Receveurs', slug: 'receveurs' },
+          { title: 'Parois', slug: 'parois' }
+        ]
+      },
+      { 
+        title: 'Espace WC', 
+        slug: 'espace-wc',
+        level3Items: [
+          { title: 'Bati-support', slug: 'bati-support' },
+          { title: 'Pack WC', slug: 'pack-wc' }
+        ]
+      },
+      { 
+        title: 'Traitement de l\'eau', 
+        slug: 'traitement-eau' 
+      }
     ]
   },
   {
@@ -320,11 +412,54 @@ const menuItems: MenuItem[] = [
     slug: 'plomberie',
     icon: '🔧',
     subItems: [
-      { title: 'Tuyaux', slug: 'tuyaux' },
-      { title: 'Raccords', slug: 'raccords' },
-      { title: 'Flexibles', slug: 'flexibles' },
-      { title: 'Vannes', slug: 'vannes' },
-      { title: 'Accessoires', slug: 'accessoires-plomberie' }
+      { 
+        title: 'Alimentation', 
+        slug: 'alimentation',
+        level3Items: [
+          { title: 'Cuivre à sertir', slug: 'cuivre-a-sertir' },
+          { title: 'Multicouche', slug: 'multicouche' },
+          { title: 'PER', slug: 'per' },
+          { title: 'Laiton', slug: 'laiton' }
+        ]
+      },
+      { 
+        title: 'Fixations', 
+        slug: 'fixations',
+        level3Items: [
+          { title: 'Tubes', slug: 'tubes' },
+          { title: 'Flexibles', slug: 'flexibles' },
+          { title: 'Vannes', slug: 'vannes' },
+          { title: 'Raccords', slug: 'raccords' }
+        ]
+      },
+      { 
+        title: 'Évacuation', 
+        slug: 'evacuation',
+        level3Items: [
+          { title: 'Tuyaux PVC', slug: 'tuyaux-pvc' }
+        ]
+      },
+      { 
+        title: 'Accessoires', 
+        slug: 'accessoires-plomberie',
+        level3Items: [
+          { title: 'Pince à sertir', slug: 'pince-a-sertir' },
+          { title: 'Cintreuse', slug: 'cintreuse' },
+          { title: 'Ébavurer', slug: 'ebavurer' },
+          { title: 'Coupe-tube', slug: 'coupe-tube' }
+        ]
+      },
+      { 
+        title: 'Raccords', 
+        slug: 'raccords',
+        level3Items: [
+          { title: 'Té', slug: 'te' },
+          { title: 'Bouchons', slug: 'bouchons' },
+          { title: 'Manchons', slug: 'manchons' },
+          { title: 'Réductions', slug: 'reductions' },
+          { title: 'Coudes', slug: 'coudes' }
+        ]
+      }
     ]
   },
   {
@@ -336,17 +471,59 @@ const menuItems: MenuItem[] = [
       { title: 'Câbles', slug: 'cables' },
       { title: 'Gaines', slug: 'gaines' },
       { title: 'Disjoncteurs', slug: 'disjoncteurs' },
-      { title: 'Panneaux solaire', slug: 'panneaux-solaire' }
+      { 
+        title: 'Panneaux solaires', 
+        slug: 'panneaux-solaires',
+        level3Items: [
+          { title: '3 kW', slug: '3kw' },
+          { title: '6 kW', slug: '6kw' },
+          { title: '9 kW', slug: '9kw' }
+        ]
+      }
     ]
   },
   {
-    title: 'Outillages',
-    slug: 'outillages',
+    title: 'Outillage',
+    slug: 'outillage',
     icon: '🔨',
     subItems: [
-      { title: 'Électroportatif', slug: 'electroportatif' },
-      { title: 'À main', slug: 'a-main' },
-      { title: 'Accessoires', slug: 'accessoires-outillage' }
+      { 
+        title: 'Électroportatif', 
+        slug: 'electroportatif',
+        level3Items: [
+          { title: 'Marteau-piqueur', slug: 'marteau-piqueur' },
+          { title: 'Visseuse', slug: 'visseuse' },
+          { title: 'Perceuse', slug: 'perceuse' },
+          { title: 'Perforateur', slug: 'perforateur' },
+          { title: 'Cloueur', slug: 'cloueur' },
+          { title: 'Scie circulaire', slug: 'scie-circulaire' }
+        ]
+      },
+      { 
+        title: 'À main', 
+        slug: 'a-main',
+        level3Items: [
+          { title: 'Scies', slug: 'scies' },
+          { title: 'Niveaux', slug: 'niveaux' },
+          { title: 'Pinceaux', slug: 'pinceaux' },
+          { title: 'Balai', slug: 'balai' },
+          { title: 'Mélangeurs', slug: 'melangeurs' }
+        ]
+      },
+      { 
+        title: 'Accessoires', 
+        slug: 'accessoires-outillage',
+        level3Items: [
+          { title: 'Forêt', slug: 'foret' },
+          { title: 'Trépan', slug: 'trepan' },
+          { title: 'Disques', slug: 'disques' },
+          { title: 'Lame', slug: 'lame' },
+          { title: 'Batterie', slug: 'batterie' },
+          { title: 'Lampe', slug: 'lampe' },
+          { title: 'Niveau laser', slug: 'niveau-laser' },
+          { title: 'Aspirateur', slug: 'aspirateur' }
+        ]
+      }
     ]
   },
   {
@@ -354,14 +531,20 @@ const menuItems: MenuItem[] = [
     slug: 'epi',
     icon: '⛑️',
     subItems: [
-      { title: 'Casques', slug: 'casques' },
-      { title: 'Chaussures de sécurité', slug: 'chaussures-securite' },
-      { title: 'Bottes', slug: 'bottes' },
+      { title: 'Casques et protections auditives', slug: 'casques-protections-auditives' },
+      { title: 'Lunettes et masques de protection', slug: 'lunettes-masques' },
       { title: 'Gants', slug: 'gants' },
-      { title: 'Lunettes de protection', slug: 'lunettes-protection' },
-      { title: 'Bouchons anti-bruits', slug: 'bouchons-anti-bruit' },
-      { title: 'Masque de chantier', slug: 'masque-chantier' },
-      { title: 'Vêtements', slug: 'vetements' }
+      { 
+        title: 'Chaussures et vêtements', 
+        slug: 'chaussures-vetements',
+        level3Items: [
+          { title: 'T-shirts', slug: 't-shirts' },
+          { title: 'Sweat', slug: 'sweat' },
+          { title: 'Pantalons', slug: 'pantalons' },
+          { title: 'Doudounes', slug: 'doudounes' },
+          { title: 'Combinaisons jetables', slug: 'combinaisons-jetables' }
+        ]
+      }
     ]
   }
 ];
