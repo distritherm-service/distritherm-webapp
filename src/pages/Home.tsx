@@ -110,7 +110,7 @@ const Home: React.FC = () => {
                     <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full transform origin-left transition-transform duration-300"></div>
                   </h2>
                   <p className="text-gray-700 leading-relaxed mb-8 text-lg">
-                  Distritherm Services, installé à Taverny (95), vous serez accueilli au sein d'un magasin par une équipe compétente 
+                    Distritherm Services, installé à Taverny (95), vous serez accueilli au sein d'un magasin par une équipe compétente 
                     et professionnelle, à votre écoute et à votre disponibilité pour répondre à l'ensemble de vos besoins en matériels ou en conseils. 
                     Nous connaissons vos attentes : rapidité, disponibilité et économie.
                     Au service des professionnels, nous misons sur la proximité, l'efficacité, et le professionnalisme pour vous accompagner au quotidien 
