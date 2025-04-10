@@ -10,12 +10,27 @@ import BrandsSection from '../components/BrandsSection';
 import ValueProposition from '../components/ValueProposition';
 import { categories } from '../data/categories';
 import { products } from '../data/products';
+import { Link, useNavigate } from 'react-router-dom';
 // import Layout from '../components/Layout';
 // import FeaturedProducts from '../components/FeaturedProducts';
 // import PromoSection from '../components/PromoSection';
 // import ServicesSection from '../components/ServicesSection';
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleMapClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/a-propos');
+    // Petit délai pour permettre à la page de se charger
+    setTimeout(() => {
+      const mapSection = document.getElementById('map-section');
+      if (mapSection) {
+        mapSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
+  };
+
   return (
     <Layout>
       {/* Section titre et services */}
@@ -44,7 +59,11 @@ const Home: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Nos Agences en France</h3>
               <p className="text-gray-600 mb-4 text-sm">Trouvez l'agence la plus proche de vous.</p>
-              <button className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110">
+              <button 
+                onClick={handleMapClick}
+                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
+                aria-label="Voir nos agences sur la carte"
+              >
                 +
               </button>
             </div>
@@ -56,7 +75,11 @@ const Home: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Ouverture de compte</h3>
               <p className="text-gray-600 mb-4 text-sm">Ouvrez votre compte PRO en ligne et bénéficiez de tous les avantages DISTRITHERM.</p>
-              <button className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110">
+              <button 
+                onClick={() => navigate('/connexion')}
+                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
+                aria-label="Créer un compte"
+              >
                 +
               </button>
             </div>
@@ -68,7 +91,11 @@ const Home: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">SAV en ligne</h3>
               <p className="text-gray-600 mb-4 text-sm">Bénéficiez d'un service en ligne et gérez vos SAV en direct.</p>
-              <button className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110">
+              <button 
+                onClick={() => navigate('/nous-contact')}
+                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
+                aria-label="Accéder au SAV en ligne"
+              >
                 +
               </button>
             </div>
@@ -80,7 +107,11 @@ const Home: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Devis en ligne</h3>
               <p className="text-gray-600 mb-4 text-sm">Demandez vos devis en ligne et recevez nos offres dans les plus brefs délais.</p>
-              <button className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110">
+              <button 
+                onClick={() => navigate('/nos-produits')}
+                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
+                aria-label="Accéder aux produits pour devis"
+              >
                 +
               </button>
             </div>
@@ -140,7 +171,7 @@ const Home: React.FC = () => {
                 {/* Engagement */}
                 <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_20px_50px_rgba(0,127,255,0.15)] transition-all duration-300 border border-gray-100 group">
                   <div className="w-14 h-14 bg-gradient-to-br from-[#007FFF]/20 to-[#7CB9E8]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <FaHandshake className="w-7 h-7 text-[#7CB9E8]" />
+                    <FaHandshake className="w-7 h-7 text-[#007FFF]" />
                   </div>
                   <h3 className="text-xl font-semibold text-gray-800 mb-3">Notre Engagement</h3>
                   <p className="text-gray-600 leading-relaxed">

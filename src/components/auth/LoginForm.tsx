@@ -69,7 +69,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         }, 2000);
       }
     } catch (error: any) {
-      console.error('Erreur de connexion:', error);
+      // console.error('Erreur de connexion:', error);
       
       if (error.response?.status === 401) {
         setError('Email ou mot de passe incorrect.');

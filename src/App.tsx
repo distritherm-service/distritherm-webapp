@@ -48,6 +48,7 @@ const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Cart = lazy(() => import('./pages/Cart/index'));
 const MonProfil = lazy(() => import('./pages/MonProfil'));
 const MesCommandes = lazy(() => import('./pages/MesCommandes'));
+const MesDevis = lazy(() => import('./pages/MesDevis'));
 const RegisterSuccess = lazy(() => import('./pages/RegisterSuccess'));
 
 // Page 404 simple
@@ -68,7 +69,6 @@ const AppRoutes = () => {
       {/* Routes publiques accessibles à tous */}
       <Route path="/" element={<Home />} />
       <Route path="/nos-produits" element={<NosProducts />} />
-      <Route path="/nos-produits/:id" element={<ProductDetail />} />
       <Route path="/produit/:id" element={<ProductDetail />} />
       <Route path="/promotions" element={<Promotions />} />
       <Route path="/espace-recrutement" element={<EspaceRecrutement />} />
@@ -79,8 +79,9 @@ const AppRoutes = () => {
       <Route path="/a-propos" element={<APropos />} />
       <Route path="/panier" element={<Cart />} />
       <Route path="/favoris" element={<Favoris />} />
-      <Route path="/mon-profil" element={<MonProfil />} />
-      <Route path="/mes-commandes" element={<MesCommandes />} />
+      <Route path="/Mon-profil" element={<MonProfil />} />
+      <Route path="/Mes-commandes" element={<MesCommandes />} />
+      <Route path="/Mes-devis" element={<MesDevis />} />
       <Route path="/panier/delivery" element={<div>Page de livraison</div>} />
       <Route path="/panier/payment" element={<div>Page de paiement</div>} />
       <Route path="/inscription-reussie" element={<RegisterSuccess />} />

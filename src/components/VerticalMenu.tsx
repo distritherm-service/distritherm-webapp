@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+import { FaChevronRight, FaChevronDown, FaTimes } from 'react-icons/fa';
 
 // Interface pour le niveau 3 (sous-sous-catégories)
 interface Level3Item {
@@ -561,11 +561,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
   const [hoveredSubCategory, setHoveredSubCategory] = useState<string | null>(null);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  // Log pour le débogage
-  useEffect(() => {
-    console.log("VerticalMenu isOpen:", isOpen);
-  }, [isOpen]);
+  const navigate = useNavigate();
 
   // Gérer la détection du mode mobile
   useEffect(() => {
@@ -574,7 +570,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Exécuter immédiatement pour définir la vue correcte
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -583,14 +579,16 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         onClose();
+        // Réinitialiser tous les états lors de la fermeture
+        setSelectedCategory(null);
+        setSelectedSubCategory(null);
+        setHoveredCategory(null);
+        setHoveredSubCategory(null);
       }
     };
 
     if (isOpen) {
-      // Ajout d'un petit délai pour éviter les conflits avec d'autres gestionnaires d'événements
-      setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-      }, 100);
+      document.addEventListener('mousedown', handleClickOutside);
     }
     
     return () => {
@@ -603,6 +601,11 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     const handleEscKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
+        // Réinitialiser tous les états lors de la fermeture
+        setSelectedCategory(null);
+        setSelectedSubCategory(null);
+        setHoveredCategory(null);
+        setHoveredSubCategory(null);
       }
     };
 
@@ -614,6 +617,20 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
       document.removeEventListener('keydown', handleEscKey);
     };
   }, [isOpen, onClose]);
+
+  const handleMouseEnter = (slug: string) => {
+    if (!isMobileView) {
+      setHoveredCategory(slug);
+      setSelectedCategory(slug);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobileView) {
+      setHoveredCategory(null);
+      setHoveredSubCategory(null);
+    }
+  };
 
   const handleCategoryClick = (slug: string) => {
     // Sur mobile, on bascule l'état de la catégorie sélectionnée
@@ -642,24 +659,10 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleMouseEnter = (slug: string) => {
-    if (!isMobileView) {
-      setHoveredCategory(slug);
-      setSelectedCategory(slug);
-    }
-  };
-
   const handleSubCategoryMouseEnter = (slug: string) => {
     if (!isMobileView) {
       setHoveredSubCategory(slug);
       setSelectedSubCategory(slug);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!isMobileView) {
-      setHoveredCategory(null);
-      setHoveredSubCategory(null);
     }
   };
 
@@ -760,37 +763,60 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
         {isOpen && (
           <motion.div
             ref={menuRef}
-            className="fixed top-0 pt-[var(--navbar-height,80px)] left-0 w-full h-full sm:h-auto sm:w-auto z-50 bg-transparent flex outline-none"
+            onMouseEnter={() => !isMobileView && isOpen}
+            onMouseLeave={handleMouseLeave}
+            className={`fixed top-0 pt-[var(--navbar-height,80px)] left-0 w-full h-[calc(100vh-var(--navbar-height,80px))] sm:h-auto sm:w-auto z-50 bg-transparent flex outline-none ${
+              isMobileView ? 'overflow-y-auto' : ''
+            }`}
             key="vertical-menu"
             initial="hidden"
             animate="visible"
             exit="exit"
             variants={menuVariants}
           >
-            <div className="flex flex-col sm:flex-row max-w-7xl mx-auto w-full h-full sm:h-auto sm:max-h-[80vh] relative rounded-xl overflow-hidden shadow-xl">
+            <div className={`flex ${isMobileView ? 'flex-col' : 'flex-row'} max-w-7xl mx-auto w-full h-full sm:h-auto sm:max-h-[80vh] relative rounded-xl overflow-hidden shadow-xl`}>
               {/* Menu des catégories - Colonne 1 */}
-              <div className="bg-white border-r w-full sm:w-64 h-full overflow-y-auto">
-                <div className="p-4 border-b font-medium text-gray-900">
-                  Nos Catégories
+              <div className={`bg-white border-r ${isMobileView ? 'w-full' : 'w-64'} ${
+                isMobileView && currentCategory ? 'hidden' : 'block'
+              } h-full overflow-y-auto`}>
+                <div className="p-4 border-b font-medium text-gray-900 flex justify-between items-center">
+                  <span>Nos Catégories</span>
+                  {isMobileView && (
+                    <button
+                      onClick={onClose}
+                      className="text-gray-500 hover:text-gray-700"
+                      aria-label="Fermer le menu"
+                    >
+                      <FaTimes size={20} />
+                    </button>
+                  )}
                 </div>
                 <div className="py-2">
                   {menuItems.map((item) => (
                     <div key={item.slug} className="flex flex-col">
                       <button
-                        className={`flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
+                        className={`flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 transition-colors w-full ${
                           currentCategory === item.slug ? 'bg-gray-100 font-medium text-[#007FFF]' : 'text-gray-700'
                         }`}
-                        onClick={() => handleCategoryClick(item.slug)}
-                        onMouseEnter={() => handleMouseEnter(item.slug)}
-                        onMouseLeave={handleMouseLeave}
+                        onClick={() => {
+                          handleCategoryClick(item.slug);
+                          if (isMobileView && !item.subItems?.length) {
+                            onClose();
+                            navigate(`/nos-produits/${item.slug}`);
+                          }
+                        }}
+                        onMouseEnter={() => !isMobileView && handleMouseEnter(item.slug)}
+                        onMouseLeave={() => !isMobileView && handleMouseLeave()}
                       >
                         <div className="flex items-center">
                           <span className="mr-3">{item.icon}</span>
                           <span>{item.title}</span>
                         </div>
-                        <FaChevronRight className={`transition-transform ${
-                          currentCategory === item.slug ? 'transform rotate-90 text-[#007FFF]' : ''
-                        }`} />
+                        {item.subItems?.length > 0 && (
+                          <FaChevronRight className={`transition-transform ${
+                            currentCategory === item.slug ? 'transform rotate-90 text-[#007FFF]' : ''
+                          }`} />
+                        )}
                       </button>
                     </div>
                   ))}
@@ -806,21 +832,47 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                     animate="visible"
                     exit="exit"
                     variants={submenuVariants}
-                    className="bg-gray-50 w-full sm:w-64 h-full overflow-y-auto"
+                    className={`bg-gray-50 ${isMobileView ? 'w-full' : 'w-64'} ${
+                      isMobileView && !currentCategory ? 'hidden' : 'block'
+                    } h-full overflow-y-auto`}
                   >
-                    <div className="p-4 border-b font-medium text-gray-900">
-                      {currentCategoryData.title}
+                    <div className="p-4 border-b font-medium text-gray-900 flex justify-between items-center">
+                      {isMobileView && (
+                        <button
+                          onClick={() => setSelectedCategory(null)}
+                          className="text-gray-500 hover:text-gray-700 mr-2"
+                          aria-label="Retour"
+                        >
+                          <FaChevronRight className="transform rotate-180" />
+                        </button>
+                      )}
+                      <span>{currentCategoryData.title}</span>
+                      {isMobileView && (
+                        <button
+                          onClick={onClose}
+                          className="text-gray-500 hover:text-gray-700"
+                          aria-label="Fermer le menu"
+                        >
+                          <FaTimes size={20} />
+                        </button>
+                      )}
                     </div>
                     <div className="py-2">
                       {currentCategoryData.subItems.map((subItem) => (
                         <div key={subItem.slug} className="flex flex-col">
                           <button
-                            className={`flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 transition-colors ${
+                            className={`flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 transition-colors w-full ${
                               currentSubCategory === subItem.slug ? 'bg-gray-100 font-medium text-[#007FFF]' : 'text-gray-700'
                             }`}
-                            onClick={() => handleSubCategoryClick(subItem.slug)}
-                            onMouseEnter={() => handleSubCategoryMouseEnter(subItem.slug)}
-                            onMouseLeave={handleSubCategoryMouseLeave}
+                            onClick={() => {
+                              handleSubCategoryClick(subItem.slug);
+                              if (isMobileView && !subItem.level3Items?.length) {
+                                onClose();
+                                navigate(`/nos-produits/${currentCategoryData.slug}/${subItem.slug}`);
+                              }
+                            }}
+                            onMouseEnter={() => !isMobileView && handleSubCategoryMouseEnter(subItem.slug)}
+                            onMouseLeave={() => !isMobileView && handleSubCategoryMouseLeave()}
                           >
                             <span>{subItem.title}</span>
                             {subItem.level3Items && (
@@ -845,55 +897,79 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                     animate="visible"
                     exit="exit"
                     variants={subSubmenuVariants}
-                    className="bg-white w-full sm:w-64 h-full overflow-y-auto"
+                    className={`bg-white ${isMobileView ? 'w-full' : 'w-64'} ${
+                      isMobileView && !currentSubCategory ? 'hidden' : 'block'
+                    } h-full overflow-y-auto`}
                   >
-                    <div className="p-4 border-b font-medium text-gray-900">
-                      {currentSubCategoryData.title}
+                    <div className="p-4 border-b font-medium text-gray-900 flex justify-between items-center">
+                      {isMobileView && (
+                        <button
+                          onClick={() => setSelectedSubCategory(null)}
+                          className="text-gray-500 hover:text-gray-700 mr-2"
+                          aria-label="Retour"
+                        >
+                          <FaChevronRight className="transform rotate-180" />
+                        </button>
+                      )}
+                      <span>{currentSubCategoryData.title}</span>
+                      {isMobileView && (
+                        <button
+                          onClick={onClose}
+                          className="text-gray-500 hover:text-gray-700"
+                          aria-label="Fermer le menu"
+                        >
+                          <FaTimes size={20} />
+                        </button>
+                      )}
                     </div>
                     <div className="py-2">
                       {currentSubCategoryData.level3Items.map((level3Item) => {
-                        // Vérifier si l'élément est un conteneur de niveau 3 avec sous-éléments
                         const hasSubItems = 'level3Items' in level3Item && 
-                                           (level3Item as Level3Container).level3Items &&
-                                           (level3Item as Level3Container).level3Items.length > 0;
+                                         (level3Item as Level3Container).level3Items &&
+                                         (level3Item as Level3Container).level3Items.length > 0;
                         
                         if (hasSubItems) {
                           const container = level3Item as Level3Container;
                           return (
                             <div key={level3Item.slug} className="flex flex-col">
-                              <Link
-                                to={`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}`}
-                                className="flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-[#007FFF] transition-colors"
-                                onClick={onClose}
+                              <button
+                                className="flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#007FFF] transition-colors w-full"
+                                onClick={() => {
+                                  onClose();
+                                  navigate(`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}`);
+                                }}
                               >
                                 <span>{level3Item.title}</span>
-                              </Link>
+                              </button>
                               <div className="pl-4">
                                 {container.level3Items.map((subItem) => (
-                                  <Link
+                                  <button
                                     key={subItem.slug}
-                                    to={`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}/${subItem.slug}`}
-                                    className="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 hover:text-[#007FFF] transition-colors"
-                                    onClick={onClose}
+                                    className="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-[#007FFF] transition-colors w-full"
+                                    onClick={() => {
+                                      onClose();
+                                      navigate(`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}/${subItem.slug}`);
+                                    }}
                                   >
                                     <span>{subItem.title}</span>
-                                  </Link>
+                                  </button>
                                 ))}
                               </div>
                             </div>
                           );
-                        } else {
-                          return (
-                            <Link
-                              key={level3Item.slug}
-                              to={`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}`}
-                              className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-[#007FFF] transition-colors"
-                              onClick={onClose}
-                            >
-                              <span>{level3Item.title}</span>
-                            </Link>
-                          );
                         }
+                        return (
+                          <button
+                            key={level3Item.slug}
+                            className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#007FFF] transition-colors w-full"
+                            onClick={() => {
+                              onClose();
+                              navigate(`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}`);
+                            }}
+                          >
+                            <span>{level3Item.title}</span>
+                          </button>
+                        );
                       })}
                     </div>
                   </motion.div>

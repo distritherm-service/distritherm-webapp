@@ -71,7 +71,7 @@ const APropos: React.FC = () => {
         {/* En-tête de la page */}
         <div className="relative pt-20 pb-12">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
+            <div className="text-center mb-2">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 relative inline-block">
                 <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
                   À propos de Distritherm Service
@@ -86,7 +86,7 @@ const APropos: React.FC = () => {
         </div>
 
         {/* Section Notre Histoire */}
-        <section className="relative py-16">
+        <section className="relative py-10">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8 transform hover:scale-105 transition-transform duration-300">
@@ -231,7 +231,7 @@ const APropos: React.FC = () => {
             </div>
 
             {/* Google Maps Embed */}
-            <div className="mt-12 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-4 overflow-hidden">
+            <div id="map-section" className="mt-12 bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-4 overflow-hidden">
               <div className="rounded-xl overflow-hidden aspect-video">
                 <iframe 
                   src="https://www.google.com/maps/d/u/0/embed?mid=1tpn6GOXi0kycdEFSlFyv95Jy_X-lUgY&ehbc=2E312F" 

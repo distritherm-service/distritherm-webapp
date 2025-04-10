@@ -19,7 +19,10 @@ const routeLabels: { [key: string]: string } = {
   '/a-propos': 'À Propos',
   '/choisir-magasin': 'Choisir votre magasin',
   '/panier': 'Panier',
-  '/connexion': 'Connexion'
+  '/connexion': 'Connexion',
+  '/mon-profil': 'Mon Profil',
+  '/validate-email': 'Vérification Email',
+  '/mes-devis': 'Mes Devis'
 };
 
 const Breadcrumb: React.FC = () => {

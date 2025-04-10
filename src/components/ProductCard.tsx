@@ -8,9 +8,10 @@ import { useCart } from '../contexts/CartContext';
 interface ProductCardProps {
   product: Product;
 }
-
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { title, description, image, category, subcategory, brand, price, inStock, featured } = product;
+  const { title, description, image, category, subcategory, brand, price } = product;
+  const inStock = product.stock > 0;
+  const featured = product.isNew || product.isPromo || false;
   const { addToCart, isInCart } = useCart();
   const [showNotification, setShowNotification] = useState<string | null>(null);
   
@@ -62,13 +63,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       
       <div className="relative aspect-[4/3]">
         <img 
-          src={image} 
+          src={image.startsWith('http') ? image : `/image-produit-defaut.jpeg`}
           alt={title} 
           className="w-full h-full object-cover"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.onerror = null;
-            target.src = 'https://via.placeholder.com/400x300?text=Distritherm';
+            target.src = `/image-produit-defaut.jpeg`;
           }}
         />
         <div className="absolute top-4 right-4">
@@ -80,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {featured && (
           <div className="absolute top-4 left-4">
             <span className="bg-amber-500 text-white text-sm px-3 py-1 rounded-full">
-              Produit vedette
+              {product.isNew ? 'Nouveau' : 'Promotion'}
             </span>
           </div>
         )}

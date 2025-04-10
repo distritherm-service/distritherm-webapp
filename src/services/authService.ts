@@ -49,7 +49,7 @@ export const authService = {
   // Connexion classique avec email/mot de passe
   async login(data: LoginRequest) {
     try {
-      console.log('Tentative de connexion avec email/mot de passe');
+      // console.log('Tentative de connexion avec email/mot de passe');
       const response = await axiosInstance.post('/auth/regular-login', data, {
         headers: {
           'x-platform': 'web',
@@ -63,7 +63,7 @@ export const authService = {
 
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
+      // console.error('Erreur lors de la connexion:', error);
       throw error;
     }
   },
@@ -71,7 +71,7 @@ export const authService = {
   // Inscription classique
   async register(data: RegisterRequest) {
     try {
-      console.log("Tentative d'inscription");
+      // console.log("Tentative d'inscription");
 
       // Formater le numéro de téléphone
       let formattedPhoneNumber = data.phoneNumber;
@@ -94,7 +94,7 @@ export const authService = {
         siretNumber: formattedSiretNumber,
       };
 
-      console.log('Données formatées pour inscription:', formattedData);
+      // console.log('Données formatées pour inscription:', formattedData);
 
       const response = await axiosInstance.post(
         '/auth/regular-register',
@@ -125,14 +125,14 @@ export const authService = {
         saveAuthData(response.data);
       }
 
-      console.log(
-        'Données utilisateur sauvegardées après inscription:',
-        response.data.user
-      );
+      // console.log(
+      //   'Données utilisateur sauvegardées après inscription:',
+      //   response.data.user
+      // );
 
       return response.data;
     } catch (error) {
-      console.error("Erreur lors de l'inscription:", error);
+      // console.error("Erreur lors de l'inscription:", error);
       throw error;
     }
   },
@@ -140,7 +140,7 @@ export const authService = {
   // Connexion avec Google
   async loginWithGoogle(providerAuthToken: string) {
     try {
-      console.log('Tentative de connexion avec Google');
+      // console.log('Tentative de connexion avec Google');
       const payload = {
         providerAuthToken,
         providerName: 'GOOGLE',
@@ -158,7 +158,7 @@ export const authService = {
 
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la connexion avec Google:', error);
+      // console.error('Erreur lors de la connexion avec Google:', error);
       throw error;
     }
   },
@@ -166,7 +166,7 @@ export const authService = {
   // Inscription avec Google
   async registerWithGoogle(providerAuthToken: string, additionalInfo: any) {
     try {
-      console.log("Tentative d'inscription avec Google");
+      // console.log("Tentative d'inscription avec Google");
 
       // Formater le numéro de téléphone
       let formattedPhoneNumber = additionalInfo.phoneNumber;
@@ -198,7 +198,7 @@ export const authService = {
         additionalInfo: formattedAdditionalInfo,
       };
 
-      console.log('Données formatées pour inscription Google:', payload);
+      // console.log('Données formatées pour inscription Google:', payload);
 
       const response = await axiosInstance.post(
         '/auth/provider-register',
@@ -234,14 +234,14 @@ export const authService = {
         saveAuthData(response.data);
       }
 
-      console.log(
-        'Données utilisateur sauvegardées après inscription Google:',
-        response.data.user
-      );
+      // console.log(
+      //   'Données utilisateur sauvegardées après inscription Google:',
+      //   response.data.user
+      // );
 
       return response.data;
     } catch (error) {
-      console.error("Erreur lors de l'inscription avec Google:", error);
+      // console.error("Erreur lors de l'inscription avec Google:", error);
       throw error;
     }
   },
@@ -249,7 +249,7 @@ export const authService = {
   // Demande de réinitialisation de mot de passe
   async forgotPassword(data: ForgotPasswordRequest) {
     try {
-      console.log('Demande de réinitialisation de mot de passe');
+      // console.log('Demande de réinitialisation de mot de passe');
       const response = await axiosInstance.post(
         '/users/send-update-password-forgot',
         data,
@@ -261,18 +261,18 @@ export const authService = {
         }
       );
 
-      console.log(
-        'Réponse de la demande de réinitialisation:',
-        await response.data
-      );
+      // console.log(
+      //   'Réponse de la demande de réinitialisation:',
+      //   await response.data
+      // );
       return response.data;
     } catch (error: any) {
-      console.error('Erreur détaillée:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      // console.error('Erreur détaillée:', {
+      //   message: error.message,
+      //   response: error.response,
+      //   status: error.response?.status,
+      //   data: error.response?.data,
+      // });
       throw error;
     }
   },
@@ -280,7 +280,7 @@ export const authService = {
   // Réinitialisation de mot de passe
   async resetPassword(data: ResetPasswordRequest) {
     try {
-      console.log('Réinitialisation de mot de passe');
+      // console.log('Réinitialisation de mot de passe');
       const response = await axiosInstance.post('/auth/reset-password', data, {
         headers: {
           'x-platform': 'web',
@@ -288,15 +288,15 @@ export const authService = {
         },
       });
 
-      console.log('Réponse de la réinitialisation:', response.data);
+      // console.log('Réponse de la réinitialisation:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur détaillée:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      // console.error('Erreur détaillée:', {
+      //   message: error.message,
+      //   response: error.response,
+      //   status: error.response?.status,
+      //   data: error.response?.data,
+      // });
       throw error;
     }
   },
@@ -304,10 +304,10 @@ export const authService = {
   // Déconnexion
   async logout() {
     try {
-      console.log('Déconnexion en cours...');
+      // console.log('Déconnexion en cours...');
       await axiosInstance.post('/auth/logout');
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
+      // console.error('Erreur lors de la déconnexion:', error);
     } finally {
       clearAuthData();
     }
@@ -321,7 +321,7 @@ export const authService = {
   // Récupérer les données utilisateur depuis l'API
   async getCurrentUserFromApi() {
     try {
-      console.log("Récupération des données utilisateur depuis l'API");
+      // console.log("Récupération des données utilisateur depuis l'API");
       const response = await axiosInstance.get('/users/me', {
         headers: {
           'x-platform': 'web',
@@ -350,20 +350,20 @@ export const authService = {
           STORAGE_KEYS.USER_DATA,
           JSON.stringify(response.data.user)
         );
-        console.log(
-          "Données utilisateur mises à jour depuis l'API:",
-          response.data.user
-        );
+        // console.log(
+        //   "Données utilisateur mises à jour depuis l'API:",
+        //   response.data.user
+        // );
 
         return response.data.user;
       }
 
       return null;
     } catch (error) {
-      console.error(
-        'Erreur lors de la récupération des données utilisateur:',
-        error
-      );
+      // console.error(
+      //   'Erreur lors de la récupération des données utilisateur:',
+      //   error
+      // );
       throw error;
     }
   },
@@ -378,7 +378,7 @@ export const authService = {
   // Mettre à jour le profil utilisateur
   async updateProfile(userData: UpdateProfileRequest) {
     try {
-      console.log('Mise à jour du profil utilisateur avec:', userData);
+      // console.log('Mise à jour du profil utilisateur avec:', userData);
 
       // Créer une copie des données pour les formater
       const formattedData: UpdateProfileRequest = { ...userData };
@@ -417,7 +417,7 @@ export const authService = {
         formattedData.siretNumber = numericSiret;
       }
 
-      console.log('Données formatées pour mise à jour:', formattedData);
+      // console.log('Données formatées pour mise à jour:', formattedData);
 
       // Récupérer l'ID de l'utilisateur actuel
       const currentUser = this.getCurrentUser();
@@ -438,9 +438,9 @@ export const authService = {
           }
         );
 
-        console.log('Réponse API brute:', response);
-        console.log('Statut HTTP:', response.status);
-        console.log('Contenu de la réponse:', response.data);
+        // console.log('Réponse API brute:', response);
+        // console.log('Statut HTTP:', response.status);
+        // console.log('Contenu de la réponse:', response.data);
 
         // Mettre à jour les données utilisateur en localStorage
         if (response.data) {
@@ -457,9 +457,9 @@ export const authService = {
 
         return response.data;
       } catch (apiError: any) {
-        console.error('Erreur API lors de la mise à jour:', apiError);
-        console.error("Détails de l'erreur:", apiError.response?.data);
-        console.error('Statut HTTP:', apiError.response?.status);
+        // console.error('Erreur API lors de la mise à jour:', apiError);
+        // console.error("Détails de l'erreur:", apiError.response?.data);
+        // console.error('Statut HTTP:', apiError.response?.status);
         throw apiError;
       }
     } catch (error) {
@@ -471,7 +471,7 @@ export const authService = {
   // Mettre à jour le mot de passe
   async updatePassword(currentPassword: string, newPassword: string) {
     try {
-      console.log('Mise à jour du mot de passe');
+      // console.log('Mise à jour du mot de passe');
       const response = await axiosInstance.post(
         '/users/update-password',
         {
@@ -487,7 +487,7 @@ export const authService = {
 
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du mot de passe:', error);
+      // console.error('Erreur lors de la mise à jour du mot de passe:', error);
       throw error;
     }
   },
@@ -495,7 +495,7 @@ export const authService = {
   // Vérifier l'email avec le token
   async verifyEmail(token: string) {
     try {
-      console.log("Vérification de l'email avec le token:", token);
+      // console.log("Vérification de l'email avec le token:", token);
 
       const response = await axiosInstance.get(
         `/users/verify-email?token=${token}`,
@@ -507,16 +507,16 @@ export const authService = {
         }
       );
 
-      console.log('Réponse complète:', response);
-      console.log('Données de réponse:', response.data);
+      // console.log('Réponse complète:', response);
+      // console.log('Données de réponse:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur détaillée:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      // console.error('Erreur détaillée:', {
+      //   message: error.message,
+      //   response: error.response,
+      //   status: error.response?.status,
+      //   data: error.response?.data,
+      // });
       throw error;
     }
   },
@@ -524,7 +524,7 @@ export const authService = {
   // Renvoyer l'email de vérification
   async resendVerificationEmail() {
     try {
-      console.log("Demande de renvoi de l'email de vérification");
+      // console.log("Demande de renvoi de l'email de vérification");
 
       // Récupérer l'utilisateur actuel
       const currentUser = this.getCurrentUser();
@@ -545,23 +545,23 @@ export const authService = {
         }
       );
 
-      console.log('Réponse complète:', response);
-      console.log('Données de réponse:', response.data);
+      // console.log('Réponse complète:', response);
+      // console.log('Données de réponse:', response.data);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur détaillée:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      // console.error('Erreur détaillée:', {
+      //   message: error.message,
+      //   response: error.response,
+      //   status: error.response?.status,
+      //   data: error.response?.data,
+      // });
       throw error;
     }
   },
 
   async updatePasswordForgot(token: string, password: string) {
     try {
-      console.log('Mise à jour du mot de passe oublié');
+      // console.log('Mise à jour du mot de passe oublié');
       const response = await axiosInstance.post(
         `/users/update-password-forgot?token=${token}`,
         {
@@ -577,12 +577,12 @@ export const authService = {
 
       return response.data;
     } catch (error: any) {
-      console.error('Erreur détaillée:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+      // console.error('Erreur détaillée:', {
+      //   message: error.message,
+      //   response: error.response,
+      //   status: error.response?.status,
+      //   data: error.response?.data,
+      // });
       throw error;
     }
   },

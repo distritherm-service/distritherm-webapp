@@ -56,12 +56,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   // Fonction pour gérer l'inscription classique
   const handleRegularRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     
     try {
       setLoading(true);
       
-      console.log('Données d\'inscription à envoyer:', registerFormData);
+      // console.log('Does d\'inscription à envoyer:', registerFormData);
       
       const responseData = await authService.register(registerFormData);
       
@@ -79,19 +78,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         }, 1000);
       }
     } catch (error: any) {
-      console.error('Erreur d\'inscription:', error);
-      
-      if (error.response?.status === 409) {
-        setError('Un utilisateur avec cette adresse email existe déjà.');
-      } else if (error.response?.status === 400) {
-        if (error.response?.data?.message?.includes('téléphone')) {
-          setError('Le format du numéro de téléphone n\'est pas valide. Utilisez le format +33XXXXXXXXX.');
-        } else {
-          setError('Veuillez vérifier vos informations d\'inscription.');
-        }
-      } else {
-        setError(error.response?.data?.message || 'Une erreur est survenue lors de l\'inscription.');
-      }
+      // console.error('eur d\'inscription:', error);
+      setError(error.message || 'Une erreur est survenue lors de l\'inscription');
     } finally {
       setLoading(false);
     }

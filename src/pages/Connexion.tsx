@@ -90,7 +90,7 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
       
       // La redirection se fera automatiquement via le useEffect qui surveille isAuthenticated
     } catch (error: any) {
-      console.error('Erreur Google Login:', error);
+     // console.error('Erreur Google Login:', error);
       
       if (error.response?.status === 404) {
         // Utilisateur non trouvé, afficher le formulaire d'informations supplémentaires
