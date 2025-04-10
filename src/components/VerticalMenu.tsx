@@ -563,11 +563,6 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Log pour le débogage
-  useEffect(() => {
-    console.log("VerticalMenu isOpen:", isOpen);
-  }, [isOpen]);
-
   // Gérer la détection du mode mobile
   useEffect(() => {
     const handleResize = () => {
@@ -575,7 +570,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     };
 
     window.addEventListener('resize', handleResize);
-    handleResize(); // Exécuter immédiatement pour définir la vue correcte
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -584,14 +579,16 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         onClose();
+        // Réinitialiser tous les états lors de la fermeture
+        setSelectedCategory(null);
+        setSelectedSubCategory(null);
+        setHoveredCategory(null);
+        setHoveredSubCategory(null);
       }
     };
 
     if (isOpen) {
-      // Ajout d'un petit délai pour éviter les conflits avec d'autres gestionnaires d'événements
-      setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-      }, 100);
+      document.addEventListener('mousedown', handleClickOutside);
     }
     
     return () => {
@@ -604,6 +601,11 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     const handleEscKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
+        // Réinitialiser tous les états lors de la fermeture
+        setSelectedCategory(null);
+        setSelectedSubCategory(null);
+        setHoveredCategory(null);
+        setHoveredSubCategory(null);
       }
     };
 
@@ -615,6 +617,20 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
       document.removeEventListener('keydown', handleEscKey);
     };
   }, [isOpen, onClose]);
+
+  const handleMouseEnter = (slug: string) => {
+    if (!isMobileView) {
+      setHoveredCategory(slug);
+      setSelectedCategory(slug);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (!isMobileView) {
+      setHoveredCategory(null);
+      setHoveredSubCategory(null);
+    }
+  };
 
   const handleCategoryClick = (slug: string) => {
     // Sur mobile, on bascule l'état de la catégorie sélectionnée
@@ -643,24 +659,10 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleMouseEnter = (slug: string) => {
-    if (!isMobileView) {
-      setHoveredCategory(slug);
-      setSelectedCategory(slug);
-    }
-  };
-
   const handleSubCategoryMouseEnter = (slug: string) => {
     if (!isMobileView) {
       setHoveredSubCategory(slug);
       setSelectedSubCategory(slug);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!isMobileView) {
-      setHoveredCategory(null);
-      setHoveredSubCategory(null);
     }
   };
 
@@ -761,6 +763,8 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
         {isOpen && (
           <motion.div
             ref={menuRef}
+            onMouseEnter={() => !isMobileView && isOpen}
+            onMouseLeave={handleMouseLeave}
             className={`fixed top-0 pt-[var(--navbar-height,80px)] left-0 w-full h-[calc(100vh-var(--navbar-height,80px))] sm:h-auto sm:w-auto z-50 bg-transparent flex outline-none ${
               isMobileView ? 'overflow-y-auto' : ''
             }`}

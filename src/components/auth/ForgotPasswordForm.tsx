@@ -62,12 +62,12 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onCancel }) => 
       // Réinitialiser le formulaire
       setForgotPasswordFormData({ email: '' });
     } catch (error: any) {
-      console.error('Erreur détaillée:', {
-        message: error.message,
-        response: error.response,
-        status: error.response?.status,
-        data: error.response?.data
-      });
+      // console.error('Erreur détaillée:', {
+      //   message: error.message,
+      //   response: error.response,
+      //   status: error.response?.status,
+      //   data: error.response?.data
+      // });
       
       if (error.response?.status === 404) {
         setError('Aucun compte n\'est associé à cette adresse email. Veuillez vérifier votre saisie ou créer un compte.');
@@ -89,7 +89,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onCancel }) => 
         <h2 className="text-xl font-bold mb-4 text-teal-600">Mot de passe oublié</h2>
         <p className="text-gray-700 mb-4">
           Veuillez saisir votre adresse email. Vous recevrez un lien pour créer un nouveau mot de passe. 
-          Ce lien sera valable pendant 1 heure.
+          Ce lien sera valable pendant 24 heure.
         </p>
         
         {error && (

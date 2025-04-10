@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
 import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt, FaSignOutAlt, FaPhone } from 'react-icons/fa';
@@ -36,6 +36,7 @@ const Navbar: React.FC = () => {
   const [isFavoritesPreviewOpen, setIsFavoritesPreviewOpen] = useState(false);
   const cartPreviewRef = useRef<HTMLDivElement>(null);
   const favoritesPreviewRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Calcul du nombre total d'articles dans le panier
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -505,6 +506,7 @@ const Navbar: React.FC = () => {
               <div className="hidden sm:block">
                 <button 
                   onClick={toggleProductsMenu}
+                  onMouseEnter={() => setIsMenuOpen(true)}
                   className="px-4 py-2 text-gray-700 hover:text-teal-600 transition-colors rounded-lg flex items-center space-x-2 focus:outline-none"
                   aria-label="Tous nos produits"
                   aria-expanded={isMenuOpen}
@@ -639,7 +641,16 @@ const Navbar: React.FC = () => {
                           </svg>
                           Mes commandes
                         </Link>
-                        
+                        <Link
+                          to="/Mes-devis"
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <svg className="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Mes Devis
+                        </Link>
                         <button
                           onClick={() => {
                             logout();
@@ -678,10 +689,9 @@ const Navbar: React.FC = () => {
                     setIsMobileMenuOpen(false);
                     setTimeout(() => {
                       setIsMenuOpen(true);
-                      console.log("Ouverture du menu vertical depuis le bouton mobile");
                     }, 100);
                   }}
-                  className="flex w-full items-center justify-center py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-md"
+                  className="flex w-full items-center justify-center py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-md"
                   id="mobile-categories-button"
                   aria-label="Voir toutes les catégories"
                   data-testid="mobile-categories-button"
@@ -693,96 +703,60 @@ const Navbar: React.FC = () => {
 
               <Link
                 to="/"
-                className={`block py-2 ${isActive('/') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                className={`block py-3 px-4 rounded-lg ${isActive('/') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Accueil
               </Link>
               <Link
                 to="/a-propos"
-                className={`block py-2 ${isActive('/a-propos') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                className={`block py-3 px-4 rounded-lg ${isActive('/a-propos') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 À propos
               </Link>
               <Link
                 to="/nos-produits"
-                className={`block py-2 ${isActive('/nos-produits') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                className={`block py-3 px-4 rounded-lg ${isActive('/nos-produits') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                Produits
               </Link>
               <Link
                 to="/promotions"
-                className={`block py-2 ${isActive('/promotions') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                className={`block py-3 px-4 rounded-lg ${isActive('/promotions') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Promotions
               </Link>
               <Link
                 to="/espace-recrutement"
-                className={`block py-2 ${isActive('/espace-recrutement') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                className={`block py-3 px-4 rounded-lg ${isActive('/espace-recrutement') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                Recrutement
               </Link>
               <Link
                 to="/nous-contact"
-                className={`block py-2 ${isActive('/nous-contact') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
+                className={`block py-3 px-4 rounded-lg ${isActive('/nous-contact') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact
               </Link>
-              
-              {/* Version mobile du sélecteur de magasin */}
-              {/* <div className="border-t border-b py-3 my-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Votre magasin :</span>
-                  <span>{selectedStore}</span>
-                </div>
-                <div className="mt-2 space-y-1">
+              {isAuthenticated && (
+                <div className="mb-4">
                   <button
-                    onClick={() => {
-                      handleStoreSelect('Magasin Taverny');
+                    onClick={(e) => {
                       setIsMobileMenuOpen(false);
+                      navigate('/mon-profil');
                     }}
-                    className="block w-full text-left py-1 px-2 text-gray-700 hover:bg-gray-100 rounded"
-                  >
-                    Magasin Taverny
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleStoreSelect('Magasin Drancy');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left py-1 px-2 text-gray-700 hover:bg-gray-100 rounded"
-                  >
-                    Magasin Drancy
-                  </button>
-                </div>
-              </div> */}
-              
-              <div className="border-t pt-4 mt-4">
-                {isAuthenticated ? (
-                  <Link
-                    to="/mon-profil"
-                    className="flex items-center w-full py-2 text-gray-700 hover:text-teal-600 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex w-full items-center justify-center py-3 px-4 bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg shadow-md"
                   >
                     <FaUser className="mr-2" />
-                    <span>Mon profil</span>
-                  </Link>
-                ) : (
-                  <Link
-                    to="/connexion"
-                    className="flex items-center w-full py-2 text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-md px-4 justify-center"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <FaUser className="mr-2" />
-                    <span>Connexion</span>
-                  </Link>
-                )}
-              </div>
+                    <span>Paramètres du compte</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

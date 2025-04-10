@@ -62,26 +62,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const localUserData = getUserData();
         
         if (token && localUserData) {
-          console.log('Restauration de la session utilisateur depuis localStorage');
+          // console.log('Restauration de la session utilisateur depuis localStorage');
           setAccessToken(token);
           setUser(localUserData);
           
           // Après avoir initialisé avec les données locales, essayer de récupérer les données à jour depuis l'API
           try {
-            console.log('Tentative de récupération des données utilisateur à jour depuis l\'API');
+            // console.log('Tentative de récupération des données utilisateur à jour depuis l\'API');
             const updatedUserData = await authService.getCurrentUserFromApi();
             
             if (updatedUserData) {
-              console.log('Données utilisateur mises à jour depuis l\'API');
+             // console.log('Données utilisateur mises à jour depuis l\'API');
               setUser(updatedUserData);
             }
           } catch (apiError) {
-            console.error('Erreur lors de la récupération des données utilisateur depuis l\'API:', apiError);
+            // console.error('Erreur lors de la récupération des données utilisateur depuis l\'API:', apiError);
             // Ne pas déconnecter l'utilisateur en cas d'erreur, conserver les données locales
           }
         }
       } catch (error) {
-        console.error('Erreur lors de l\'initialisation de l\'authentification:', error);
+        // console.error('Erreur lors de l\'initialisation de l\'authentification:', error);
         setError('Impossible de restaurer votre session.');
         clearAuthData();
       } finally {
@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Écouter les événements d'authentification
     const handleLogout = () => {
-      console.log('Événement de déconnexion détecté');
+      // console.log('Événement de déconnexion détecté');
       setUser(null);
       setAccessToken(null);
       clearAuthData();
@@ -115,7 +115,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (data: any) => {
     try {
       if (data.accessToken && data.user) {
-        console.log('Connexion réussie, données utilisateur reçues:', data.user);
+        // console.log('Connexion réussie, données utilisateur reçues:', data.user);
         
         // Si l'utilisateur était déjà connecté et avait des données en mémoire
         const existingUser = getUserData();
@@ -137,7 +137,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error('Données d\'authentification invalides');
       }
     } catch (error: any) {
-      console.error('Erreur lors de la connexion:', error);
+      // console.error('Erreur lors de la connexion:', error);
       setError(error.message || 'Une erreur est survenue lors de la connexion.');
     }
   };
@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Appeler l'API de déconnexion côté serveur
       await authService.logout();
     } catch (error) {
-      console.error('Erreur lors de la déconnexion:', error);
+      //console.error('Erreur lors de la déconnexion:', error);
     } finally {
       // Nettoyage des états même si l'API échoue
       setUser(null);
@@ -173,12 +173,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Mettre à jour les données dans le localStorage
         localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
-        console.log('Données utilisateur mises à jour');
+        // console.log('Données utilisateur mises à jour');
       } else {
         throw new Error('Aucun utilisateur connecté');
       }
     } catch (error: any) {
-      console.error('Erreur lors de la mise à jour des données utilisateur:', error);
+      // console.error('Erreur lors de la mise à jour des données utilisateur:', error);
       setError(error.message || 'Une erreur est survenue lors de la mise à jour du profil.');
     }
   };
@@ -196,7 +196,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Erreur lors de la vérification de l\'email:', error);
+    // console.error('Erreur lors de la vérification de l\'email:', error);
       throw error;
     }
   };
