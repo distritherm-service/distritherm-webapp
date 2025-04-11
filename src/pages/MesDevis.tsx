@@ -69,6 +69,157 @@ const MesDevis: React.FC = () => {
               imageUrl: '/installation.jpeg'
             }
           ]
+        },
+        {
+          id: '2',
+          quoteNumber: 'DEV-2024-002',
+          date: '2024-03-18T14:45:00Z',
+          status: 'accepted',
+          totalAmount: 1899.99,
+          items: [
+            {
+              id: 'item3',
+              productId: 'prod3',
+              productName: 'Climatiseur réversible DAIKIN',
+              quantity: 1,
+              unitPrice: 1599.99,
+              imageUrl: '/climatisation.jpeg'
+            },
+            {
+              id: 'item4',
+              productId: 'prod4',
+              productName: 'Kit installation premium',
+              quantity: 1,
+              unitPrice: 300.00,
+              imageUrl: '/installation.jpeg'
+            }
+          ]
+        },
+        {
+          id: '3',
+          quoteNumber: 'DEV-2024-003',
+          date: '2024-03-20T09:15:00Z',
+          status: 'rejected',
+          totalAmount: 799.99,
+          items: [
+            {
+              id: 'item5',
+              productId: 'prod5',
+              productName: 'Radiateur connecté ACOVA',
+              quantity: 1,
+              unitPrice: 799.99,
+              imageUrl: '/chauffage.jpeg'
+            }
+          ]
+        },
+        {
+          id: '4',
+          quoteNumber: 'DEV-2024-004',
+          date: '2024-03-22T11:30:00Z',
+          status: 'pending',
+          totalAmount: 3299.99,
+          items: [
+            {
+              id: 'item6',
+              productId: 'prod6',
+              productName: 'Système de climatisation complet',
+              quantity: 1,
+              unitPrice: 2799.99,
+              imageUrl: '/climatisation.jpeg'
+            },
+            {
+              id: 'item7',
+              productId: 'prod7',
+              productName: 'Installation et mise en service',
+              quantity: 1,
+              unitPrice: 500.00,
+              imageUrl: '/installation.jpeg'
+            }
+          ]
+        },
+        {
+          id: '5',
+          quoteNumber: 'DEV-2024-005',
+          date: '2024-03-25T16:20:00Z',
+          status: 'expired',
+          totalAmount: 1499.99,
+          items: [
+            {
+              id: 'item8',
+              productId: 'prod8',
+              productName: 'Chauffe-eau thermodynamique',
+              quantity: 1,
+              unitPrice: 1499.99,
+              imageUrl: '/chauffage.jpeg'
+            }
+          ]
+        },
+        {
+          id: '6',
+          quoteNumber: 'DEV-2024-006',
+          date: '2024-03-27T13:45:00Z',
+          status: 'accepted',
+          totalAmount: 2199.99,
+          items: [
+            {
+              id: 'item9',
+              productId: 'prod9',
+              productName: 'Pompe à chaleur Air/Eau',
+              quantity: 1,
+              unitPrice: 1899.99,
+              imageUrl: '/chauffage.jpeg'
+            },
+            {
+              id: 'item10',
+              productId: 'prod10',
+              productName: 'Kit de raccordement premium',
+              quantity: 1,
+              unitPrice: 300.00,
+              imageUrl: '/installation.jpeg'
+            }
+          ]
+        },
+        {
+          id: '7',
+          quoteNumber: 'DEV-2024-007',
+          date: '2024-03-29T10:00:00Z',
+          status: 'pending',
+          totalAmount: 999.99,
+          items: [
+            {
+              id: 'item11',
+              productId: 'prod11',
+              productName: 'Radiateur électrique intelligent',
+              quantity: 2,
+              unitPrice: 499.99,
+              imageUrl: '/chauffage.jpeg'
+            }
+          ]
+        },
+        {
+          id: '8',
+          quoteNumber: 'DEV-2024-008',
+          date: '2024-03-30T15:30:00Z',
+          status: 'pending',
+          totalAmount: 4499.99,
+          items: [
+            {
+              id: 'item12',
+              productId: 'prod12',
+              productName: 'Climatisation multi-split MITSUBISHI',
+              quantity: 1,
+              unitPrice: 3999.99,
+              imageUrl: '/climatisation.jpeg'
+            },
+            {
+              id: 'item13',
+              productId: 'prod13',
+              productName: 'Installation complète multi-split',
+              quantity: 1,
+              unitPrice: 500.00,
+              imageUrl: '/installation.jpeg'
+            }
+          ]
         }
       ];
 
@@ -296,11 +447,11 @@ const MesDevis: React.FC = () => {
                 </div>
               ) : (
                 // Liste des devis en cartes
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 px-4 sm:px-6 lg:px-8">
                   {filteredQuotes.map(quote => (
                     <div 
                       key={quote.id} 
-                      className="relative overflow-hidden bg-gradient-to-br from-white to-gray-50 rounded-xl p-0 hover:shadow-lg transition-all duration-300 border border-gray-100"
+                      className="relative overflow-hidden border border-gray-100 rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-gray-50 hover:scale-[1.02] group"
                     >
                       {/* Bande de statut colorée en haut */}
                       <div className={`absolute top-0 left-0 right-0 h-1 ${
@@ -310,11 +461,11 @@ const MesDevis: React.FC = () => {
                         'bg-gradient-to-r from-gray-300 to-gray-400'
                       }`}></div>
                       
-                      <div className="p-4 space-y-3">
+                      <div className="p-5 space-y-4">
                         {/* En-tête avec numéro et statut */}
                         <div className="flex justify-between items-start">
                           <div className="flex flex-col">
-                            <h3 className="text-lg font-bold text-gray-800">
+                            <h3 className="text-base font-bold text-gray-800 group-hover:text-[#007FFF] transition-colors">
                               Devis #{quote.quoteNumber}
                             </h3>
                             <div className="flex items-center mt-1 text-gray-500">
@@ -338,23 +489,23 @@ const MesDevis: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           {/* Informations sur les articles */}
-                          <div className="flex items-center justify-between text-gray-600 bg-white rounded-lg p-2.5 shadow-sm">
+                          <div className="flex items-center justify-between rounded-lg p-3 bg-gray-50/80 backdrop-blur-sm">
                             <div className="flex items-center">
-                              <div className="p-1.5 rounded-md bg-blue-50 mr-2">
-                                <FaFileInvoice className="text-[#007FFF] text-xs" />
+                              <div className="p-1.5 rounded-md bg-[#007FFF]/10 mr-2">
+                                <FaFileAlt className="text-[#007FFF] text-xs" />
                               </div>
-                              <span className="text-xs font-medium">Articles</span>
+                              <span className="text-xs font-medium text-gray-600">Articles</span>
                             </div>
-                            <span className="text-base font-semibold text-gray-800">{quote.items.length}</span>
+                            <span className="text-sm font-semibold text-gray-800">{quote.items.length}</span>
                           </div>
 
                           {/* Prix total */}
-                          <div className="flex items-center justify-between p-2.5 bg-[#007FFF]/5 rounded-lg">
+                          <div className="flex items-center justify-between p-3 bg-[#007FFF]/5 rounded-lg">
                             <span className="text-xs font-medium text-gray-600">Total</span>
-                            <div className="flex items-center text-base font-bold text-gray-800">
-                              <span className="text-[#007FFF] mr-1 text-sm">€</span>
+                            <div className="flex items-center text-sm font-bold text-gray-800">
+                              <span className="text-[#007FFF] mr-1 text-xs">€</span>
                               {quote.totalAmount.toLocaleString('fr-FR', { 
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
@@ -364,12 +515,12 @@ const MesDevis: React.FC = () => {
                         </div>
 
                         {/* Boutons d'action */}
-                        <div className="grid grid-cols-1 gap-2 pt-1">
+                        <div className="grid grid-cols-1 gap-2 pt-2">
                           <button
                             onClick={() => setSelectedQuote(quote)}
-                            className="w-full bg-[#007FFF] text-white rounded-lg py-2 px-3 text-sm font-medium hover:bg-[#0066CC] transition-colors duration-200 flex items-center justify-center shadow-sm hover:shadow-md"
+                            className="w-full bg-[#007FFF] text-white rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#0066CC] transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow group-hover:shadow-md"
                           >
-                            <FaEye className="mr-1.5 text-xs" />
+                            <FaEye className="mr-2 text-xs" />
                             Voir détail
                           </button>
                           
@@ -377,50 +528,50 @@ const MesDevis: React.FC = () => {
                             {quote.status === 'pending' ? (
                               <>
                                 <button
-                                  className="group relative w-full bg-white text-green-600 border border-green-500 rounded-lg py-1.5 px-3 text-sm font-medium hover:bg-green-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                                  className="group/btn relative w-full text-green-600 border border-green-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-green-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                                 >
                                   <div className="relative z-10 flex items-center justify-center">
-                                    <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                     </svg>
                                     Accepter
                                   </div>
-                                  <div className="absolute inset-0 bg-green-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                                  <div className="absolute inset-0 bg-green-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
                                 </button>
                                 <button
-                                  className="group relative w-full bg-white text-red-600 border border-red-500 rounded-lg py-1.5 px-3 text-sm font-medium hover:bg-red-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                                  className="group/btn relative w-full text-red-600 border border-red-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-red-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                                 >
                                   <div className="relative z-10 flex items-center justify-center">
-                                    <svg className="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                     Refuser
                                   </div>
-                                  <div className="absolute inset-0 bg-red-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                                  <div className="absolute inset-0 bg-red-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
                                 </button>
                               </>
                             ) : (
                               <button
-                                className="group relative w-full bg-white text-[#007FFF] border border-[#007FFF] rounded-lg py-1.5 px-3 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                                className="group/btn relative w-full text-[#007FFF] border border-[#007FFF] rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                               >
                                 <div className="relative z-10 flex items-center justify-center">
-                                  <FaFileDownload className="mr-1.5 text-xs" />
+                                  <FaFileDownload className="mr-2 text-xs" />
                                   Télécharger
                                 </div>
-                                <div className="absolute inset-0 bg-[#007FFF] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                                <div className="absolute inset-0 bg-[#007FFF] transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
                               </button>
                             )}
                           </div>
                           
                           {quote.status === 'pending' && (
                             <button
-                              className="group relative w-full bg-white text-[#007FFF] border border-[#007FFF] rounded-lg py-1.5 px-3 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                              className="group/btn relative w-full text-[#007FFF] border border-[#007FFF] rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                             >
                               <div className="relative z-10 flex items-center justify-center">
-                                <FaFileDownload className="mr-1.5 text-xs" />
+                                <FaFileDownload className="mr-2 text-xs" />
                                 Télécharger
                               </div>
-                              <div className="absolute inset-0 bg-[#007FFF] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                              <div className="absolute inset-0 bg-[#007FFF] transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
                             </button>
                           )}
                         </div>

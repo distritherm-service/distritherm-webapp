@@ -133,6 +133,216 @@ const MesCommandes: React.FC = () => {
             postalCode: '75001',
             country: 'France'
           }
+        },
+        {
+          id: '3',
+          orderNumber: 'CMD-2023-078',
+          date: '2023-06-05T09:45:00Z',
+          status: 'shipped',
+          totalAmount: 1899.99,
+          items: [
+            {
+              id: 'item5',
+              productId: 'prod5',
+              productName: 'Climatiseur réversible DAIKIN',
+              quantity: 1,
+              unitPrice: 1599.99,
+              imageUrl: '/climatisation.jpeg'
+            },
+            {
+              id: 'item6',
+              productId: 'prod6',
+              productName: 'Installation premium',
+              quantity: 1,
+              unitPrice: 300.00,
+              imageUrl: '/chauffage.jpeg'
+            }
+          ],
+          shippingAddress: {
+            fullName: 'Marie Martin',
+            streetAddress: '28 Avenue des Champs-Élysées',
+            city: 'Paris',
+            postalCode: '75008',
+            country: 'France'
+          },
+          billingAddress: {
+            fullName: 'Marie Martin',
+            streetAddress: '28 Avenue des Champs-Élysées',
+            city: 'Paris',
+            postalCode: '75008',
+            country: 'France'
+          }
+        },
+        {
+          id: '4',
+          orderNumber: 'CMD-2023-096',
+          date: '2023-07-12T16:20:00Z',
+          status: 'delivered',
+          totalAmount: 799.99,
+          items: [
+            {
+              id: 'item7',
+              productId: 'prod7',
+              productName: 'Chauffe-eau thermodynamique',
+              quantity: 1,
+              unitPrice: 799.99,
+              imageUrl: '/chauffage.jpeg'
+            }
+          ],
+          shippingAddress: {
+            fullName: 'Pierre Dubois',
+            streetAddress: '45 Rue du Commerce',
+            city: 'Lyon',
+            postalCode: '69002',
+            country: 'France'
+          },
+          billingAddress: {
+            fullName: 'Pierre Dubois',
+            streetAddress: '45 Rue du Commerce',
+            city: 'Lyon',
+            postalCode: '69002',
+            country: 'France'
+          }
+        },
+        {
+          id: '5',
+          orderNumber: 'CMD-2023-125',
+          date: '2023-08-28T11:05:00Z',
+          status: 'processing',
+          totalAmount: 2499.99,
+          items: [
+            {
+              id: 'item8',
+              productId: 'prod8',
+              productName: 'Pompe à chaleur Air/Eau',
+              quantity: 1,
+              unitPrice: 2199.99,
+              imageUrl: '/chauffage.jpeg'
+            },
+            {
+              id: 'item9',
+              productId: 'prod9',
+              productName: 'Kit de raccordement premium',
+              quantity: 1,
+              unitPrice: 300.00,
+              imageUrl: '/climatisation.jpeg'
+            }
+          ],
+          shippingAddress: {
+            fullName: 'Sophie Bernard',
+            streetAddress: '12 Boulevard Victor Hugo',
+            city: 'Nice',
+            postalCode: '06000',
+            country: 'France'
+          },
+          billingAddress: {
+            fullName: 'Sophie Bernard',
+            streetAddress: '12 Boulevard Victor Hugo',
+            city: 'Nice',
+            postalCode: '06000',
+            country: 'France'
+          }
+        },
+        {
+          id: '6',
+          orderNumber: 'CMD-2023-156',
+          date: '2023-09-15T14:30:00Z',
+          status: 'cancelled',
+          totalAmount: 349.99,
+          items: [
+            {
+              id: 'item10',
+              productId: 'prod10',
+              productName: 'Radiateur électrique intelligent',
+              quantity: 1,
+              unitPrice: 349.99,
+              imageUrl: '/chauffage.jpeg'
+            }
+          ],
+          shippingAddress: {
+            fullName: 'Lucas Petit',
+            streetAddress: '8 Rue de la République',
+            city: 'Marseille',
+            postalCode: '13001',
+            country: 'France'
+          },
+          billingAddress: {
+            fullName: 'Lucas Petit',
+            streetAddress: '8 Rue de la République',
+            city: 'Marseille',
+            postalCode: '13001',
+            country: 'France'
+          }
+        },
+        {
+          id: '7',
+          orderNumber: 'CMD-2023-189',
+          date: '2023-10-02T09:15:00Z',
+          status: 'shipped',
+          totalAmount: 1799.99,
+          items: [
+            {
+              id: 'item11',
+              productId: 'prod11',
+              productName: 'Climatiseur mobile DELONGHI',
+              quantity: 2,
+              unitPrice: 899.99,
+              imageUrl: '/climatisation.jpeg'
+            }
+          ],
+          shippingAddress: {
+            fullName: 'Emma Roux',
+            streetAddress: '25 Avenue Jean Jaurès',
+            city: 'Toulouse',
+            postalCode: '31000',
+            country: 'France'
+          },
+          billingAddress: {
+            fullName: 'Emma Roux',
+            streetAddress: '25 Avenue Jean Jaurès',
+            city: 'Toulouse',
+            postalCode: '31000',
+            country: 'France'
+          }
+        },
+        {
+          id: '8',
+          orderNumber: 'CMD-2023-201',
+          date: '2023-10-20T15:45:00Z',
+          status: 'processing',
+          totalAmount: 3299.99,
+          items: [
+            {
+              id: 'item12',
+              productId: 'prod12',
+              productName: 'Système de climatisation complet',
+              quantity: 1,
+              unitPrice: 2799.99,
+              imageUrl: '/climatisation.jpeg'
+            },
+            {
+              id: 'item13',
+              productId: 'prod13',
+              productName: 'Installation et mise en service',
+              quantity: 1,
+              unitPrice: 500.00,
+              imageUrl: '/chauffage.jpeg'
+            }
+          ],
+          shippingAddress: {
+            fullName: 'Thomas Moreau',
+            streetAddress: '56 Rue Nationale',
+            city: 'Bordeaux',
+            postalCode: '33000',
+            country: 'France'
+          },
+          billingAddress: {
+            fullName: 'Thomas Moreau',
+            streetAddress: '56 Rue Nationale',
+            city: 'Bordeaux',
+            postalCode: '33000',
+            country: 'France'
+          }
         }
       ];
 
@@ -250,215 +460,110 @@ const MesCommandes: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
-              {selectedOrder ? (
-                // Détail de la commande sélectionnée
-                <div className="p-4 md:p-6">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b pb-4 mb-4">
-                    <h2 className="text-xl font-bold text-gray-800 mb-2 md:mb-0">
-                      Commande #{selectedOrder.orderNumber}
-                    </h2>
-                    <button
-                      onClick={() => setSelectedOrder(null)}
-                      className="text-gray-600 hover:text-[#007FFF] inline-flex items-center"
-                    >
-                      <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Retour aux commandes
-                    </button>
-                  </div>
+            // Liste des commandes en cartes
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 px-4 sm:px-6 lg:px-8">
+              {filteredOrders.map(order => (
+                <div 
+                  key={order.id} 
+                  className="relative overflow-hidden border border-gray-100 rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-gray-50 hover:scale-[1.02] group"
+                >
+                  {/* Bande de statut colorée en haut */}
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${
+                    order.status === 'delivered' ? 'bg-gradient-to-r from-green-400 to-green-500' :
+                    order.status === 'processing' ? 'bg-gradient-to-r from-blue-400 to-blue-500' :
+                    order.status === 'shipped' ? 'bg-gradient-to-r from-indigo-400 to-indigo-500' :
+                    order.status === 'cancelled' ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                    'bg-gradient-to-r from-gray-300 to-gray-400'
+                  }`}></div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-500 mb-2">Date de commande</h3>
-                      <p className="flex items-center text-gray-800">
-                        <FaCalendarAlt className="mr-2 text-[#007FFF]" />
-                        {formatDate(selectedOrder.date)}
-                      </p>
-                    </div>
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-500 mb-2">Statut</h3>
-                      <p className={`flex items-center ${getStatusInfo(selectedOrder.status).color}`}>
-                        <FaCircle className="mr-2 h-2 w-2" />
-                        {getStatusInfo(selectedOrder.status).label}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-lg font-medium text-gray-800 mb-3">Articles</h3>
-                  <div className="bg-gray-50 rounded-lg overflow-hidden mb-6">
-                    {/* En-tête de la liste des articles - visible uniquement sur desktop */}
-                    <div className="hidden md:grid grid-cols-12 gap-2 bg-gray-100 p-4 text-sm text-gray-500">
-                      <div className="col-span-6">Produit</div>
-                      <div className="col-span-2 text-center">Prix unitaire</div>
-                      <div className="col-span-2 text-center">Quantité</div>
-                      <div className="col-span-2 text-right">Total</div>
-                    </div>
-                    
-                    {/* Liste des articles */}
-                    <div className="divide-y divide-gray-200">
-                      {selectedOrder.items.map(item => (
-                        <div key={item.id} className="p-4">
-                          {/* Version mobile */}
-                          <div className="md:hidden space-y-2">
-                            <div className="flex items-center">
-                              {item.imageUrl && (
-                                <img src={item.imageUrl} alt={item.productName} className="h-16 w-16 object-cover rounded mr-3" />
-                              )}
-                              <div>
-                                <h4 className="font-medium text-gray-800">{item.productName}</h4>
-                                <p className="text-sm text-gray-500">
-                                  Prix unitaire: {item.unitPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                                </p>
-                                <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
-                                <p className="text-sm font-medium text-gray-800">
-                                  Total: {(item.unitPrice * item.quantity).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {/* Version desktop */}
-                          <div className="hidden md:grid grid-cols-12 gap-2 items-center">
-                            <div className="col-span-6 flex items-center">
-                              {item.imageUrl && (
-                                <img src={item.imageUrl} alt={item.productName} className="h-10 w-10 mr-3 object-cover rounded" />
-                              )}
-                              <span className="font-medium text-gray-800">{item.productName}</span>
-                            </div>
-                            <div className="col-span-2 text-center">
-                              {item.unitPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                            </div>
-                            <div className="col-span-2 text-center">{item.quantity}</div>
-                            <div className="col-span-2 text-right font-medium">
-                              {(item.unitPrice * item.quantity).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                            </div>
-                          </div>
+                  <div className="p-5 space-y-4">
+                    {/* En-tête avec numéro et statut */}
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col">
+                        <h3 className="text-base font-bold text-gray-800 group-hover:text-[#007FFF] transition-colors">
+                          Commande #{order.orderNumber}
+                        </h3>
+                        <div className="flex items-center mt-1 text-gray-500">
+                          <FaRegCalendarAlt className="mr-1 text-[#007FFF] text-xs" />
+                          <span className="text-xs">{formatDate(order.date)}</span>
                         </div>
-                      ))}
-                    </div>
-                    
-                    <div className="p-4 bg-gray-50 border-t border-gray-200">
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-gray-800">Total</span>
-                        <span className="font-bold text-gray-800">
-                          {selectedOrder.totalAmount.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                        </span>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
+                        order.status === 'delivered' ? 'bg-green-50 text-green-700 border border-green-200' :
+                        order.status === 'processing' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                        order.status === 'shipped' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                        order.status === 'cancelled' ? 'bg-red-50 text-red-700 border border-red-200' :
+                        'bg-gray-50 text-gray-700 border border-gray-200'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                          order.status === 'delivered' ? 'bg-green-500' :
+                          order.status === 'processing' ? 'bg-blue-500' :
+                          order.status === 'shipped' ? 'bg-indigo-500' :
+                          order.status === 'cancelled' ? 'bg-red-500' :
+                          'bg-gray-500'
+                        }`}></span>
+                        {getStatusInfo(order.status).label}
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-800 mb-3">Adresse de livraison</h3>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="font-medium text-gray-800">{selectedOrder.shippingAddress.fullName}</p>
-                        <p className="text-gray-600">{selectedOrder.shippingAddress.streetAddress}</p>
-                        <p className="text-gray-600">
-                          {selectedOrder.shippingAddress.postalCode} {selectedOrder.shippingAddress.city}
-                        </p>
-                        <p className="text-gray-600">{selectedOrder.shippingAddress.country}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-medium text-gray-800 mb-3">Adresse de facturation</h3>
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <p className="font-medium text-gray-800">{selectedOrder.billingAddress.fullName}</p>
-                        <p className="text-gray-600">{selectedOrder.billingAddress.streetAddress}</p>
-                        <p className="text-gray-600">
-                          {selectedOrder.billingAddress.postalCode} {selectedOrder.billingAddress.city}
-                        </p>
-                        <p className="text-gray-600">{selectedOrder.billingAddress.country}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col md:flex-row md:justify-end space-y-3 md:space-y-0 md:space-x-4">
-                    <button className="px-4 py-2 bg-[#007FFF] text-white rounded-md hover:bg-[#7CB9E8] transition-colors flex items-center justify-center">
-                      <FaDownload className="mr-2" />
-                      Télécharger le devis
-                    </button>
-                    <button className="px-4 py-2 bg-[#007FFF] text-white rounded-md hover:bg-[#7CB9E8] transition-colors flex items-center justify-center">
-                      <FaDownload className="mr-2" />
-                      Télécharger la facture
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                // Liste des commandes en cartes
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {filteredOrders.map(order => (
-                    <div 
-                      key={order.id} 
-                      className="bg-gray-50/50 backdrop-blur-sm rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-                    >
-                      <div className="space-y-4">
-                        {/* En-tête avec numéro et statut */}
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="text-xl font-semibold text-gray-900">
-                              Commande #{order.orderNumber}
-                            </h3>
-                            <div className="flex items-center mt-2 text-gray-600">
-                              <FaRegCalendarAlt className="mr-2" />
-                              <span className="text-sm">{formatDate(order.date)}</span>
-                            </div>
-                          </div>
-                          <span className={`px-4 py-1.5 rounded-full text-sm font-medium ${
-                            order.status === 'delivered' ? 'bg-green-100 text-green-700' :
-                            order.status === 'processing' ? 'bg-blue-100 text-blue-700' :
-                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
-                            {getStatusInfo(order.status).label}
-                          </span>
-                        </div>
 
-                        {/* Informations sur les articles */}
-                        <div className="flex items-center text-gray-600 bg-white/80 rounded-xl p-4">
-                          <FaShoppingBag className="text-[#007FFF] mr-3" />
-                          <span>Nombre d'articles : {order.items.length}</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      {/* Informations sur les articles */}
+                      <div className="flex items-center justify-between rounded-lg p-3 bg-gray-50/80 backdrop-blur-sm">
+                        <div className="flex items-center">
+                          <div className="p-1.5 rounded-md bg-[#007FFF]/10 mr-2">
+                            <FaShoppingBag className="text-[#007FFF] text-xs" />
+                          </div>
+                          <span className="text-xs font-medium text-gray-600">Articles</span>
                         </div>
+                        <span className="text-sm font-semibold text-gray-800">{order.items.length}</span>
+                      </div>
 
-                        {/* Prix total */}
-                        <div className="flex items-center text-2xl font-bold text-gray-900">
-                          <span className="text-[#007FFF] mr-2">€</span>
+                      {/* Prix total */}
+                      <div className="flex items-center justify-between p-3 bg-[#007FFF]/5 rounded-lg">
+                        <span className="text-xs font-medium text-gray-600">Total</span>
+                        <div className="flex items-center text-sm font-bold text-gray-800">
+                          <span className="text-[#007FFF] mr-1 text-xs">€</span>
                           {order.totalAmount.toLocaleString('fr-FR', { 
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2
                           })}
                         </div>
-
-                        {/* Boutons d'action */}
-                        <div className="grid grid-cols-1 gap-3 pt-4">
-                          <button
-                            onClick={() => handleViewOrder(order)}
-                            className="w-full bg-[#007FFF] text-white rounded-xl py-3 px-4 font-medium hover:bg-[#7CB9E8] transition-colors duration-200 flex items-center justify-center"
-                          >
-                            <FaEye className="mr-2" />
-                            Voir détail
-                          </button>
-                          <div className="grid grid-cols-2 gap-3">
-                            <button
-                              className="w-full bg-white text-[#007FFF] border-2 border-[#007FFF] rounded-xl py-2.5 px-4 font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center"
-                            >
-                              <FaFileDownload className="mr-2" />
-                              Devis
-                            </button>
-                            <button
-                              className="w-full bg-white text-[#007FFF] border-2 border-[#007FFF] rounded-xl py-2.5 px-4 font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center"
-                            >
-                              <FaFileInvoice className="mr-2" />
-                              Facture
-                            </button>
-                          </div>
-                        </div>
                       </div>
                     </div>
-                  ))}
+
+                    {/* Boutons d'action */}
+                    <div className="grid grid-cols-1 gap-2 pt-2">
+                      <button
+                        onClick={() => handleViewOrder(order)}
+                        className="w-full bg-[#007FFF] text-white rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#0066CC] transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow group-hover:shadow-md"
+                      >
+                        <FaEye className="mr-2 text-xs" />
+                        Voir détail
+                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          className="group/btn relative w-full text-[#007FFF] border border-[#007FFF] rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                        >
+                          <div className="relative z-10 flex items-center justify-center">
+                            <FaFileDownload className="mr-2 text-xs" />
+                            Devis
+                          </div>
+                          <div className="absolute inset-0 bg-[#007FFF] transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                        </button>
+                        <button
+                          className="group/btn relative w-full text-[#007FFF] border border-[#007FFF] rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                        >
+                          <div className="relative z-10 flex items-center justify-center">
+                            <FaFileInvoice className="mr-2 text-xs" />
+                            Facture
+                          </div>
+                          <div className="absolute inset-0 bg-[#007FFF] transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           )}
         </div>

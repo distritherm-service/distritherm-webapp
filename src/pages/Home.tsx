@@ -161,7 +161,7 @@ const Home: React.FC = () => {
                   <div className="w-14 h-14 bg-gradient-to-br from-[#7CB9E8]/20 to-[#007FFF]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                     <FaIndustry className="w-7 h-7 text-[#007FFF]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Nos Expertises</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Notre Expertise</h3>
                   <p className="text-gray-600 leading-relaxed">
                     Spécialistes en climatisation, chauffage, électricité, et installations sanitaires.
                     Nous vous accompagnons dans la réalisation de vos projets de construction, de rénovation et d'amélioration de votre habitat residenciel ou commercial.

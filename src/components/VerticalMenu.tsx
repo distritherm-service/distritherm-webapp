@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaChevronRight, FaChevronDown, FaTimes } from 'react-icons/fa';
+import { FaChevronRight, FaChevronDown, FaTimes, FaChevronLeft } from 'react-icons/fa';
+import { useMediaQuery } from 'react-responsive';
 
 // Interface pour le niveau 3 (sous-sous-catégories)
 interface Level3Item {
@@ -94,39 +95,30 @@ const menuItems: MenuItem[] = [
       },
       {
         title: 'Colle',
-        slug: 'colle'
+        slug: 'colle',
+        level3Items: [
+          { title: 'Colle à joint', slug: 'colle-joint' },
+          { title: 'Colle à carreaux', slug: 'colle-carreaux' }
+        ]
       },
       {
         title: 'Enduit',
         slug: 'enduit',
         level3Items: [
-          { 
-            title: 'En sac', 
-            slug: 'en-sac',
-            level3Items: [
-              { title: 'Fin', slug: 'fin' },
-              { title: 'Gros', slug: 'gros' },
-              { title: 'Rapide', slug: 'rapide' },
-              { title: 'Universel', slug: 'universel' },
-              { title: '2en1', slug: '2en1' }
-            ] 
-          } as Level3Container,
-          { 
-            title: 'En seau', 
-            slug: 'en-seau',
-            level3Items: [
-              { title: 'Fin', slug: 'fin-seau' },
-              { title: 'Gros', slug: 'gros-seau' },
-              { title: 'Rapide', slug: 'rapide-seau' },
-              { title: 'Universel', slug: 'universel-seau' },
-              { title: '2en1', slug: '2en1-seau' }
-            ] 
-          } as Level3Container
+          { title: 'Fin', slug: 'fin' },
+          { title: 'Gros', slug: 'gros' },
+          { title: 'Rapide', slug: 'rapide' },
+          { title: 'Universel', slug: 'universel' },
+          { title: '2en1', slug: '2en1' }
         ]
       },
       {
         title: 'Mortier',
-        slug: 'mortier'
+        slug: 'mortier',
+        level3Items: [
+          { title: 'Prêt à l\'emploi', slug: 'pret-emploi' },
+          { title: 'À projeter', slug: 'a-projeter' }
+        ]
       },
       {
         title: 'Peinture',
@@ -156,26 +148,9 @@ const menuItems: MenuItem[] = [
         level3Items: [
           { title: 'Vis', slug: 'vis' },
           { title: 'Suspentes', slug: 'suspentes' },
-          { 
-            title: 'Bandes', 
-            slug: 'bandes',
-            level3Items: [
-              { title: 'Papier', slug: 'bande-papier' },
-              { title: 'Armée', slug: 'bande-armee' },
-              { title: 'Fermacell', slug: 'bande-fermacell' }
-            ]
-          } as Level3Container,
+          { title: 'Bandes', slug: 'bandes' },
           { title: 'Chevilles', slug: 'chevilles' },
-          { 
-            title: 'Adhésif', 
-            slug: 'adhesif',
-            level3Items: [
-              { title: 'Pare-vapeur', slug: 'adhesif-pare-vapeur' },
-              { title: 'Aluminium', slug: 'adhesif-aluminium' },
-              { title: 'Papier', slug: 'adhesif-papier' },
-              { title: 'Double face', slug: 'adhesif-double-face' }
-            ]
-          } as Level3Container
+          { title: 'Adhésif', slug: 'adhesif' }
         ]
       }
     ]
@@ -233,22 +208,8 @@ const menuItems: MenuItem[] = [
         title: 'Pompe à chaleur AIR/EAU', 
         slug: 'pompe-a-chaleur-air-eau',
         level3Items: [
-          { 
-            title: 'Bi-split', 
-            slug: 'bi-split',
-            level3Items: [
-              { title: 'Monophasé', slug: 'monophase' },
-              { title: 'Triphasé', slug: 'triphase' }
-            ]
-          } as Level3Container,
-          { 
-            title: 'Monobloc', 
-            slug: 'monobloc',
-            level3Items: [
-              { title: 'Monophasé', slug: 'monophase-monobloc' },
-              { title: 'Triphasé', slug: 'triphase-monobloc' }
-            ]
-          } as Level3Container
+          { title: 'Monophasé', slug: 'monophase' },
+          { title: 'Triphasé', slug: 'triphase' }
         ]
       },
       { 
@@ -555,431 +516,180 @@ interface VerticalMenuProps {
 }
 
 const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
-  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
-  const [hoveredSubCategory, setHoveredSubCategory] = useState<string | null>(null);
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 768);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+  const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
+  const [menuHistory, setMenuHistory] = useState<string[]>([]);
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
-  // Gérer la détection du mode mobile
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth < 768);
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Fermer le menu quand on clique en dehors
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        onClose();
-        // Réinitialiser tous les états lors de la fermeture
-        setSelectedCategory(null);
-        setSelectedSubCategory(null);
-        setHoveredCategory(null);
-        setHoveredSubCategory(null);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen, onClose]);
-
-  // Ajouter un gestionnaire pour fermer le menu avec la touche Escape
-  useEffect(() => {
-    const handleEscKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-        // Réinitialiser tous les états lors de la fermeture
-        setSelectedCategory(null);
-        setSelectedSubCategory(null);
-        setHoveredCategory(null);
-        setHoveredSubCategory(null);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscKey);
-    }
-    
-    return () => {
-      document.removeEventListener('keydown', handleEscKey);
-    };
-  }, [isOpen, onClose]);
-
-  const handleMouseEnter = (slug: string) => {
-    if (!isMobileView) {
-      setHoveredCategory(slug);
-      setSelectedCategory(slug);
-    }
+  const handleMenuClick = (menuId: string) => {
+    setActiveMenu(menuId);
+    setActiveSubMenu(null);
+    setMenuHistory([menuId]);
   };
 
-  const handleMouseLeave = () => {
-    if (!isMobileView) {
-      setHoveredCategory(null);
-      setHoveredSubCategory(null);
-    }
+  const handleSubMenuClick = (subMenuId: string, event: React.MouseEvent) => {
+    event.preventDefault();
+    setActiveSubMenu(subMenuId);
+    setMenuHistory([...menuHistory, subMenuId]);
   };
 
-  const handleCategoryClick = (slug: string) => {
-    // Sur mobile, on bascule l'état de la catégorie sélectionnée
-    if (isMobileView) {
-      if (selectedCategory === slug) {
-        setSelectedCategory(null);
-        setSelectedSubCategory(null);
-      } else {
-        setSelectedCategory(slug);
-        setSelectedSubCategory(null);
-      }
+  const handleBackClick = () => {
+    const newHistory = [...menuHistory];
+    newHistory.pop();
+    setMenuHistory(newHistory);
+    if (newHistory.length === 1) {
+      setActiveSubMenu(null);
+      setActiveMenu(newHistory[0]);
+    } else if (newHistory.length === 0) {
+      setActiveMenu(null);
+      setActiveSubMenu(null);
     } else {
-      // Sur desktop, on définit simplement la catégorie sélectionnée
-      setSelectedCategory(slug);
-      setSelectedSubCategory(null);
+      setActiveSubMenu(newHistory[newHistory.length - 1]);
     }
   };
 
-  const handleSubCategoryClick = (slug: string) => {
-    if (isMobileView) {
-      if (selectedSubCategory === slug) {
-        setSelectedSubCategory(null);
-      } else {
-        setSelectedSubCategory(slug);
-      }
+  const getCurrentTitle = () => {
+    if (activeSubMenu) {
+      const mainMenu = menuItems.find(item => item.slug === activeMenu);
+      const subMenu = mainMenu?.subItems.find(sub => sub.slug === activeSubMenu);
+      return subMenu?.title || mainMenu?.title || 'Menu';
     }
-  };
-
-  const handleSubCategoryMouseEnter = (slug: string) => {
-    if (!isMobileView) {
-      setHoveredSubCategory(slug);
-      setSelectedSubCategory(slug);
-    }
-  };
-
-  const handleSubCategoryMouseLeave = () => {
-    if (!isMobileView) {
-      setHoveredSubCategory(null);
-    }
-  };
-
-  const currentCategory = hoveredCategory || selectedCategory;
-  const currentSubCategory = hoveredSubCategory || selectedSubCategory;
-  const currentCategoryData = menuItems.find(item => item.slug === currentCategory);
-  const currentSubCategoryData = currentCategoryData?.subItems.find(
-    item => item.slug === currentSubCategory
-  );
-
-  // Animations pour le menu
-  const menuVariants = {
-    hidden: {
-      opacity: 0,
-    },
-    visible: {
-      opacity: 1,
-      transition: {
-        duration: 0.3,
-      },
-    },
-    exit: {
-      opacity: 0,
-      transition: {
-        duration: 0.2,
-      },
-    },
-  };
-
-  // Animations pour les sous-menus
-  const submenuVariants = {
-    hidden: {
-      opacity: 0,
-      x: -10,
-    },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.3,
-      },
-    },
-    exit: {
-      opacity: 0,
-      x: -10,
-      transition: {
-        duration: 0.2,
-      },
-    },
-  };
-
-  // Animations pour les sous-sous-menus
-  const subSubmenuVariants = {
-    hidden: {
-      opacity: 0,
-      x: -10,
-    },
-    visible: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        duration: 0.3,
-      },
-    },
-    exit: {
-      opacity: 0,
-      x: -10,
-      transition: {
-        duration: 0.2,
-      },
-    },
+    return activeMenu ? menuItems.find(item => item.slug === activeMenu)?.title || 'Menu' : 'Catégories';
   };
 
   return (
-    <>
-      {/* Fond semi-transparent pour fermer en cliquant en dehors */}
-      <AnimatePresence>
-        {isOpen && (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Overlay sombre */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black bg-opacity-30 z-40"
             onClick={onClose}
+            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
           />
-        )}
-      </AnimatePresence>
 
-      {/* Menu principal */}
-      <AnimatePresence>
-        {isOpen && (
+          {/* Menu principal */}
           <motion.div
-            ref={menuRef}
-            onMouseEnter={() => !isMobileView && isOpen}
-            onMouseLeave={handleMouseLeave}
-            className={`fixed top-0 pt-[var(--navbar-height,80px)] left-0 w-full h-[calc(100vh-var(--navbar-height,80px))] sm:h-auto sm:w-auto z-50 bg-transparent flex outline-none ${
-              isMobileView ? 'overflow-y-auto' : ''
-            }`}
-            key="vertical-menu"
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={menuVariants}
+            initial={isMobile ? { x: "-100%" } : { opacity: 0 }}
+            animate={isMobile ? { x: 0 } : { opacity: 1 }}
+            exit={isMobile ? { x: "-100%" } : { opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className={`fixed top-0 left-0 h-[100dvh] bg-white z-50 overflow-hidden
+              ${isMobile ? 'w-full' : 'w-80'} flex flex-col shadow-xl`}
           >
-            <div className={`flex ${isMobileView ? 'flex-col' : 'flex-row'} max-w-7xl mx-auto w-full h-full sm:h-auto sm:max-h-[80vh] relative rounded-xl overflow-hidden shadow-xl`}>
-              {/* Menu des catégories - Colonne 1 */}
-              <div className={`bg-white border-r ${isMobileView ? 'w-full' : 'w-64'} ${
-                isMobileView && currentCategory ? 'hidden' : 'block'
-              } h-full overflow-y-auto`}>
-                <div className="p-4 border-b font-medium text-gray-900 flex justify-between items-center">
-                  <span>Nos Catégories</span>
-                  {isMobileView && (
-                    <button
-                      onClick={onClose}
-                      className="text-gray-500 hover:text-gray-700"
-                      aria-label="Fermer le menu"
-                    >
-                      <FaTimes size={20} />
-                    </button>
-                  )}
-                </div>
-                <div className="py-2">
-                  {menuItems.map((item) => (
-                    <div key={item.slug} className="flex flex-col">
-                      <button
-                        className={`flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 transition-colors w-full ${
-                          currentCategory === item.slug ? 'bg-gray-100 font-medium text-[#007FFF]' : 'text-gray-700'
-                        }`}
-                        onClick={() => {
-                          handleCategoryClick(item.slug);
-                          if (isMobileView && !item.subItems?.length) {
-                            onClose();
-                            navigate(`/nos-produits/${item.slug}`);
-                          }
-                        }}
-                        onMouseEnter={() => !isMobileView && handleMouseEnter(item.slug)}
-                        onMouseLeave={() => !isMobileView && handleMouseLeave()}
-                      >
-                        <div className="flex items-center">
-                          <span className="mr-3">{item.icon}</span>
-                          <span>{item.title}</span>
-                        </div>
-                        {item.subItems?.length > 0 && (
-                          <FaChevronRight className={`transition-transform ${
-                            currentCategory === item.slug ? 'transform rotate-90 text-[#007FFF]' : ''
-                          }`} />
-                        )}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* En-tête du menu */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {getCurrentTitle()}
+              </h2>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <FaTimes className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
 
-              {/* Sous-catégories - Colonne 2 */}
-              <AnimatePresence>
-                {currentCategoryData && (
-                  <motion.div
-                    key={`subcategory-${currentCategoryData.slug}`}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    variants={submenuVariants}
-                    className={`bg-gray-50 ${isMobileView ? 'w-full' : 'w-64'} ${
-                      isMobileView && !currentCategory ? 'hidden' : 'block'
-                    } h-full overflow-y-auto`}
-                  >
-                    <div className="p-4 border-b font-medium text-gray-900 flex justify-between items-center">
-                      {isMobileView && (
-                        <button
-                          onClick={() => setSelectedCategory(null)}
-                          className="text-gray-500 hover:text-gray-700 mr-2"
-                          aria-label="Retour"
-                        >
-                          <FaChevronRight className="transform rotate-180" />
-                        </button>
-                      )}
-                      <span>{currentCategoryData.title}</span>
-                      {isMobileView && (
-                        <button
-                          onClick={onClose}
-                          className="text-gray-500 hover:text-gray-700"
-                          aria-label="Fermer le menu"
-                        >
-                          <FaTimes size={20} />
-                        </button>
-                      )}
+            {/* Zone de défilement du menu */}
+            <div className="flex-1 overflow-y-auto overscroll-contain pb-safe">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`${activeMenu}-${activeSubMenu}`}
+                  initial={{ x: 50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -50, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  className="h-full"
+                >
+                  {activeSubMenu ? (
+                    // Niveau 3
+                    <div className="h-full">
+                      <button
+                        onClick={handleBackClick}
+                        className="w-full flex items-center p-4 text-gray-600 hover:bg-gray-50 transition-colors sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100"
+                      >
+                        <FaChevronLeft className="w-4 h-4 mr-2" />
+                        <span>Retour</span>
+                      </button>
+                      <div className="divide-y divide-gray-100">
+                        {menuItems
+                          .find(item => item.slug === activeMenu)
+                          ?.subItems.find(sub => sub.slug === activeSubMenu)
+                          ?.level3Items?.map((level3Item) => (
+                            <Link
+                              key={level3Item.slug}
+                              to={`/nos-produits/${activeMenu}/${activeSubMenu}/${level3Item.slug}`}
+                              onClick={onClose}
+                              className="flex items-center px-6 py-4 text-gray-700 hover:bg-gray-50 transition-colors active:bg-gray-100"
+                            >
+                              {level3Item.title}
+                            </Link>
+                          ))}
+                      </div>
                     </div>
-                    <div className="py-2">
-                      {currentCategoryData.subItems.map((subItem) => (
-                        <div key={subItem.slug} className="flex flex-col">
-                          <button
-                            className={`flex items-center justify-between px-4 py-3 text-left hover:bg-gray-100 transition-colors w-full ${
-                              currentSubCategory === subItem.slug ? 'bg-gray-100 font-medium text-[#007FFF]' : 'text-gray-700'
-                            }`}
-                            onClick={() => {
-                              handleSubCategoryClick(subItem.slug);
-                              if (isMobileView && !subItem.level3Items?.length) {
-                                onClose();
-                                navigate(`/nos-produits/${currentCategoryData.slug}/${subItem.slug}`);
-                              }
-                            }}
-                            onMouseEnter={() => !isMobileView && handleSubCategoryMouseEnter(subItem.slug)}
-                            onMouseLeave={() => !isMobileView && handleSubCategoryMouseLeave()}
-                          >
-                            <span>{subItem.title}</span>
-                            {subItem.level3Items && (
-                              <FaChevronRight className={`transition-transform ${
-                                currentSubCategory === subItem.slug ? 'transform rotate-90 text-[#007FFF]' : ''
-                              }`} />
-                            )}
-                          </button>
-                        </div>
+                  ) : activeMenu ? (
+                    // Niveau 2
+                    <div className="h-full">
+                      <button
+                        onClick={handleBackClick}
+                        className="w-full flex items-center p-4 text-gray-600 hover:bg-gray-50 transition-colors sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b border-gray-100"
+                      >
+                        <FaChevronLeft className="w-4 h-4 mr-2" />
+                        <span>Retour</span>
+                      </button>
+                      <div className="divide-y divide-gray-100">
+                        {menuItems
+                          .find(item => item.slug === activeMenu)
+                          ?.subItems.map((subItem) => (
+                            subItem.level3Items ? (
+                              <button
+                                key={subItem.slug}
+                                onClick={(e) => handleSubMenuClick(subItem.slug, e)}
+                                className="w-full flex items-center justify-between p-4 text-gray-700 hover:bg-gray-50 transition-colors active:bg-gray-100"
+                              >
+                                <span>{subItem.title}</span>
+                                <FaChevronRight className="w-4 h-4 text-gray-400" />
+                              </button>
+                            ) : (
+                              <Link
+                                key={subItem.slug}
+                                to={`/nos-produits/${activeMenu}/${subItem.slug}`}
+                                onClick={onClose}
+                                className="flex items-center px-6 py-4 text-gray-700 hover:bg-gray-50 transition-colors active:bg-gray-100"
+                              >
+                                {subItem.title}
+                              </Link>
+                            )
+                          ))}
+                      </div>
+                    </div>
+                  ) : (
+                    // Menu principal (Niveau 1)
+                    <div className="divide-y divide-gray-100">
+                      {menuItems.map((item) => (
+                        <button
+                          key={item.slug}
+                          onClick={() => handleMenuClick(item.slug)}
+                          className="w-full flex items-center justify-between p-4 text-gray-700 hover:bg-gray-50 transition-colors active:bg-gray-100"
+                        >
+                          <span className="flex items-center">
+                            {item.icon && <span className="mr-3 text-gray-500">{item.icon}</span>}
+                            <span className="font-medium">{item.title}</span>
+                          </span>
+                          <FaChevronRight className="w-4 h-4 text-gray-400" />
+                        </button>
                       ))}
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Sous-sous-catégories - Colonne 3 */}
-              <AnimatePresence>
-                {currentSubCategoryData?.level3Items && (
-                  <motion.div
-                    key={`level3-${currentSubCategoryData.slug}`}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    variants={subSubmenuVariants}
-                    className={`bg-white ${isMobileView ? 'w-full' : 'w-64'} ${
-                      isMobileView && !currentSubCategory ? 'hidden' : 'block'
-                    } h-full overflow-y-auto`}
-                  >
-                    <div className="p-4 border-b font-medium text-gray-900 flex justify-between items-center">
-                      {isMobileView && (
-                        <button
-                          onClick={() => setSelectedSubCategory(null)}
-                          className="text-gray-500 hover:text-gray-700 mr-2"
-                          aria-label="Retour"
-                        >
-                          <FaChevronRight className="transform rotate-180" />
-                        </button>
-                      )}
-                      <span>{currentSubCategoryData.title}</span>
-                      {isMobileView && (
-                        <button
-                          onClick={onClose}
-                          className="text-gray-500 hover:text-gray-700"
-                          aria-label="Fermer le menu"
-                        >
-                          <FaTimes size={20} />
-                        </button>
-                      )}
-                    </div>
-                    <div className="py-2">
-                      {currentSubCategoryData.level3Items.map((level3Item) => {
-                        const hasSubItems = 'level3Items' in level3Item && 
-                                         (level3Item as Level3Container).level3Items &&
-                                         (level3Item as Level3Container).level3Items.length > 0;
-                        
-                        if (hasSubItems) {
-                          const container = level3Item as Level3Container;
-                          return (
-                            <div key={level3Item.slug} className="flex flex-col">
-                              <button
-                                className="flex items-center justify-between px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#007FFF] transition-colors w-full"
-                                onClick={() => {
-                                  onClose();
-                                  navigate(`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}`);
-                                }}
-                              >
-                                <span>{level3Item.title}</span>
-                              </button>
-                              <div className="pl-4">
-                                {container.level3Items.map((subItem) => (
-                                  <button
-                                    key={subItem.slug}
-                                    className="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 hover:text-[#007FFF] transition-colors w-full"
-                                    onClick={() => {
-                                      onClose();
-                                      navigate(`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}/${subItem.slug}`);
-                                    }}
-                                  >
-                                    <span>{subItem.title}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        }
-                        return (
-                          <button
-                            key={level3Item.slug}
-                            className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-[#007FFF] transition-colors w-full"
-                            onClick={() => {
-                              onClose();
-                              navigate(`/nos-produits/${currentCategoryData?.slug}/${currentSubCategoryData.slug}/${level3Item.slug}`);
-                            }}
-                          >
-                            <span>{level3Item.title}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </motion.div>
-                )}
+                  )}
+                </motion.div>
               </AnimatePresence>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
 

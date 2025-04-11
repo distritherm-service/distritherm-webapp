@@ -26,7 +26,7 @@ const slides = [
   {
     id: 4,
     image: '/slider-4.jpeg',
-    title: 'Ranovation énergetique',
+    title: 'Rénovation énergetique',
     description: 'Nous vous accompagnons dans la renovation'
   }
 ];
