@@ -8,12 +8,13 @@ import { useCart } from '../contexts/CartContext';
 import { useSearch } from '../contexts/SearchContext';
 import { useAuth } from '../contexts/AuthContext';
 import SearchBar from './SearchBar';
-import UserProfileModal from './UserProfileModal';
+//import UserProfileModal from './UserProfileModal';
 import CartPreview from './CartPreview';
 import FavoritesPreview from './FavoritesPreview';
 import CallbackForm from './CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
-import { AnimatePresence } from 'framer-motion';
+//import { AnimatePresence } from 'framer-motion';
+import MobileVerticalMenu from './MobileVerticalMenu';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -513,7 +514,7 @@ const Navbar: React.FC = () => {
                   data-testid="all-products-button"
                 >
                   <FaBars className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-90' : ''}`} />
-                  <span>Tous nos produits</span>
+                  <span>Nos Catégories</span>
                 </button>
               </div>
               
@@ -680,11 +681,9 @@ const Navbar: React.FC = () => {
               <div className="space-y-2">
                 {/* Bouton Voir toutes les catégories */}
                 <button
-                  onClick={(e) => {
+                  onClick={() => {
                     setIsMobileMenuOpen(false);
-                    setTimeout(() => {
-                      setIsMenuOpen(true);
-                    }, 100);
+                    setIsMenuOpen(true);
                   }}
                   className="flex w-full items-center justify-between py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
                   id="mobile-categories-button"
@@ -707,6 +706,7 @@ const Navbar: React.FC = () => {
                   >
                     Accueil
                   </Link>
+           
                   <Link
                     to="/a-propos"
                     className={`flex items-center w-full py-3.5 px-4 ${
@@ -774,7 +774,7 @@ const Navbar: React.FC = () => {
                 ) : (
                   <Link
                     to="/connexion"
-                    className="flex w-full items-center justify-between py-3.5 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
+                    className="flex w-full items-center justify-between py-3.5 px-4 bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg shadow-sm"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     <span className="flex items-center">
@@ -791,9 +791,22 @@ const Navbar: React.FC = () => {
           </div>
         </div>
         
-        {/* Menu vertical déroulant */}
-        {isMenuOpen && <VerticalMenu isOpen={true} onClose={() => setIsMenuOpen(false)} />}
+        {/* Menu vertical déroulant desktop */}
+        {isMenuOpen && window.innerWidth >= 768 && (
+          <VerticalMenu 
+            isOpen={isMenuOpen} 
+            onClose={() => setIsMenuOpen(false)} 
+          />
+        )}
       </div>
+      
+      {/* Menu vertical mobile (en dehors du conteneur principal) */}
+      {isMenuOpen && window.innerWidth < 768 && (
+        <MobileVerticalMenu 
+          isOpen={isMenuOpen} 
+          onClose={() => setIsMenuOpen(false)} 
+        />
+      )}
       
       {/* Overlay pour la recherche */}
       {isSearchOpen && <SearchBar />}

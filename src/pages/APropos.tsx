@@ -520,7 +520,7 @@ const APropos: React.FC = () => {
         </section>
 
         {/* Navigation rapide - Bouton retour */}
-        <div className="fixed bottom-8 left-8 z-50">
+        {/* <div className="fixed bottom-8 left-8 z-50">
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -530,7 +530,7 @@ const APropos: React.FC = () => {
           >
             <FaArrowLeft />
           </motion.button>
-        </div>
+        </div> */}
       </div>
     </Layout>
   );
