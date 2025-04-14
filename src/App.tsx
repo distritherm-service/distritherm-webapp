@@ -36,6 +36,7 @@ const LoginPage = () => {
 const Home = lazy(() => import('./pages/Home'));
 const NosProducts = lazy(() => import('./pages/NosProducts'));
 const Promotions = lazy(() => import('./pages/Promotions'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const EspaceRecrutement = lazy(() => import('./pages/EspaceRecrutement'));
 const Contact = lazy(() => import('./pages/Contact'));
 const ConditionsVente = lazy(() => import('./pages/ConditionsVente'));
@@ -69,6 +70,7 @@ const AppRoutes = () => {
       {/* Routes publiques accessibles à tous */}
       <Route path="/" element={<Home />} />
       <Route path="/nos-produits" element={<NosProducts />} />
+      <Route path="/categorie/:slug" element={<CategoryPage />} />
       <Route path="/produit/:id" element={<ProductDetail />} />
       <Route path="/promotions" element={<Promotions />} />
       <Route path="/espace-recrutement" element={<EspaceRecrutement />} />

@@ -15,11 +15,16 @@ import CallbackForm from './CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
 //import { AnimatePresence } from 'framer-motion';
 import MobileVerticalMenu from './MobileVerticalMenu';
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
+import { Fragment } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isStoreMenuOpen, setIsStoreMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileMenuVisible, setIsMobileMenuVisible] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState('Choisir votre magasin');
@@ -179,7 +184,7 @@ const Navbar: React.FC = () => {
     }
     
     // Ajouter un log pour déboguer
-    console.log("Menu des produits toggled:", !isMenuOpen);
+   // console.log("Menu des produits toggled:", !isMenuOpen);
   };
 
   const handleSearchClick = () => {
@@ -514,7 +519,7 @@ const Navbar: React.FC = () => {
                   data-testid="all-products-button"
                 >
                   <FaBars className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-90' : ''}`} />
-                  <span>Nos Catégories</span>
+                  <span className="hidden lg:inline">Nos Catégories</span>
                 </button>
               </div>
               
@@ -683,16 +688,12 @@ const Navbar: React.FC = () => {
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);
-                    setIsMenuOpen(true);
+                    setIsMobileMenuVisible(true);
                   }}
-                  className="flex w-full items-center justify-between py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
-                  id="mobile-categories-button"
-                  aria-label="Voir toutes les catégories"
+                  className="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
                 >
-                  <span className="font-medium">Voir toutes les catégories</span>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
+                  <span>Voir toutes les catégories</span>
+                  <ChevronRightIcon className="w-5 h-5" />
                 </button>
 
                 {/* Liens de navigation */}
@@ -801,12 +802,10 @@ const Navbar: React.FC = () => {
       </div>
       
       {/* Menu vertical mobile (en dehors du conteneur principal) */}
-      {isMenuOpen && window.innerWidth < 768 && (
-        <MobileVerticalMenu 
-          isOpen={isMenuOpen} 
-          onClose={() => setIsMenuOpen(false)} 
-        />
-      )}
+      <MobileVerticalMenu 
+        isOpen={isMobileMenuVisible} 
+        onClose={() => setIsMobileMenuVisible(false)} 
+      />
       
       {/* Overlay pour la recherche */}
       {isSearchOpen && <SearchBar />}

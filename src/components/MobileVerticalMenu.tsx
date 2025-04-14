@@ -36,18 +36,23 @@ const MobileVerticalMenu: React.FC<MobileVerticalMenuProps> = ({ isOpen, onClose
       return (
         <div className="space-y-2">
           {menuItems.map((item) => (
-            <motion.button
+            <Link
               key={item.slug}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleItemClick(item, 'main')}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-lg transition-colors"
+              to={`/categorie/${item.slug}`}
+              onClick={onClose}
+              className="block w-full"
             >
-              <span className="flex items-center space-x-3">
-                {item.icon && <span className="text-xl">{item.icon}</span>}
-                <span className="font-medium">{item.title}</span>
-              </span>
-              <span className="text-gray-400">›</span>
-            </motion.button>
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <span className="flex items-center space-x-3">
+                  {item.icon && <span className="text-xl">{item.icon}</span>}
+                  <span className="font-medium">{item.title}</span>
+                </span>
+                <span className="text-gray-400">›</span>
+              </motion.div>
+            </Link>
           ))}
         </div>
       );
@@ -60,15 +65,20 @@ const MobileVerticalMenu: React.FC<MobileVerticalMenuProps> = ({ isOpen, onClose
       return (
         <div className="space-y-2">
           {item.subItems.map((subItem) => (
-            <motion.button
+            <Link
               key={subItem.slug}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleItemClick(subItem, 'sub', item)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-lg transition-colors"
+              to={`/categorie/${item.slug}/${subItem.slug}`}
+              onClick={onClose}
+              className="block w-full"
             >
-              <span>{subItem.title}</span>
-              {subItem.level3Items && <span className="text-gray-400">›</span>}
-            </motion.button>
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <span>{subItem.title}</span>
+                {subItem.level3Items && <span className="text-gray-400">›</span>}
+              </motion.div>
+            </Link>
           ))}
         </div>
       );
@@ -81,15 +91,20 @@ const MobileVerticalMenu: React.FC<MobileVerticalMenuProps> = ({ isOpen, onClose
       return (
         <div className="space-y-2">
           {item.level3Items.map((level3Item) => (
-            <motion.button
+            <Link
               key={level3Item.slug}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleItemClick(level3Item, 'level3', item)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-lg transition-colors"
+              to={`/categorie/${currentLevel.parent?.slug}/${item.slug}/${level3Item.slug}`}
+              onClick={onClose}
+              className="block w-full"
             >
-              <span>{level3Item.title}</span>
-              {level3Item.level4Items && <span className="text-gray-400">›</span>}
-            </motion.button>
+              <motion.div
+                whileTap={{ scale: 0.98 }}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <span>{level3Item.title}</span>
+                {level3Item.level4Items && <span className="text-gray-400">›</span>}
+              </motion.div>
+            </Link>
           ))}
         </div>
       );
@@ -104,7 +119,7 @@ const MobileVerticalMenu: React.FC<MobileVerticalMenuProps> = ({ isOpen, onClose
           {item.level4Items.map((level4Item) => (
             <Link
               key={level4Item.slug}
-              to={`/products/${currentLevel.parent?.slug}/${item.slug}/${level4Item.slug}`}
+              to={`/categorie/${currentLevel.parent?.slug}/${item.slug}/${level4Item.slug}`}
               onClick={onClose}
               className="block p-4 hover:bg-gray-50 rounded-lg transition-colors"
             >
