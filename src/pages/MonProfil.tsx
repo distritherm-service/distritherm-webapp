@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
-import { FaBuilding, FaEnvelope, FaLock, FaUser, FaPhone, FaIdCard, FaSave, FaKey, FaUserEdit } from 'react-icons/fa';
+import { FaBuilding, FaEnvelope, FaLock, FaUser, FaPhone, FaIdCard, FaSave, FaKey, FaUserEdit, FaSignOutAlt } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
 
@@ -25,7 +25,7 @@ interface PasswordFormData {
 type ProfileTab = 'informations' | 'motDePasse';
 
 const MonProfil: React.FC = () => {
-  const { user, isAuthenticated, updateUser } = useAuth();
+  const { user, isAuthenticated, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<ProfileFormData>({
     firstName: '',
@@ -56,8 +56,8 @@ const MonProfil: React.FC = () => {
         lastName: user.lastName || '',
         email: user.email || '',
         phoneNumber: user.phoneNumber || '',
-        companyName: user.companyName || '',
-        siretNumber: user.siretNumber || '',
+        companyName: user.companyName || user.client?.companyName || '',
+        siretNumber: user.siretNumber || user.client?.siretNumber || '',
       });
     }
   }, [isAuthenticated, navigate, user]);
@@ -132,21 +132,21 @@ const MonProfil: React.FC = () => {
         siretNumber: formData.siretNumber.replace(/\D/g, '')
       };
 
-      console.log('Envoi des données de mise à jour:', updatedData);
+      // console.log('Envoi des données de mise à jour:', updatedData);
       
       // Utiliser la fonction updateProfile du service authService qui gère correctement le formatage
       const response = await authService.updateProfile(updatedData);
       
-      console.log('Réponse complète de mise à jour du profil:', response);
-      console.log('Structure de la réponse:', Object.keys(response));
+      // console.log('Réponse complète de mise à jour du profil:', response);
+      // console.log('Structure de la réponse:', Object.keys(response));
       
       if (response.user) {
-        console.log('Données utilisateur reçues:', response.user);
+        // console.log('Données utilisateur reçues:', response.user);
         updateUser(response.user);
         setSuccessMessage('Votre profil a été mis à jour avec succès.');
         setIsEditing(false);
       } else {
-        console.log('Aucune donnée utilisateur dans la réponse');
+        // console.log('Aucune donnée utilisateur dans la réponse');
         // Essayons quand même de conserver les données saisies par l'utilisateur
         const currentUser = authService.getCurrentUser();
         if (currentUser) {
@@ -164,7 +164,7 @@ const MonProfil: React.FC = () => {
         }
       }
     } catch (error: any) {
-      console.error('Erreur de mise à jour du profil:', error);
+      // console.error('Erreur de mise à jour du profil:', error);
       let errorMessage = 'Une erreur est survenue lors de la mise à jour du profil.';
       
       if (error.response?.status === 400) {
@@ -236,245 +236,438 @@ const MonProfil: React.FC = () => {
     }
   };
 
+  const formatUserName = () => {
+    if (user?.firstName && user.lastName) {
+      return `${user.firstName} ${user.lastName}`;
+    } else if (user?.firstName) {
+      return user.firstName;
+    } else if (user?.lastName) {
+      return user.lastName;
+    } else {
+      return user?.email || 'Utilisateur';
+    }
+  };
+
   return (
     <Layout>
       <div className="container mx-auto px-4 py-12">
-        <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="bg-gradient-to-r from-teal-500 to-blue-500 px-6 py-4">
-            <h1 className="text-2xl font-bold text-white">Mon Profil</h1>
+        <div className="max-w-5xl mx-auto">
+          {/* En-tête du profil */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+            <div className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] px-6 py-8">
+              <div className="flex items-center">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                  <span className="text-2xl font-bold text-[#007FFF]">
+                    {user?.firstName ? user.firstName[0].toUpperCase() : user?.email?.[0].toUpperCase()}
+                  </span>
+                </div>
+                <div className="ml-6">
+                  <h1 className="text-2xl font-bold text-white">{formatUserName()}</h1>
+                  <p className="text-[#FFFFFF]/90">{user?.email}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Raccourcis */}
+            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Link
+                to="/mes-commandes"
+                className="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:border-[#007FFF] transition-colors group"
+              >
+                <div className="w-12 h-12 bg-[#7CB9E8]/20 rounded-lg flex items-center justify-center group-hover:bg-[#007FFF] transition-colors">
+                  <svg className="w-6 h-6 text-[#007FFF] group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-medium text-gray-900">Mes commandes</h3>
+                  <p className="text-sm text-gray-500">Suivre mes commandes</p>
+                </div>
+              </Link>
+
+              <Link
+                to="/mes-devis"
+                className="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:border-[#007FFF] transition-colors group"
+              >
+                <div className="w-12 h-12 bg-[#7CB9E8]/20 rounded-lg flex items-center justify-center group-hover:bg-[#007FFF] transition-colors">
+                  <svg className="w-6 h-6 text-[#007FFF] group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-medium text-gray-900">Mes devis</h3>
+                  <p className="text-sm text-gray-500">Gérer mes devis</p>
+                </div>
+              </Link>
+
+              <button
+                onClick={logout}
+                className="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:border-red-500 transition-colors group"
+              >
+                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-500 transition-colors">
+                  <FaSignOutAlt className="w-6 h-6 text-red-600 group-hover:text-white" />
+                </div>
+                <div className="ml-4">
+                  <h3 className="font-medium text-gray-900">Déconnexion</h3>
+                  <p className="text-sm text-gray-500">Se déconnecter</p>
+                </div>
+              </button>
+            </div>
           </div>
-          
-          {/* Tabs de navigation */}
-          <div className="flex border-b">
-            <button
-              className={`flex items-center px-6 py-4 text-sm font-medium ${
-                activeTab === 'informations'
-                  ? 'border-b-2 border-teal-500 text-teal-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => switchTab('informations')}
-            >
-              <FaUserEdit className="mr-2" />
-              Informations personnelles
-            </button>
-            {user && user.type !== 'PROVIDER' && (
+
+          {/* Contenu du profil */}
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] px-6 py-4">
+              <h1 className="text-2xl font-bold text-white">Mon Profil</h1>
+            </div>
+            
+            {/* Tabs de navigation */}
+            <div className="flex border-b">
               <button
                 className={`flex items-center px-6 py-4 text-sm font-medium ${
-                  activeTab === 'motDePasse'
-                    ? 'border-b-2 border-teal-500 text-teal-600'
+                  activeTab === 'informations'
+                    ? 'border-b-2 border-[#007FFF] text-[#007FFF]'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
-                onClick={() => switchTab('motDePasse')}
+                onClick={() => switchTab('informations')}
               >
-                <FaKey className="mr-2" />
-                Changer de mot de passe
+                <FaUserEdit className="mr-2" />
+                Informations personnelles
               </button>
-            )}
-          </div>
-          
-          <div className="p-6">
-            {error && (
-              <div className="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
-                <p>{error}</p>
-              </div>
-            )}
+              {user && user.type !== 'PROVIDER' && (
+                <button
+                  className={`flex items-center px-6 py-4 text-sm font-medium ${
+                    activeTab === 'motDePasse'
+                      ? 'border-b-2 border-[#007FFF] text-[#007FFF]'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                  onClick={() => switchTab('motDePasse')}
+                >
+                  <FaKey className="mr-2" />
+                  Changer de mot de passe
+                </button>
+              )}
+            </div>
             
-            {successMessage && (
-              <div className="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
-                <p>{successMessage}</p>
-              </div>
-            )}
-            
-            {/* Tab d'informations personnelles */}
-            {activeTab === 'informations' && (
-              <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
+            <div className="p-6">
+              {error && (
+                <div className="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
+                  <p>{error}</p>
+                </div>
+              )}
+              
+              {successMessage && (
+                <div className="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded">
+                  <p>{successMessage}</p>
+                </div>
+              )}
+              
+              {/* Tab d'informations personnelles */}
+              {activeTab === 'informations' && (
+                <form onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Prénom
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FaUser className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleChange}
+                          disabled={!isEditing}
+                          className={`w-full pl-10 px-4 py-3 rounded-lg border ${
+                            !isEditing 
+                              ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
+                              : 'border-gray-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                          }`}
+                          placeholder="Prénom"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nom
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FaUser className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleChange}
+                          disabled={!isEditing}
+                          className={`w-full pl-10 px-4 py-3 rounded-lg border ${
+                            !isEditing 
+                              ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
+                              : 'border-gray-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                          }`}
+                          placeholder="Nom"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Prénom
+                      Adresse e-mail
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaUser className="h-5 w-5 text-gray-400" />
+                        <FaEnvelope className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        disabled
+                        className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 bg-gray-100 cursor-not-allowed"
+                        placeholder="Email"
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-gray-500">L'adresse e-mail ne peut pas être modifiée.</p>
+                    {user && !user?.client?.emailVerified && (
+                      <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                        <p className="text-sm text-yellow-700 flex items-center">
+                          <span className="mr-2">⚠️</span>
+                          Votre email n'est pas vérifié. Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification.
+                        </p>
+                        <button
+                          onClick={() => navigate('/verification-email')}
+                          className="mt-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                        >
+                          <FaEnvelope className="mr-2" />
+                          Vérifier mon email
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Numéro de téléphone
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FaPhone className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="tel"
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
                         onChange={handleChange}
                         disabled={!isEditing}
                         className={`w-full pl-10 px-4 py-3 rounded-lg border ${
                           !isEditing 
                             ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
-                            : 'border-gray-200 bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent'
+                            : 'border-gray-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                         }`}
-                        placeholder="Prénom"
+                        placeholder="06 12 34 56 78"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">Format: 06 12 34 56 78 (sera automatiquement converti au format international)</p>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Nom de l'entreprise
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FaBuilding className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        name="companyName"
+                        value={formData.companyName}
+                        onChange={handleChange}
+                        disabled={!isEditing}
+                        className={`w-full pl-10 px-4 py-3 rounded-lg border ${
+                          !isEditing 
+                            ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
+                            : 'border-gray-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                        }`}
+                        placeholder="Nom de l'entreprise"
                       />
                     </div>
                   </div>
                   
-                  <div>
+                  <div className="mb-6">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nom
+                      Numéro SIRET
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaUser className="h-5 w-5 text-gray-400" />
+                        <FaIdCard className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
                         type="text"
-                        name="lastName"
-                        value={formData.lastName}
+                        name="siretNumber"
+                        value={formData.siretNumber}
                         onChange={handleChange}
                         disabled={!isEditing}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
                         className={`w-full pl-10 px-4 py-3 rounded-lg border ${
                           !isEditing 
                             ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
-                            : 'border-gray-200 bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent'
+                            : 'border-gray-200 bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                         }`}
-                        placeholder="Nom"
+                        placeholder="12345678901234"
                       />
                     </div>
+                    <p className="mt-1 text-xs text-gray-500">Format: 14 chiffres uniquement, sans espaces ni caractères spéciaux</p>
                   </div>
-                </div>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Adresse e-mail
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaEnvelope className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      disabled
-                      className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 bg-gray-100 cursor-not-allowed"
-                      placeholder="Email"
-                    />
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500">L'adresse e-mail ne peut pas être modifiée.</p>
-                  {user && !user?.client?.emailVerified && (
-                    <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                      <p className="text-sm text-yellow-700 flex items-center">
-                        <span className="mr-2">⚠️</span>
-                        Votre email n'est pas vérifié. Veuillez vérifier votre boîte de réception et cliquer sur le lien de vérification.
-                      </p>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Numéro de téléphone
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaPhone className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="tel"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      className={`w-full pl-10 px-4 py-3 rounded-lg border ${
-                        !isEditing 
-                          ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
-                          : 'border-gray-200 bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent'
-                      }`}
-                      placeholder="06 12 34 56 78"
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">Format: 06 12 34 56 78 (sera automatiquement converti au format international)</p>
-                </div>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nom de l'entreprise
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaBuilding className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="companyName"
-                      value={formData.companyName}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      className={`w-full pl-10 px-4 py-3 rounded-lg border ${
-                        !isEditing 
-                          ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
-                          : 'border-gray-200 bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent'
-                      }`}
-                      placeholder="Nom de l'entreprise"
-                    />
-                  </div>
-                </div>
-                
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Numéro SIRET
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <FaIdCard className="h-5 w-5 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      name="siretNumber"
-                      value={formData.siretNumber}
-                      onChange={handleChange}
-                      disabled={!isEditing}
-                      pattern="[0-9]*"
-                      inputMode="numeric"
-                      className={`w-full pl-10 px-4 py-3 rounded-lg border ${
-                        !isEditing 
-                          ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
-                          : 'border-gray-200 bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent'
-                      }`}
-                      placeholder="12345678901234"
-                    />
-                  </div>
-                  <p className="mt-1 text-xs text-gray-500">Format: 14 chiffres uniquement, sans espaces ni caractères spéciaux</p>
-                </div>
-                
-                <div className="mt-8 flex justify-end space-x-4">
-                  {isEditing ? (
-                    <>
+                  
+                  <div className="mt-8 flex justify-end space-x-4">
+                    {isEditing ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsEditing(false);
+                            // Réinitialiser le formulaire avec les données utilisateur
+                            if (user) {
+                              setFormData({
+                                firstName: user.firstName || '',
+                                lastName: user.lastName || '',
+                                email: user.email || '',
+                                phoneNumber: user.phoneNumber || '',
+                                companyName: user.companyName || '',
+                                siretNumber: user.siretNumber || '',
+                              });
+                            }
+                            setError('');
+                            setSuccessMessage('');
+                          }}
+                          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        >
+                          Annuler
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSaving}
+                          className={`flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                            isSaving 
+                              ? 'bg-[#7CB9E8] cursor-not-allowed' 
+                              : 'bg-[#007FFF] hover:bg-[#0066CC] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007FFF]'
+                          }`}
+                        >
+                          {isSaving ? (
+                            <>
+                              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Enregistrement...
+                            </>
+                          ) : (
+                            <>
+                              <FaSave className="mr-2" />
+                              Enregistrer
+                            </>
+                          )}
+                        </button>
+                      </>
+                    ) : (
                       <button
                         type="button"
                         onClick={() => {
-                          setIsEditing(false);
-                          // Réinitialiser le formulaire avec les données utilisateur
-                          if (user) {
-                            setFormData({
-                              firstName: user.firstName || '',
-                              lastName: user.lastName || '',
-                              email: user.email || '',
-                              phoneNumber: user.phoneNumber || '',
-                              companyName: user.companyName || '',
-                              siretNumber: user.siretNumber || '',
-                            });
-                          }
+                          setIsEditing(true);
                           setError('');
                           setSuccessMessage('');
                         }}
-                        className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
-                        Annuler
+                        <FaUserEdit className="mr-2" />
+                        Modifier
                       </button>
+                    )}
+                  </div>
+                </form>
+              )}
+              
+              {/* Tab de changement de mot de passe */}
+              {activeTab === 'motDePasse' && (
+                <form onSubmit={handlePasswordSubmit} className="mt-4">
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Mot de passe actuel
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FaLock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="password"
+                          name="currentPassword"
+                          value={passwordData.currentPassword}
+                          onChange={handlePasswordChange}
+                          required
+                          className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="********"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nouveau mot de passe
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FaLock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="password"
+                          name="newPassword"
+                          value={passwordData.newPassword}
+                          onChange={handlePasswordChange}
+                          required
+                          minLength={8}
+                          className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="********"
+                        />
+                      </div>
+                      <p className="mt-1 text-xs text-gray-500">Le mot de passe doit contenir au moins 8 caractères.</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirmer le nouveau mot de passe
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <FaLock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                          type="password"
+                          name="confirmPassword"
+                          value={passwordData.confirmPassword}
+                          onChange={handlePasswordChange}
+                          required
+                          className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="********"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end">
                       <button
                         type="submit"
                         disabled={isSaving}
-                        className={`flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                          isSaving 
-                            ? 'bg-teal-400 cursor-not-allowed' 
-                            : 'bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
-                        }`}
+                        className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         {isSaving ? (
                           <>
@@ -486,124 +679,16 @@ const MonProfil: React.FC = () => {
                           </>
                         ) : (
                           <>
-                            <FaSave className="mr-2" />
-                            Enregistrer
+                            <FaLock className="mr-2" />
+                            Changer le mot de passe
                           </>
                         )}
                       </button>
-                    </>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditing(true);
-                        setError('');
-                        setSuccessMessage('');
-                      }}
-                      className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                    >
-                      <FaUserEdit className="mr-2" />
-                      Modifier
-                    </button>
-                  )}
-                </div>
-              </form>
-            )}
-            
-            {/* Tab de changement de mot de passe */}
-            {activeTab === 'motDePasse' && (
-              <form onSubmit={handlePasswordSubmit} className="mt-4">
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Mot de passe actuel
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaLock className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="password"
-                        name="currentPassword"
-                        value={passwordData.currentPassword}
-                        onChange={handlePasswordChange}
-                        required
-                        className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        placeholder="********"
-                      />
                     </div>
                   </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nouveau mot de passe
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaLock className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="password"
-                        name="newPassword"
-                        value={passwordData.newPassword}
-                        onChange={handlePasswordChange}
-                        required
-                        minLength={8}
-                        className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        placeholder="********"
-                      />
-                    </div>
-                    <p className="mt-1 text-xs text-gray-500">Le mot de passe doit contenir au moins 8 caractères.</p>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Confirmer le nouveau mot de passe
-                      <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <FaLock className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <input
-                        type="password"
-                        name="confirmPassword"
-                        value={passwordData.confirmPassword}
-                        onChange={handlePasswordChange}
-                        required
-                        className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                        placeholder="********"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={isSaving}
-                      className="flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
-                    >
-                      {isSaving ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Enregistrement...
-                        </>
-                      ) : (
-                        <>
-                          <FaLock className="mr-2" />
-                          Changer le mot de passe
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </form>
-            )}
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </div>

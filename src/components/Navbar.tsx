@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
 import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt, FaSignOutAlt, FaPhone } from 'react-icons/fa';
@@ -8,12 +8,13 @@ import { useCart } from '../contexts/CartContext';
 import { useSearch } from '../contexts/SearchContext';
 import { useAuth } from '../contexts/AuthContext';
 import SearchBar from './SearchBar';
-import UserProfileModal from './UserProfileModal';
+//import UserProfileModal from './UserProfileModal';
 import CartPreview from './CartPreview';
 import FavoritesPreview from './FavoritesPreview';
 import CallbackForm from './CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
-import { AnimatePresence } from 'framer-motion';
+//import { AnimatePresence } from 'framer-motion';
+import MobileVerticalMenu from './MobileVerticalMenu';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -36,6 +37,7 @@ const Navbar: React.FC = () => {
   const [isFavoritesPreviewOpen, setIsFavoritesPreviewOpen] = useState(false);
   const cartPreviewRef = useRef<HTMLDivElement>(null);
   const favoritesPreviewRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Calcul du nombre total d'articles dans le panier
   const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -512,13 +514,8 @@ const Navbar: React.FC = () => {
                   data-testid="all-products-button"
                 >
                   <FaBars className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-90' : ''}`} />
-                  <span>Tous nos produits</span>
+                  <span>Nos Catégories</span>
                 </button>
-              </div>
-              
-              {/* Pour mobile, on affiche un titre simple */}
-              <div className="sm:hidden font-medium text-gray-700">
-                Menu
               </div>
               
               {/* Liens de navigation au centre - Desktop */}
@@ -639,7 +636,16 @@ const Navbar: React.FC = () => {
                           </svg>
                           Mes commandes
                         </Link>
-                        
+                        <Link
+                          to="/Mes-devis"
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <svg className="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Mes Devis
+                        </Link>
                         <button
                           onClick={() => {
                             logout();
@@ -671,115 +677,113 @@ const Navbar: React.FC = () => {
               id="mobile-menu" 
               className={`sm:hidden mt-4 space-y-2 ${isMobileMenuOpen ? 'block' : 'hidden'}`}
             >
-              {/* Bouton mobile pour afficher le menu des produits */}
-              <div className="mb-4">
+              {/* Menu principal mobile */}
+              <div className="space-y-2">
+                {/* Bouton Voir toutes les catégories */}
                 <button
-                  onClick={(e) => {
+                  onClick={() => {
                     setIsMobileMenuOpen(false);
-                    setTimeout(() => {
-                      setIsMenuOpen(true);
-                      console.log("Ouverture du menu vertical depuis le bouton mobile");
-                    }, 100);
+                    setIsMenuOpen(true);
                   }}
-                  className="flex w-full items-center justify-center py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-md"
+                  className="flex w-full items-center justify-between py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
                   id="mobile-categories-button"
                   aria-label="Voir toutes les catégories"
-                  data-testid="mobile-categories-button"
                 >
-                  <FaBars className="mr-2" />
-                  <span>Voir toutes les catégories</span>
+                  <span className="font-medium">Voir toutes les catégories</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
-              </div>
 
-              <Link
-                to="/"
-                className={`block py-2 ${isActive('/') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Accueil
-              </Link>
-              <Link
-                to="/a-propos"
-                className={`block py-2 ${isActive('/a-propos') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                À propos
-              </Link>
-              <Link
-                to="/nos-produits"
-                className={`block py-2 ${isActive('/nos-produits') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-               Produits
-              </Link>
-              <Link
-                to="/promotions"
-                className={`block py-2 ${isActive('/promotions') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Promotions
-              </Link>
-              <Link
-                to="/espace-recrutement"
-                className={`block py-2 ${isActive('/espace-recrutement') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-               Recrutement
-              </Link>
-              <Link
-                to="/nous-contact"
-                className={`block py-2 ${isActive('/nous-contact') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Contact
-              </Link>
-              
-              {/* Version mobile du sélecteur de magasin */}
-              {/* <div className="border-t border-b py-3 my-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Votre magasin :</span>
-                  <span>{selectedStore}</span>
-                </div>
-                <div className="mt-2 space-y-1">
-                  <button
-                    onClick={() => {
-                      handleStoreSelect('Magasin Taverny');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left py-1 px-2 text-gray-700 hover:bg-gray-100 rounded"
-                  >
-                    Magasin Taverny
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleStoreSelect('Magasin Drancy');
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left py-1 px-2 text-gray-700 hover:bg-gray-100 rounded"
-                  >
-                    Magasin Drancy
-                  </button>
-                </div>
-              </div> */}
-              
-              <div className="border-t pt-4 mt-4">
-                {isAuthenticated ? (
+                {/* Liens de navigation */}
+                <nav className="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
                   <Link
-                    to="/mon-profil"
-                    className="flex items-center w-full py-2 text-gray-700 hover:text-teal-600 transition-colors"
+                    to="/"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors first:rounded-t-lg`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <FaUser className="mr-2" />
-                    <span>Mon profil</span>
+                    Accueil
                   </Link>
+           
+                  <Link
+                    to="/a-propos"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/a-propos') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    À propos
+                  </Link>
+                  <Link
+                    to="/nos-produits"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/nos-produits') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Produits
+                  </Link>
+                  <Link
+                    to="/promotions"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/promotions') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Promotions
+                  </Link>
+                  <Link
+                    to="/espace-recrutement"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/espace-recrutement') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Recrutement
+                  </Link>
+                  <Link
+                    to="/nous-contact"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/nous-contact') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors last:rounded-b-lg`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                </nav>
+
+                {/* Bouton Connexion/Profil */}
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      navigate('/mon-profil');
+                    }}
+                    className="flex w-full items-center justify-between py-3.5 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
+                  >
+                    <span className="flex items-center">
+                      <FaUser className="w-4 h-4 mr-2" />
+                      <span className="font-medium">{user?.name || 'Mon profil'}</span>
+                    </span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 ) : (
                   <Link
                     to="/connexion"
-                    className="flex items-center w-full py-2 text-center bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-md px-4 justify-center"
+                    className="flex w-full items-center justify-between py-3.5 px-4 bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg shadow-sm"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <FaUser className="mr-2" />
-                    <span>Connexion</span>
+                    <span className="flex items-center">
+                      <FaUser className="w-4 h-4 mr-2" />
+                      <span className="font-medium">Connexion</span>
+                    </span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
                   </Link>
                 )}
               </div>
@@ -787,9 +791,22 @@ const Navbar: React.FC = () => {
           </div>
         </div>
         
-        {/* Menu vertical déroulant */}
-        {isMenuOpen && <VerticalMenu isOpen={true} onClose={() => setIsMenuOpen(false)} />}
+        {/* Menu vertical déroulant desktop */}
+        {isMenuOpen && window.innerWidth >= 768 && (
+          <VerticalMenu 
+            isOpen={isMenuOpen} 
+            onClose={() => setIsMenuOpen(false)} 
+          />
+        )}
       </div>
+      
+      {/* Menu vertical mobile (en dehors du conteneur principal) */}
+      {isMenuOpen && window.innerWidth < 768 && (
+        <MobileVerticalMenu 
+          isOpen={isMenuOpen} 
+          onClose={() => setIsMenuOpen(false)} 
+        />
+      )}
       
       {/* Overlay pour la recherche */}
       {isSearchOpen && <SearchBar />}

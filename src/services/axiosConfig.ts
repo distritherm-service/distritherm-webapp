@@ -59,17 +59,17 @@ export const saveAuthData = (data: AuthResponse): void => {
   }
   
   // Log pour débogage
-  console.log('Données d\'authentification sauvegardées:', {
-    token: !!data.accessToken,
-    user: !!data.user
-  });
+  // console.log('Données d\'authentification sauvegardées:', {
+  //   token: !!data.accessToken,
+  //   user: !!data.user
+  // });
 };
 
 // Fonction pour supprimer les données d'authentification
 export const clearAuthData = (): void => {
   localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
   localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-  console.log('Données d\'authentification supprimées');
+  // console.log('Données d\'authentification supprimées');
 };
 
 // Fonction pour récupérer le token d'accès
@@ -91,7 +91,7 @@ let refreshSubscribers: Array<(token: string) => void> = [];
 // Fonction pour rafraîchir le token
 const refreshToken = async (): Promise<string> => {
   try {
-    console.log('Tentative de rafraîchissement du token...');
+    // console.log('Tentative de rafraîchissement du token...');
     const response = await axios.post<RefreshTokenResponse>(
       `${BASE_API_URL}/auth/refresh-token`,
       {},
@@ -102,10 +102,10 @@ const refreshToken = async (): Promise<string> => {
     
     const { accessToken } = response.data;
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-    console.log('Token rafraîchi avec succès');
+    // console.log('Token rafraîchi avec succès');
     return accessToken;
   } catch (error) {
-    console.error('Échec du rafraîchissement du token:', error);
+    // console.error('Échec du rafraîchissement du token:', error);
     clearAuthData();
     throw error;
   }
@@ -137,7 +137,7 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('Erreur dans l\'intercepteur de requête:', error);
+    // console.error('Erreur dans l\'intercepteur de requête:', error);
     return Promise.reject(error);
   }
 );
@@ -155,10 +155,10 @@ axiosInstance.interceptors.response.use(
     const originalRequest: any = error.config;
     const errorResponse = error.response?.data as any;
     
-    console.error('Erreur de réponse:', {
-      status: error.response?.status,
-      message: errorResponse?.message || error.message
-    });
+    // console.error('Erreur de réponse:', {
+    //   status: error.response?.status,
+    //   message: errorResponse?.message || error.message
+    // });
     
     // Vérifier si l'erreur est liée à un token invalide (401)
     if (
@@ -166,14 +166,14 @@ axiosInstance.interceptors.response.use(
       (errorResponse?.message === 'Token invalide' || errorResponse?.message === 'Non autorisé') &&
       !originalRequest._retry
     ) {
-      console.log('Token invalide détecté, tentative de rafraîchissement...');
+      // console.log('Token invalide détecté, tentative de rafraîchissement...');
       
       // Marquer la requête pour éviter les boucles infinies
       originalRequest._retry = true;
       
       // Si un rafraîchissement est déjà en cours, mettre la requête en attente
       if (isRefreshing) {
-        console.log('Rafraîchissement déjà en cours, mise en file d\'attente de la requête');
+        // console.log('Rafraîchissement déjà en cours, mise en file d\'attente de la requête');
         try {
           // Attendre le nouveau token et réessayer la requête
           const newToken = await new Promise<string>((resolve) => {
@@ -186,7 +186,7 @@ axiosInstance.interceptors.response.use(
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
-          console.error('Erreur lors de l\'attente du rafraîchissement:', refreshError);
+          // console.error('Erreur lors de l\'attente du rafraîchissement:', refreshError);
           return Promise.reject(refreshError);
         }
       }
@@ -208,7 +208,7 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         // Gérer les erreurs de rafraîchissement
-        console.error('Échec du processus de rafraîchissement:', refreshError);
+        // console.error('Échec du processus de rafraîchissement:', refreshError);
         
         // Déclencher un événement pour informer l'application
         const event = new CustomEvent('auth:logout', { detail: 'Session expirée' });

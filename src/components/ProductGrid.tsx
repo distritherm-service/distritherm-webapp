@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import ProductCard from './ProductCard';
+// Correction de l'importation du composant ProductCard
+import ProductCard from '../components/ProductCard';
 import { Product } from '../data/products';
 
 interface ProductGridProps {
