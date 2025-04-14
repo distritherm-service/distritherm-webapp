@@ -11,6 +11,7 @@ import { useAuth } from './contexts/AuthContext';
 import EmailVerification from './pages/EmailVerification';
 import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import ValidateEmail from './pages/ValidateEmail';
+import CategoryProducts from './pages/CategoryProducts';
 
 // Composant de chargement simple en attendant de créer le composant LoadingSpinner
 const LoadingSpinner = () => (
@@ -69,6 +70,8 @@ const AppRoutes = () => {
       {/* Routes publiques accessibles à tous */}
       <Route path="/" element={<Home />} />
       <Route path="/nos-produits" element={<NosProducts />} />
+      <Route path="/categorie" element={<Navigate to="/" replace />} />
+      <Route path="/categorie/:category/:subCategory?/:level3?/:level4?" element={<CategoryProducts />} />
       <Route path="/produit/:id" element={<ProductDetail />} />
       <Route path="/promotions" element={<Promotions />} />
       <Route path="/espace-recrutement" element={<EspaceRecrutement />} />

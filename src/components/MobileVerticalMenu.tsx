@@ -35,7 +35,7 @@ const MobileVerticalMenu: React.FC<MobileVerticalMenuProps> = ({ isOpen, onClose
     if (menuHistory.length === 0) {
       return (
         <div className="space-y-2">
-          {menuItems.map((item) => (
+          {menuItems.map((item: MenuItem) => (
             <motion.button
               key={item.slug}
               whileTap={{ scale: 0.98 }}

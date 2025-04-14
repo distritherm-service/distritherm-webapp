@@ -157,7 +157,7 @@ const AdditionalInfoForm: React.FC<AdditionalInfoFormProps> = ({
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:from-teal-700 hover:to-blue-700"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] text-white rounded-lg hover:from-[#6BA8D7] hover:to-[#0066CC]"
               disabled={loading}
             >
               {loading ? 'Chargement...' : 'S\'inscrire'}

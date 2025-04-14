@@ -1,9 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 interface Category {
   title: string;
   image: string;
   icon: React.ReactNode;
+  slug: string;
 }
 
 interface CategoryGridProps {
@@ -15,7 +17,11 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
     <div className="max-w-6xl mx-auto">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
         {categories.map((category, index) => (
-          <div key={index} className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
+          <Link 
+            key={index} 
+            to={`/categorie/${category.slug}`}
+            className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer block"
+          >
             <img 
               src={category.image}
               alt={category.title} 
@@ -30,7 +36,7 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
                 {category.title}
               </h3>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

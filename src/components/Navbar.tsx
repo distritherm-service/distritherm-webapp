@@ -179,7 +179,7 @@ const Navbar: React.FC = () => {
     }
     
     // Ajouter un log pour déboguer
-    console.log("Menu des produits toggled:", !isMenuOpen);
+   // console.log("Menu des produits toggled:", !isMenuOpen);
   };
 
   const handleSearchClick = () => {
@@ -514,7 +514,7 @@ const Navbar: React.FC = () => {
                   data-testid="all-products-button"
                 >
                   <FaBars className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-90' : ''}`} />
-                  <span>Nos Catégories</span>
+                  <span className="hidden lg:inline">Nos Catégories</span>
                 </button>
               </div>
               

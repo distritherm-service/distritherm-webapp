@@ -7,7 +7,7 @@ import DeliveryStep from './DeliveryStep';
 import ConfirmationStep from './ConfirmationStep';
 import { useCart } from '../../contexts/CartContext';
 import Breadcrumb from '../../components/Breadcrumb';
-import Slider from '../../components/Slider';
+// import Slider from '../../components/Slider';
 import Footer from '../../components/Footer';
 import BrandsSection from '../../components/BrandsSection';
 import { motion } from 'framer-motion';
@@ -70,7 +70,7 @@ const Cart: React.FC = () => {
   if (isEmpty) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Slider showOnPages={['/panier']} />
+        {/* <Slider showOnPages={['/panier']} /> */}
         <Breadcrumb />
         <div className="container mx-auto px-4 py-8 sm:py-12">
         <div className="text-center mb-16">
@@ -107,7 +107,7 @@ const Cart: React.FC = () => {
 
   return (
     <div className="min-h-screen">
-      <Slider showOnPages={['/panier']} />
+      
       
       <div className="bg-gray-50 pb-8 sm:pb-16">
         <div className="container mx-auto px-3 sm:px-4">

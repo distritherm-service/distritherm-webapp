@@ -5,6 +5,7 @@ import { FaHome, FaChevronRight } from 'react-icons/fa';
 interface BreadcrumbItem {
   path: string;
   label: string;
+  id: string;
 }
 
 const routeLabels: { [key: string]: string } = {
@@ -22,7 +23,8 @@ const routeLabels: { [key: string]: string } = {
   '/connexion': 'Connexion',
   '/mon-profil': 'Mon Profil',
   '/validate-email': 'Vérification Email',
-  '/mes-devis': 'Mes Devis'
+  '/mes-devis': 'Mes Devis',
+  '/categorie': 'Catégories'
 };
 
 const Breadcrumb: React.FC = () => {
@@ -30,22 +32,46 @@ const Breadcrumb: React.FC = () => {
   const pathnames = location.pathname.split('/').filter((x) => x);
   
   const breadcrumbItems: BreadcrumbItem[] = [
-    { path: '/', label: 'Accueil' },
-    ...pathnames.map((value, index) => {
-      const path = '/' + pathnames.slice(0, index + 1).join('/');
-      return {
-        path,
-        label: routeLabels[path] || value
-      };
-    })
+    { path: '/', label: 'Accueil', id: 'home' }
   ];
+
+  // Ajouter les éléments du fil d'Ariane
+  pathnames.forEach((value, index) => {
+    const path = '/' + pathnames.slice(0, index + 1).join('/');
+    const uniqueId = `${path}-${index}`;
+    
+    if (path.startsWith('/categorie')) {
+      // Pour le lien "Catégories"
+      if (index === 0) {
+        breadcrumbItems.push({ 
+          path: '/', 
+          label: 'Catégories',
+          id: 'categories-root'
+        });
+      } else {
+        // Pour les catégories spécifiques
+        const categorySlug = value;
+        breadcrumbItems.push({
+          path,
+          label: categorySlug.charAt(0).toUpperCase() + categorySlug.slice(1),
+          id: uniqueId
+        });
+      }
+    } else {
+      breadcrumbItems.push({
+        path,
+        label: routeLabels[path] || value,
+        id: uniqueId
+      });
+    }
+  });
 
   return (
     <nav className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 mt-12 md:mt-14">
       <div className="container mx-auto px-3">
         <div className="flex items-center space-x-1.5 py-1.5 overflow-x-auto whitespace-nowrap scrollbar-hide">
           {breadcrumbItems.map((item, index) => (
-            <React.Fragment key={item.path}>
+            <React.Fragment key={item.id}>
               {index === 0 ? (
                 <Link
                   to="/"

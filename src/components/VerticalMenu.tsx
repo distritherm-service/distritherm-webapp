@@ -121,7 +121,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                 </motion.button>
               </div>
               <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-                {menuItems.map((item) => (
+                {menuItems.map((item: MenuItem) => (
                   <motion.button
                     key={item.slug}
                     variants={itemVariants}
@@ -165,13 +165,13 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
                   <h2 className="text-xl font-semibold text-gray-800">
-                    {menuItems.find(item => item.slug === activeMenu)?.title}
+                    {menuItems.find((item: MenuItem) => item.slug === activeMenu)?.title}
                   </h2>
                 </div>
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
                   {menuItems
-                    .find(item => item.slug === activeMenu)
-                    ?.subItems.map((subItem) => (
+                    .find((item: MenuItem) => item.slug === activeMenu)
+                    ?.subItems.map((subItem: SubItem) => (
                       <button
                         key={subItem.slug}
                         onClick={(e) => handleSubMenuClick(subItem.slug, e)}
@@ -201,15 +201,15 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
                   <h2 className="text-xl font-semibold text-gray-800">
                     {menuItems
-                      .find(item => item.slug === activeMenu)
-                      ?.subItems.find(sub => sub.slug === activeSubMenu)?.title}
+                      .find((item: MenuItem) => item.slug === activeMenu)
+                      ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)?.title}
                   </h2>
                 </div>
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
                   {menuItems
-                    .find(item => item.slug === activeMenu)
-                    ?.subItems.find(sub => sub.slug === activeSubMenu)
-                    ?.level3Items?.map((level3Item) => (
+                    .find((item: MenuItem) => item.slug === activeMenu)
+                    ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)
+                    ?.level3Items?.map((level3Item: Level3Item) => (
                       level3Item.level4Items ? (
                         <button
                           key={level3Item.slug}
@@ -224,7 +224,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                       ) : (
                         <Link
                           key={level3Item.slug}
-                          to={`/nos-produits/${activeMenu}/${activeSubMenu}/${level3Item.slug}`}
+                          to={`/categorie/${activeMenu}/${activeSubMenu}/${level3Item.slug}`}
                           onClick={onClose}
                           className="flex items-center px-6 py-4 hover:bg-gray-50 transition-colors"
                         >
@@ -248,20 +248,20 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
                   <h2 className="text-xl font-semibold text-gray-800">
                     {menuItems
-                      .find(item => item.slug === activeMenu)
-                      ?.subItems.find(sub => sub.slug === activeSubMenu)
-                      ?.level3Items?.find(level3 => level3.slug === activeLevel3)?.title}
+                      .find((item: MenuItem) => item.slug === activeMenu)
+                      ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)
+                      ?.level3Items?.find((level3: Level3Item) => level3.slug === activeLevel3)?.title}
                   </h2>
                 </div>
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
                   {menuItems
-                    .find(item => item.slug === activeMenu)
-                    ?.subItems.find(sub => sub.slug === activeSubMenu)
-                    ?.level3Items?.find(level3 => level3.slug === activeLevel3)
-                    ?.level4Items?.map((level4Item) => (
+                    .find((item: MenuItem) => item.slug === activeMenu)
+                    ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)
+                    ?.level3Items?.find((level3: Level3Item) => level3.slug === activeLevel3)
+                    ?.level4Items?.map((level4Item: Level4Item) => (
                       <Link
                         key={level4Item.slug}
-                        to={`/nos-produits/${activeMenu}/${activeSubMenu}/${activeLevel3}/${level4Item.slug}`}
+                        to={`/categorie/${activeMenu}/${activeSubMenu}/${activeLevel3}/${level4Item.slug}`}
                         onClick={onClose}
                         className="flex items-center px-6 py-4 hover:bg-gray-50 transition-colors"
                       >
