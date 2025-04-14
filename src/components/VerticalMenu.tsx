@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { FaChevronRight, FaTimes } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
 import { MenuItem, SubItem, Level3Item, Level4Item, menuItems } from '../data/menuData';
@@ -15,6 +16,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const [activeLevel3, setActiveLevel3] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isOpen) {
@@ -93,7 +95,9 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
 
           <motion.div
             ref={menuRef}
+
             variants={menuVariants}
+
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -101,6 +105,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
             className="fixed top-0 left-0 h-screen w-auto bg-white overflow-hidden flex flex-row shadow-xl"
             style={{ zIndex: 9999 }}
           >
+
             {/* Menu principal (Niveau 1) */}
             <motion.div 
               variants={menuVariants}
@@ -167,12 +172,15 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                   <h2 className="text-xl font-semibold text-gray-800">
                     {menuItems.find(item => item.slug === activeMenu)?.title}
                   </h2>
+
+
                 </div>
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
                   {menuItems
                     .find(item => item.slug === activeMenu)
                     ?.subItems.map((subItem) => (
                       <button
+
                         key={subItem.slug}
                         onClick={(e) => handleSubMenuClick(subItem.slug, e)}
                         className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
@@ -182,12 +190,14 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                         <span>{subItem.title}</span>
                         {subItem.level3Items && (
                           <FaChevronRight className="w-4 h-4 text-gray-400" />
+
                         )}
                       </button>
                     ))}
                 </div>
               </motion.div>
             )}
+
 
             {/* Niveau 3 */}
             {activeSubMenu && (
@@ -271,6 +281,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                 </div>
               </motion.div>
             )}
+
           </motion.div>
         </>
       )}
