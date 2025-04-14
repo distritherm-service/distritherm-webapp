@@ -21,6 +21,7 @@ interface ContactFormData {
   last_name: string;
   email: string;
   phone_number: string;
+  company_name: string;
   address: string;
   postal_code: string;
   city: string;
@@ -44,6 +45,7 @@ const Contact: React.FC = () => {
     last_name: '',
     email: '',
     phone_number: '',
+    company_name: '',
     address: '',
     postal_code: '',
     city: '',
@@ -218,6 +220,7 @@ const Contact: React.FC = () => {
         last_name: '',
         email: '',
         phone_number: '',
+        company_name: '',
         address: '',
         postal_code: '',
         city: '',
@@ -433,6 +436,21 @@ const Contact: React.FC = () => {
                           required
                         />
                       </div>
+                    </div>
+
+                    {/* Nom de l'entreprise */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Nom de l'entreprise
+                      </label>
+                      <input
+                        type="text"
+                        name="company_name"
+                        value={formData.company_name}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
+                        placeholder="Nom de votre entreprise"
+                      />
                     </div>
 
                     {/* Email et Téléphone */}

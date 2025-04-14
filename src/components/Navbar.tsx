@@ -8,12 +8,13 @@ import { useCart } from '../contexts/CartContext';
 import { useSearch } from '../contexts/SearchContext';
 import { useAuth } from '../contexts/AuthContext';
 import SearchBar from './SearchBar';
-import UserProfileModal from './UserProfileModal';
+//import UserProfileModal from './UserProfileModal';
 import CartPreview from './CartPreview';
 import FavoritesPreview from './FavoritesPreview';
 import CallbackForm from './CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
-import { AnimatePresence } from 'framer-motion';
+//import { AnimatePresence } from 'framer-motion';
+import MobileVerticalMenu from './MobileVerticalMenu';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -506,7 +507,6 @@ const Navbar: React.FC = () => {
               <div className="hidden sm:block">
                 <button 
                   onClick={toggleProductsMenu}
-                  onMouseEnter={() => setIsMenuOpen(true)}
                   className="px-4 py-2 text-gray-700 hover:text-teal-600 transition-colors rounded-lg flex items-center space-x-2 focus:outline-none"
                   aria-label="Tous nos produits"
                   aria-expanded={isMenuOpen}
@@ -514,13 +514,8 @@ const Navbar: React.FC = () => {
                   data-testid="all-products-button"
                 >
                   <FaBars className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-90' : ''}`} />
-                  <span>Tous nos produits</span>
+                  <span>Nos Catégories</span>
                 </button>
-              </div>
-              
-              {/* Pour mobile, on affiche un titre simple */}
-              <div className="sm:hidden font-medium text-gray-700">
-                Menu
               </div>
               
               {/* Liens de navigation au centre - Desktop */}
@@ -682,88 +677,136 @@ const Navbar: React.FC = () => {
               id="mobile-menu" 
               className={`sm:hidden mt-4 space-y-2 ${isMobileMenuOpen ? 'block' : 'hidden'}`}
             >
-              {/* Bouton mobile pour afficher le menu des produits */}
-              <div className="mb-4">
+              {/* Menu principal mobile */}
+              <div className="space-y-2">
+                {/* Bouton Voir toutes les catégories */}
                 <button
-                  onClick={(e) => {
+                  onClick={() => {
                     setIsMobileMenuOpen(false);
-                    setTimeout(() => {
-                      setIsMenuOpen(true);
-                    }, 100);
+                    setIsMenuOpen(true);
                   }}
-                  className="flex w-full items-center justify-center py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-md"
+                  className="flex w-full items-center justify-between py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
                   id="mobile-categories-button"
                   aria-label="Voir toutes les catégories"
-                  data-testid="mobile-categories-button"
                 >
-                  <FaBars className="mr-2" />
-                  <span>Voir toutes les catégories</span>
+                  <span className="font-medium">Voir toutes les catégories</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
-              </div>
 
-              <Link
-                to="/"
-                className={`block py-3 px-4 rounded-lg ${isActive('/') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Accueil
-              </Link>
-              <Link
-                to="/a-propos"
-                className={`block py-3 px-4 rounded-lg ${isActive('/a-propos') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                À propos
-              </Link>
-              <Link
-                to="/nos-produits"
-                className={`block py-3 px-4 rounded-lg ${isActive('/nos-produits') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-               Produits
-              </Link>
-              <Link
-                to="/promotions"
-                className={`block py-3 px-4 rounded-lg ${isActive('/promotions') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Promotions
-              </Link>
-              <Link
-                to="/espace-recrutement"
-                className={`block py-3 px-4 rounded-lg ${isActive('/espace-recrutement') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-               Recrutement
-              </Link>
-              <Link
-                to="/nous-contact"
-                className={`block py-3 px-4 rounded-lg ${isActive('/nous-contact') ? 'bg-gray-100 text-teal-600 font-medium' : 'text-gray-700'} hover:bg-gray-50 transition-colors`}
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Contact
-              </Link>
-              {isAuthenticated && (
-                <div className="mb-4">
+                {/* Liens de navigation */}
+                <nav className="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
+                  <Link
+                    to="/"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors first:rounded-t-lg`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Accueil
+                  </Link>
+           
+                  <Link
+                    to="/a-propos"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/a-propos') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    À propos
+                  </Link>
+                  <Link
+                    to="/nos-produits"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/nos-produits') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Produits
+                  </Link>
+                  <Link
+                    to="/promotions"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/promotions') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Promotions
+                  </Link>
+                  <Link
+                    to="/espace-recrutement"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/espace-recrutement') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Recrutement
+                  </Link>
+                  <Link
+                    to="/nous-contact"
+                    className={`flex items-center w-full py-3.5 px-4 ${
+                      isActive('/nous-contact') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-colors last:rounded-b-lg`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Contact
+                  </Link>
+                </nav>
+
+                {/* Bouton Connexion/Profil */}
+                {isAuthenticated ? (
                   <button
-                    onClick={(e) => {
+                    onClick={() => {
                       setIsMobileMenuOpen(false);
                       navigate('/mon-profil');
                     }}
-                    className="flex w-full items-center justify-center py-3 px-4 bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg shadow-md"
+                    className="flex w-full items-center justify-between py-3.5 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
                   >
-                    <FaUser className="mr-2" />
-                    <span>Paramètres du compte</span>
+                    <span className="flex items-center">
+                      <FaUser className="w-4 h-4 mr-2" />
+                      <span className="font-medium">{user?.name || 'Mon profil'}</span>
+                    </span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
                   </button>
-                </div>
-              )}
+                ) : (
+                  <Link
+                    to="/connexion"
+                    className="flex w-full items-center justify-between py-3.5 px-4 bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg shadow-sm"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <span className="flex items-center">
+                      <FaUser className="w-4 h-4 mr-2" />
+                      <span className="font-medium">Connexion</span>
+                    </span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Menu vertical déroulant */}
-        {isMenuOpen && <VerticalMenu isOpen={true} onClose={() => setIsMenuOpen(false)} />}
+        {/* Menu vertical déroulant desktop */}
+        {isMenuOpen && window.innerWidth >= 768 && (
+          <VerticalMenu 
+            isOpen={isMenuOpen} 
+            onClose={() => setIsMenuOpen(false)} 
+          />
+        )}
       </div>
+      
+      {/* Menu vertical mobile (en dehors du conteneur principal) */}
+      {isMenuOpen && window.innerWidth < 768 && (
+        <MobileVerticalMenu 
+          isOpen={isMenuOpen} 
+          onClose={() => setIsMenuOpen(false)} 
+        />
+      )}
       
       {/* Overlay pour la recherche */}
       {isSearchOpen && <SearchBar />}
