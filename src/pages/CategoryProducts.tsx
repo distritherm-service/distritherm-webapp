@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { productsData } from '../data/productsData';
-import ProductCard from '../components/categories/ProductCard';
+import ProductCard from '../components/products/ProductCard';
 import { categories } from '../data/categories';
-import ProductFilters from '../components/ProductFilters';
-import Footer from '../components/Footer';
-import Breadcrumb from '../components/Breadcrumb';
+import ProductFilters from '../components/products/ProductFilters';
+import Footer from '../components/layout/Footer';
+import Breadcrumb from '../components/navigation/Breadcrumb';
 import { Product } from '../types/product';
+import Layout from '../components/layout/Layout';
+import ProductGrid from '../components/products/ProductGrid';
 
 const CategoryProducts: React.FC = () => {
   const { category } = useParams<{ category: string }>();
@@ -23,7 +25,8 @@ const CategoryProducts: React.FC = () => {
     brand: 'Toutes les marques',
     priceRange: initialPriceRange,
     inStockOnly: false,
-    sortBy: 'featured'
+    sortBy: 'featured',
+    priceRangeTouched: false
   });
 
   // Trouver la catégorie dans les données
@@ -59,7 +62,10 @@ const CategoryProducts: React.FC = () => {
     }
 
     // Trier les produits
-    if (filters.sortBy) {
+    if (filters.sortBy === 'order_first') {
+      // Si le tri est "Sur commande", ne garder que les produits avec stock = 0
+      result = result.filter(product => product.stock === 0);
+    } else if (filters.sortBy) {
       result = sortProducts(result, filters.sortBy);
     }
 
@@ -71,6 +77,8 @@ const CategoryProducts: React.FC = () => {
     const sortedProducts = [...productsToSort];
     
     switch (sortBy) {
+      case 'stock_first':
+        return sortedProducts.sort((a, b) => (b.stock > 0 ? 1 : -1) - (a.stock > 0 ? 1 : -1));
       case 'price_asc':
         return sortedProducts.sort((a, b) => a.price - b.price);
       case 'price_desc':
@@ -79,8 +87,6 @@ const CategoryProducts: React.FC = () => {
         return sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
       case 'name_desc':
         return sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
-      case 'rating':
-        return sortedProducts.sort((a, b) => b.rating - a.rating);
       default:
         return sortedProducts;
     }

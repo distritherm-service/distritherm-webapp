@@ -6,10 +6,10 @@ import CartSummary from './CartSummary';
 import DeliveryStep from './DeliveryStep';
 import ConfirmationStep from './ConfirmationStep';
 import { useCart } from '../../contexts/CartContext';
-import Breadcrumb from '../../components/Breadcrumb';
+import Breadcrumb from '../../components/navigation/Breadcrumb';
 // import Slider from '../../components/Slider';
-import Footer from '../../components/Footer';
-import BrandsSection from '../../components/BrandsSection';
+import Footer from '../../components/layout/Footer';
+import BrandsSection from '../../components/home/BrandsSection';
 import { motion } from 'framer-motion';
 import Connexion from '../../pages/Connexion';
 

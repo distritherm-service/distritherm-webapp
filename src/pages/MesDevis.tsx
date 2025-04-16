@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../components/Layout';
+import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import { FaFileInvoice, FaRegCalendarAlt, FaEuroSign, FaEye, FaFileDownload, FaSearch, FaChevronDown, FaFileAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';

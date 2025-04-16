@@ -20,6 +20,13 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onCancel }) => 
     email: ''
   });
 
+  // Gestion du clic à l'extérieur du modal
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onCancel();
+    }
+  };
+
   // Gestion du changement dans le formulaire de mot de passe oublié
   const handleForgotPasswordFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -84,7 +91,10 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onCancel }) => 
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+    <div 
+      className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-white rounded-lg p-8 max-w-md mx-4 w-full">
         <h2 className="text-xl font-bold mb-4 text-teal-600">Mot de passe oublié</h2>
         <p className="text-gray-700 mb-4">
@@ -136,7 +146,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onCancel }) => 
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white rounded-lg hover:from-teal-700 hover:to-blue-700"
+              className="flex-1 px-4 py-2 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] text-white rounded-lg hover:from-[#6BA8D7] hover:to-[#0066CC]"
               disabled={loading}
             >
               {loading ? 'Chargement...' : 'Envoyer'}

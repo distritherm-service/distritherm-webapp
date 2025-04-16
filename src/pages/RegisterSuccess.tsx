@@ -3,8 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FaCheckCircle, FaUser, FaHome, FaShoppingCart } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import Breadcrumb from '../components/Breadcrumb';
-import Footer from '../components/Footer';
+import Breadcrumb from '../components/navigation/Breadcrumb';
+import Footer from '../components/layout/Footer';
 
 const RegisterSuccess: React.FC = () => {
   const navigate = useNavigate();

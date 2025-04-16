@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import { FaEnvelope, FaSpinner, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
-import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
-import Breadcrumb from '../components/Breadcrumb';
+import Footer from '../components/layout/Footer';
+import Navbar from '../components/navigation/Navbar';
+import Breadcrumb from '../components/navigation/Breadcrumb';
 
 const EmailVerification: React.FC = () => {
   const { user, updateUser } = useAuth();

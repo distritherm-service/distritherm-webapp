@@ -1,6 +1,6 @@
 import React from 'react';
-import Layout from '../components/Layout';
-import { FaMapMarkerAlt, FaUsers, FaHistory, FaStar, FaHandshake, FaTruck, FaEye, FaAward, FaShieldAlt, FaArrowLeft } from 'react-icons/fa';
+import Layout from "../components/layout/Layout";
+import { FaMapMarkerAlt, FaUsers, FaHistory, FaTruck, FaEye, FaAward, FaShieldAlt, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 

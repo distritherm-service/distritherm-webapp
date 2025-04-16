@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../components/Layout';
+import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts/AuthContext';
 import { FaShoppingBag, FaCalendarAlt, FaEuroSign, FaCircle, FaInfoCircle, FaDownload, FaRegCalendarAlt, FaEye, FaFileDownload, FaFileInvoice, FaChevronDown, FaSearch as FaSearchIcon, FaSearch } from 'react-icons/fa';
 import { BiSearch } from 'react-icons/bi';

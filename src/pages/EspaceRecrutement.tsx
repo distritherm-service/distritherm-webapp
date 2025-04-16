@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import Layout from '../components/Layout';
+import Layout from '../components/layout/Layout';
 import { FaUsers, FaGraduationCap, FaHandshake, FaChartLine, FaFileUpload, FaSpinner, FaCheckCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import axiosInstance from '../services/axiosConfig';
-import Footer from '../components/Footer';
-import Breadcrumb from '../components/Breadcrumb';
+import Footer from '../components/layout/Footer';
+import Breadcrumb from '../components/navigation/Breadcrumb';
 
 interface FormData {
   desired_position: string;
@@ -382,7 +382,7 @@ const EspaceRecrutement: React.FC = () => {
                       name="desired_position"
                       value={formData.desired_position}
                       onChange={handleInputChange}
-                      className={`w-full px-4 py-3 rounded-lg border ${errors.desired_position ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
+                      className={`w-full px-4 rounded-lg h-[45px] rounded-lg border ${errors.desired_position ? 'border-red-500' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70`}
                     >
                       <option value="">Sélectionnez un poste</option>
                       {postes.map((poste) => (
