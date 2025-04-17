@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { FaHeart, FaTrash, FaShoppingCart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import Slider from '../components/home/Slider';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 import Footer from '../components/layout/Footer';
 import { Product } from '../data/products';
@@ -56,7 +55,6 @@ const Favoris: React.FC = () => {
 
   return (
     <>
-      <Slider />
       <div className="min-h-screen bg-gray-50">
         <Breadcrumb />
         <div className="container mx-auto px-4 py-8">

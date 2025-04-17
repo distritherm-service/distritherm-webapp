@@ -7,15 +7,13 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useAuth } from '../../contexts/AuthContext';
-import SearchBar from './SearchBar';
-//import UserProfileModal from './UserProfileModal';
 import CartPreview from '../cart/CartPreview';
 import FavoritesPreview from '../favorites/FavoritesPreview';
 import CallbackForm from '../common/CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
-//import { AnimatePresence } from 'framer-motion';
 import MobileVerticalMenu from './MobileVerticalMenu';
 import { FaHeart as FaHeartFilled } from 'react-icons/fa';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,12 +24,21 @@ const Navbar: React.FC = () => {
   const [selectedStore, setSelectedStore] = useState('Choisir votre magasin');
   const [scrolled, setScrolled] = useState(false);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   const storeMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const navbarHeight = useRef<number>(0);
   const { favorites, favoritesCount } = useFavorites();
   const { cart } = useCart();
-  const { openSearch, isSearchOpen } = useSearch();
+  const { 
+    searchQuery, 
+    searchResults, 
+    isSearching,
+    setSearchQuery,
+    clearSearch 
+  } = useSearch();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
   const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
@@ -185,8 +192,11 @@ const Navbar: React.FC = () => {
    // console.log("Menu des produits toggled:", !isMenuOpen);
   };
 
-  const handleSearchClick = () => {
-    openSearch();
+  const handleSearchClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
   };
 
   const handleLogout = () => {
@@ -266,6 +276,55 @@ const Navbar: React.FC = () => {
     }
     closeUserMenu();
   };
+
+  // Gestionnaire de recherche
+  const handleSearchFocus = () => {
+    setShowSearchResults(true);
+  };
+
+  const handleSearchBlur = (e: React.FocusEvent) => {
+    // Vérifier si on clique sur un résultat de recherche
+    if (searchRef.current && !searchRef.current.contains(e.relatedTarget as Node)) {
+      setTimeout(() => {
+        setShowSearchResults(false);
+      }, 200);
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchResults.length > 0) {
+      navigate(`/nos-produits/${searchResults[0].id}`);
+      setShowSearchResults(false);
+      clearSearch();
+      if (searchInputRef.current) {
+        searchInputRef.current.blur();
+      }
+    }
+  };
+
+  const handleResultClick = (productId: string) => {
+    navigate(`/nos-produits/${productId}`);
+    setShowSearchResults(false);
+    clearSearch();
+    if (searchInputRef.current) {
+      searchInputRef.current.blur();
+    }
+  };
+
+  // Fermer les résultats de recherche au clic en dehors
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <>
@@ -417,19 +476,81 @@ const Navbar: React.FC = () => {
               </div>
 
               {/* Barre de recherche desktop */}
-              <div className="flex-1 max-w-3xl mx-8 hidden sm:block">
-                <div className="relative">
-                  <button
-                    onClick={handleSearchClick}
-                    className={`w-full px-6 pr-12 text-left text-gray-500 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 ${
-                      scrolled ? 'py-2' : 'py-2.5'
-                    }`}
-                  >
-                    Que recherchez-vous ?
-                  </button>
-                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 text-gray-400">
-                    <FaSearch className="w-4 h-4" />
-                  </div>
+              <div className="flex-1 max-w-3xl hidden sm:flex items-center justify-center px-4">
+                <div ref={searchRef} className="relative w-full max-w-2xl">
+                  <form onSubmit={handleSearchSubmit} className="relative">
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onFocus={handleSearchFocus}
+                      placeholder="Rechercher des produits..."
+                      className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  </form>
+
+                  <AnimatePresence>
+                    {showSearchResults && searchQuery.trim() !== '' && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-100 max-h-[80vh] overflow-y-auto z-50"
+                      >
+                        {isSearching ? (
+                          <div className="flex justify-center items-center h-20">
+                            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-600"></div>
+                          </div>
+                        ) : searchResults.length === 0 ? (
+                          <div className="p-4 text-center text-gray-500">
+                            Aucun résultat trouvé pour "{searchQuery}"
+                          </div>
+                        ) : (
+                          <div className="py-2">
+                            {searchResults.slice(0, 6).map((product) => (
+                              <button
+                                key={product.id}
+                                onClick={() => handleResultClick(product.id)}
+                                className="w-full px-4 py-2 hover:bg-gray-50 flex items-center text-left"
+                              >
+                                <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                  <img
+                                    src={product.image}
+                                    alt={product.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="ml-3 flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 truncate">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-sm text-gray-500">
+                                    {product.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                                  </p>
+                                </div>
+                              </button>
+                            ))}
+                            {searchResults.length > 6 && (
+                              <div className="px-4 py-2 border-t border-gray-100">
+                                <button
+                                  onClick={() => {
+                                    navigate('/nos-produits', { state: { searchQuery } });
+                                    setShowSearchResults(false);
+                                  }}
+                                  className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium"
+                                >
+                                  Voir tous les résultats ({searchResults.length})
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
               
@@ -843,8 +964,16 @@ const Navbar: React.FC = () => {
         />
       )}
       
-      {/* Overlay pour la recherche */}
-      {isSearchOpen && <SearchBar />}
+      {/* Boutons de navigation mobile */}
+      <div className="flex items-center space-x-2 lg:hidden">
+        <button
+          onClick={handleSearchClick}
+          className="p-2 hover:bg-gray-100 rounded-full"
+          aria-label="Rechercher"
+        >
+          <FaSearch className="w-6 h-6 text-gray-600" />
+        </button>
+      </div>
 
       {/* Formulaire de rappel */}
       <CallbackForm isOpen={isCallbackFormOpen} onClose={() => setIsCallbackFormOpen(false)} />

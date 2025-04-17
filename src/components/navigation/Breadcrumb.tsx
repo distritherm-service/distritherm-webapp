@@ -23,17 +23,29 @@ const routeLabels: { [key: string]: string } = {
   '/connexion': 'Connexion',
   '/mon-profil': 'Mon Profil',
   '/validate-email': 'Vérification Email',
+  '/mes-commandes': 'Mes Commandes',
   '/mes-devis': 'Mes Devis',
+  '/favoris': 'Mes Favoris',
   '/categorie': 'Catégories'
 };
 
 const Breadcrumb: React.FC = () => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
+  const fromProfile = location.state?.from === 'profile';
   
   const breadcrumbItems: BreadcrumbItem[] = [
     { path: '/', label: 'Accueil', id: 'home' }
   ];
+
+  // Si on vient du profil, ajouter le lien vers le profil
+  if (fromProfile) {
+    breadcrumbItems.push({
+      path: '/mon-profil',
+      label: 'Mon Profil',
+      id: 'profile'
+    });
+  }
 
   // Ajouter les éléments du fil d'Ariane
   pathnames.forEach((value, index) => {
@@ -58,11 +70,14 @@ const Breadcrumb: React.FC = () => {
         });
       }
     } else {
-      breadcrumbItems.push({
-        path,
-        label: routeLabels[path] || value,
-        id: uniqueId
-      });
+      // Ne pas ajouter l'élément si c'est le profil et qu'on vient du profil
+      if (!(fromProfile && path === '/mon-profil')) {
+        breadcrumbItems.push({
+          path,
+          label: routeLabels[path] || value,
+          id: uniqueId
+        });
+      }
     }
   });
 
@@ -84,6 +99,7 @@ const Breadcrumb: React.FC = () => {
                   <FaChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
                   <Link
                     to={item.path}
+                    state={fromProfile && index === breadcrumbItems.length - 1 ? { from: 'profile' } : undefined}
                     className={`
                       text-xs font-medium transition-all duration-200 shrink-0
                       ${index === breadcrumbItems.length - 1

@@ -83,7 +83,7 @@ const CallbackForm: React.FC<CallbackFormProps> = ({ isOpen, onClose }) => {
       }, 3000);
       
     } catch (error: any) {
-      console.error('Erreur lors de l\'envoi de la demande de rappel', error);
+      //console.error('Erreur lors de l\'envoi de la demande de rappel', error);
       setError(error.message || 'Une erreur est survenue. Veuillez réessayer plus tard.');
     } finally {
       setLoading(false);

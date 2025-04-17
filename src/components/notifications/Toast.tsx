@@ -45,9 +45,9 @@ const Toast: React.FC<ToastProps> = ({
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 50 }}
-          className={`fixed bottom-4 right-4 ${getBgColor()} text-white px-6 py-3 rounded-lg shadow-lg z-50`}
+          className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 ${getBgColor()} text-white px-6 py-3 rounded-lg shadow-lg z-[9999] flex items-center space-x-2 min-w-[300px] justify-center`}
         >
-          {message}
+          <span className="text-sm font-medium">{message}</span>
         </motion.div>
       )}
     </AnimatePresence>

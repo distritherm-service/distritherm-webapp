@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronRight, FaTimes } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
-import { menuItems, MenuItem, SubItem, Level3Item, Level4Item } from '../../data/menuData';
+import { Category, categoryService } from '../../services/categoryService';
 
 interface VerticalMenuProps {
   isOpen: boolean;
@@ -11,23 +11,76 @@ interface VerticalMenuProps {
 }
 
 const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
-  const [activeMenu, setActiveMenu] = useState<string | null>(null);
-  const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
-  const [activeLevel3, setActiveLevel3] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeCategory, setActiveCategory] = useState<Category | null>(null);
+  const [activeSubCategory, setActiveSubCategory] = useState<Category | null>(null);
+  const [activeLevel3Category, setActiveLevel3Category] = useState<Category | null>(null);
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Charger toutes les catégories au montage
   useEffect(() => {
-    if (!isOpen) {
-      setActiveMenu(null);
-      setActiveSubMenu(null);
-      setActiveLevel3(null);
+    const fetchCategories = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const fetchedCategories = await categoryService.getAllCategories();
+        setCategories(fetchedCategories);
+      } catch (err) {
+        setError("Erreur lors du chargement des catégories");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchCategories();
     }
   }, [isOpen]);
 
-  const handleMouseEnter = () => {
+  // Réinitialiser les états lors de la fermeture
+  useEffect(() => {
     if (!isOpen) {
-      onClose();
+      setActiveCategory(null);
+      setActiveSubCategory(null);
+      setActiveLevel3Category(null);
     }
+  }, [isOpen]);
+
+  // Organiser les catégories par niveau et parent
+  const {
+    level1Categories,
+    getChildCategories,
+  } = useMemo(() => {
+    const level1 = categories.filter(cat => cat.level === 1);
+    
+    const getChildren = (parentId: number) => {
+      return categories.filter(cat => cat.parentCategoryId === parentId);
+    };
+
+    return {
+      level1Categories: level1,
+      getChildCategories: getChildren,
+    };
+  }, [categories]);
+
+  const handleLevel1Click = (category: Category) => {
+    setActiveCategory(category);
+    setActiveSubCategory(null);
+    setActiveLevel3Category(null);
+  };
+
+  const handleLevel2Click = (category: Category) => {
+    setActiveSubCategory(category);
+    setActiveLevel3Category(null);
+  };
+
+  const handleLevel3Click = (category: Category) => {
+    setActiveLevel3Category(category);
   };
 
   const menuVariants = {
@@ -60,22 +113,24 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleMenuClick = (menuId: string) => {
-    setActiveMenu(menuId);
-    setActiveSubMenu(null);
-    setActiveLevel3(null);
-  };
+  const renderLoadingState = () => (
+    <div className="flex items-center justify-center h-32">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>
+  );
 
-  const handleSubMenuClick = (subMenuId: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    setActiveSubMenu(subMenuId);
-    setActiveLevel3(null);
-  };
+  const renderErrorState = () => (
+    <div className="flex flex-col items-center justify-center h-32 p-4 text-center">
+      <p className="text-red-500 mb-2">Une erreur est survenue</p>
+      <p className="text-sm text-gray-600">{error}</p>
+    </div>
+  );
 
-  const handleLevel3Click = (level3Id: string, event: React.MouseEvent) => {
-    event.preventDefault();
-    setActiveLevel3(level3Id);
-  };
+  const renderEmptyState = () => (
+    <div className="flex flex-col items-center justify-center h-32 p-4 text-center">
+      <p className="text-gray-500">Aucune catégorie disponible</p>
+    </div>
+  );
 
   return createPortal(
     <AnimatePresence>
@@ -97,11 +152,10 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            onMouseEnter={handleMouseEnter}
             className="fixed top-0 left-0 h-screen w-auto bg-white overflow-hidden flex flex-row shadow-xl"
             style={{ zIndex: 9999 }}
           >
-            {/* Menu principal (Niveau 1) */}
+            {/* Niveau 1 */}
             <motion.div 
               variants={menuVariants}
               className="w-80 flex flex-col h-full border-r border-gray-100"
@@ -120,42 +174,40 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                   <FaTimes className="w-5 h-5 text-gray-600" />
                 </motion.button>
               </div>
-              <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-                {menuItems.map((item: MenuItem) => (
+              <div className="flex-1 overflow-y-auto">
+                {isLoading && renderLoadingState()}
+                {error && renderErrorState()}
+                {!isLoading && !error && level1Categories.length === 0 && renderEmptyState()}
+                {level1Categories.map((category) => (
                   <motion.button
-                    key={item.slug}
+                    key={category.id}
                     variants={itemVariants}
                     whileHover={{ 
                       backgroundColor: 'rgba(243, 244, 246, 1)',
                       x: 5,
                       transition: { duration: 0.2 }
                     }}
-                    onClick={() => handleMenuClick(item.slug)}
-                    className={`w-full flex items-center justify-between p-4 transition-all ${
-                      activeMenu === item.slug ? 'bg-gray-50 font-medium' : ''
+                    onClick={() => handleLevel1Click(category)}
+                    className={`w-full flex items-center justify-between p-4 border-b border-gray-100 transition-all ${
+                      activeCategory?.id === category.id ? 'bg-gray-50 font-medium' : ''
                     }`}
                   >
-                    <span className="flex items-center">
-                      {item.icon && (
-                        <motion.span className="mr-3 text-gray-500" whileHover={{ scale: 1.2 }}>
-                          {item.icon}
-                        </motion.span>
-                      )}
-                      <span className="font-medium">{item.title}</span>
-                    </span>
-                    <motion.span
-                      animate={activeMenu === item.slug ? { rotate: 90 } : { rotate: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <FaChevronRight className="w-4 h-4 text-gray-400" />
-                    </motion.span>
+                    <span className="font-medium">{category.name}</span>
+                    {category.haveChildren && (
+                      <motion.span
+                        animate={activeCategory?.id === category.id ? { rotate: 90 } : { rotate: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <FaChevronRight className="w-4 h-4 text-gray-400" />
+                      </motion.span>
+                    )}
                   </motion.button>
                 ))}
               </div>
             </motion.div>
 
             {/* Niveau 2 */}
-            {activeMenu && (
+            {activeCategory && (
               <motion.div
                 variants={menuVariants}
                 initial="hidden"
@@ -165,79 +217,78 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
                   <h2 className="text-xl font-semibold text-gray-800">
-                    {menuItems.find((item: MenuItem) => item.slug === activeMenu)?.title}
+                    {activeCategory.name}
                   </h2>
                 </div>
-                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-                  {menuItems
-                    .find((item: MenuItem) => item.slug === activeMenu)
-                    ?.subItems.map((subItem: SubItem) => (
-                      <button
-                        key={subItem.slug}
-                        onClick={(e) => handleSubMenuClick(subItem.slug, e)}
-                        className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
-                          activeSubMenu === subItem.slug ? 'bg-gray-50' : ''
-                        }`}
-                      >
-                        <span>{subItem.title}</span>
-                        {subItem.level3Items && (
-                          <FaChevronRight className="w-4 h-4 text-gray-400" />
-                        )}
-                      </button>
-                    ))}
+                <div className="flex-1 overflow-y-auto">
+                  {isLoading && renderLoadingState()}
+                  {error && renderErrorState()}
+                  {!isLoading && !error && getChildCategories(activeCategory.id).length === 0 && renderEmptyState()}
+                  {getChildCategories(activeCategory.id).map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => handleLevel2Click(category)}
+                      className={`w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                        activeSubCategory?.id === category.id ? 'bg-gray-50' : ''
+                      }`}
+                    >
+                      <span>{category.name}</span>
+                      {category.haveChildren && (
+                        <FaChevronRight className="w-4 h-4 text-gray-400" />
+                      )}
+                    </button>
+                  ))}
                 </div>
               </motion.div>
             )}
 
             {/* Niveau 3 */}
-            {activeSubMenu && (
+            {activeSubCategory && (
               <motion.div
                 variants={menuVariants}
                 initial="hidden"
                 animate="visible"
                 exit="exit"
-                className="w-80 flex flex-col h-full"
+                className="w-80 flex flex-col h-full border-r border-gray-100"
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
                   <h2 className="text-xl font-semibold text-gray-800">
-                    {menuItems
-                      .find((item: MenuItem) => item.slug === activeMenu)
-                      ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)?.title}
+                    {activeSubCategory.name}
                   </h2>
                 </div>
-                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-                  {menuItems
-                    .find((item: MenuItem) => item.slug === activeMenu)
-                    ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)
-                    ?.level3Items?.map((level3Item: Level3Item) => (
-                      level3Item.level4Items ? (
-                        <button
-                          key={level3Item.slug}
-                          onClick={(e) => handleLevel3Click(level3Item.slug, e)}
-                          className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
-                            activeLevel3 === level3Item.slug ? 'bg-gray-50' : ''
-                          }`}
-                        >
-                          <span>{level3Item.title}</span>
-                          <FaChevronRight className="w-4 h-4 text-gray-400" />
-                        </button>
-                      ) : (
-                        <Link
-                          key={level3Item.slug}
-                          to={`/categorie/${activeMenu}/${activeSubMenu}/${level3Item.slug}`}
-                          onClick={onClose}
-                          className="flex items-center px-6 py-4 hover:bg-gray-50 transition-colors"
-                        >
-                          {level3Item.title}
-                        </Link>
-                      )
-                    ))}
+                <div className="flex-1 overflow-y-auto">
+                  {isLoading && renderLoadingState()}
+                  {error && renderErrorState()}
+                  {!isLoading && !error && getChildCategories(activeSubCategory.id).length === 0 && renderEmptyState()}
+                  {getChildCategories(activeSubCategory.id).map((category) => (
+                    category.haveChildren ? (
+                      <button
+                        key={category.id}
+                        onClick={() => handleLevel3Click(category)}
+                        className={`w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                          activeLevel3Category?.id === category.id ? 'bg-gray-50' : ''
+                        }`}
+                      >
+                        <span>{category.name}</span>
+                        <FaChevronRight className="w-4 h-4 text-gray-400" />
+                      </button>
+                    ) : (
+                      <Link
+                        key={category.id}
+                        to={`/categorie/${activeCategory!.id}/${activeSubCategory.id}/${category.id}`}
+                        onClick={onClose}
+                        className="flex items-center px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                      >
+                        {category.name}
+                      </Link>
+                    )
+                  ))}
                 </div>
               </motion.div>
             )}
 
             {/* Niveau 4 */}
-            {activeLevel3 && (
+            {activeLevel3Category && (
               <motion.div
                 variants={menuVariants}
                 initial="hidden"
@@ -247,27 +298,23 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
               >
                 <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
                   <h2 className="text-xl font-semibold text-gray-800">
-                    {menuItems
-                      .find((item: MenuItem) => item.slug === activeMenu)
-                      ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)
-                      ?.level3Items?.find((level3: Level3Item) => level3.slug === activeLevel3)?.title}
+                    {activeLevel3Category.name}
                   </h2>
                 </div>
-                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-                  {menuItems
-                    .find((item: MenuItem) => item.slug === activeMenu)
-                    ?.subItems.find((sub: SubItem) => sub.slug === activeSubMenu)
-                    ?.level3Items?.find((level3: Level3Item) => level3.slug === activeLevel3)
-                    ?.level4Items?.map((level4Item: Level4Item) => (
-                      <Link
-                        key={level4Item.slug}
-                        to={`/categorie/${activeMenu}/${activeSubMenu}/${activeLevel3}/${level4Item.slug}`}
-                        onClick={onClose}
-                        className="flex items-center px-6 py-4 hover:bg-gray-50 transition-colors"
-                      >
-                        {level4Item.title}
-                      </Link>
-                    ))}
+                <div className="flex-1 overflow-y-auto">
+                  {isLoading && renderLoadingState()}
+                  {error && renderErrorState()}
+                  {!isLoading && !error && getChildCategories(activeLevel3Category.id).length === 0 && renderEmptyState()}
+                  {getChildCategories(activeLevel3Category.id).map((category) => (
+                    <Link
+                      key={category.id}
+                      to={`/categorie/${activeCategory!.id}/${activeSubCategory!.id}/${activeLevel3Category.id}/${category.id}`}
+                      onClick={onClose}
+                      className="flex items-center px-6 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    >
+                      {category.name}
+                    </Link>
+                  ))}
                 </div>
               </motion.div>
             )}

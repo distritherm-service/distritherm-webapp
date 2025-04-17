@@ -586,4 +586,32 @@ export const authService = {
       throw error;
     }
   },
+
+  // Mettre à jour les adresses
+  async updateAddresses(data: { addresses: any[] }) {
+    try {
+      const response = await axiosInstance.put(
+        '/users/addresses',
+        data,
+        {
+          headers: {
+            'x-platform': 'web',
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      // Mettre à jour les données utilisateur en localStorage
+      if (response.data && response.data.user) {
+        localStorage.setItem(
+          STORAGE_KEYS.USER_DATA,
+          JSON.stringify(response.data.user)
+        );
+      }
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
