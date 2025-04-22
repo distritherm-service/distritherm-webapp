@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+
 import { FaChevronRight, FaTimes } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
 import { MenuItem, SubItem, Level3Item, Level4Item, menuItems } from '../data/menuData';
@@ -15,6 +16,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const [activeLevel3, setActiveLevel3] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isOpen) {
@@ -60,18 +62,20 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
     }
   };
 
-  const handleMenuHover = (menuId: string) => {
+  const handleMenuClick = (menuId: string) => {
     setActiveMenu(menuId);
     setActiveSubMenu(null);
     setActiveLevel3(null);
   };
 
-  const handleSubMenuHover = (subMenuId: string) => {
+  const handleSubMenuClick = (subMenuId: string, event: React.MouseEvent) => {
+    event.preventDefault();
     setActiveSubMenu(subMenuId);
     setActiveLevel3(null);
   };
 
-  const handleLevel3Hover = (level3Id: string) => {
+  const handleLevel3Click = (level3Id: string, event: React.MouseEvent) => {
+    event.preventDefault();
     setActiveLevel3(level3Id);
   };
 
@@ -91,7 +95,9 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
 
           <motion.div
             ref={menuRef}
+
             variants={menuVariants}
+
             initial="hidden"
             animate="visible"
             exit="exit"
@@ -99,6 +105,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
             className="fixed top-0 left-0 h-screen w-auto bg-white overflow-hidden flex flex-row shadow-xl"
             style={{ zIndex: 9999 }}
           >
+
             {/* Menu principal (Niveau 1) */}
             <motion.div 
               variants={menuVariants}
@@ -120,65 +127,34 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
                 {menuItems.map((item) => (
-                  <div
+                  <motion.button
                     key={item.slug}
-                    onMouseEnter={() => handleMenuHover(item.slug)}
-                    className="w-full"
+                    variants={itemVariants}
+                    whileHover={{ 
+                      backgroundColor: 'rgba(243, 244, 246, 1)',
+                      x: 5,
+                      transition: { duration: 0.2 }
+                    }}
+                    onClick={() => handleMenuClick(item.slug)}
+                    className={`w-full flex items-center justify-between p-4 transition-all ${
+                      activeMenu === item.slug ? 'bg-gray-50 font-medium' : ''
+                    }`}
                   >
-                    {item.subItems && item.subItems.length > 0 ? (
-                      <motion.button
-                        variants={itemVariants}
-                        whileHover={{ 
-                          backgroundColor: 'rgba(243, 244, 246, 1)',
-                          x: 5,
-                          transition: { duration: 0.2 }
-                        }}
-                        className={`w-full flex items-center justify-between p-4 transition-all ${
-                          activeMenu === item.slug ? 'bg-gray-50 font-medium' : ''
-                        }`}
-                      >
-                        <span className="flex items-center">
-                          {item.icon && (
-                            <motion.span className="mr-3 text-gray-500" whileHover={{ scale: 1.2 }}>
-                              {item.icon}
-                            </motion.span>
-                          )}
-                          <span className="font-medium">{item.title}</span>
-                        </span>
-                        <motion.span
-                          animate={activeMenu === item.slug ? { rotate: 90 } : { rotate: 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <FaChevronRight className="w-4 h-4 text-gray-400" />
+                    <span className="flex items-center">
+                      {item.icon && (
+                        <motion.span className="mr-3 text-gray-500" whileHover={{ scale: 1.2 }}>
+                          {item.icon}
                         </motion.span>
-                      </motion.button>
-                    ) : (
-                      <Link
-                        to={`/categorie/${item.slug}`}
-                        onClick={onClose}
-                        className="block w-full"
-                      >
-                        <motion.button
-                          variants={itemVariants}
-                          whileHover={{ 
-                            backgroundColor: 'rgba(243, 244, 246, 1)',
-                            x: 5,
-                            transition: { duration: 0.2 }
-                          }}
-                          className="w-full flex items-center justify-between p-4 transition-all"
-                        >
-                          <span className="flex items-center">
-                            {item.icon && (
-                              <motion.span className="mr-3 text-gray-500" whileHover={{ scale: 1.2 }}>
-                                {item.icon}
-                              </motion.span>
-                            )}
-                            <span className="font-medium">{item.title}</span>
-                          </span>
-                        </motion.button>
-                      </Link>
-                    )}
-                  </div>
+                      )}
+                      <span className="font-medium">{item.title}</span>
+                    </span>
+                    <motion.span
+                      animate={activeMenu === item.slug ? { rotate: 90 } : { rotate: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <FaChevronRight className="w-4 h-4 text-gray-400" />
+                    </motion.span>
+                  </motion.button>
                 ))}
               </div>
             </motion.div>
@@ -196,43 +172,32 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                   <h2 className="text-xl font-semibold text-gray-800">
                     {menuItems.find(item => item.slug === activeMenu)?.title}
                   </h2>
+
+
                 </div>
                 <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
                   {menuItems
                     .find(item => item.slug === activeMenu)
                     ?.subItems.map((subItem) => (
-                      <div
+                      <button
+
                         key={subItem.slug}
-                        onMouseEnter={() => handleSubMenuHover(subItem.slug)}
-                        className="w-full"
+                        onClick={(e) => handleSubMenuClick(subItem.slug, e)}
+                        className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
+                          activeSubMenu === subItem.slug ? 'bg-gray-50' : ''
+                        }`}
                       >
-                        {subItem.level3Items && subItem.level3Items.length > 0 ? (
-                          <button
-                            className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
-                              activeSubMenu === subItem.slug ? 'bg-gray-50' : ''
-                            }`}
-                          >
-                            <span>{subItem.title}</span>
-                            <FaChevronRight className="w-4 h-4 text-gray-400" />
-                          </button>
-                        ) : (
-                          <Link
-                            to={`/categorie/${activeMenu}/${subItem.slug}`}
-                            onClick={onClose}
-                            className="block w-full"
-                          >
-                            <button
-                              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-                            >
-                              <span>{subItem.title}</span>
-                            </button>
-                          </Link>
+                        <span>{subItem.title}</span>
+                        {subItem.level3Items && (
+                          <FaChevronRight className="w-4 h-4 text-gray-400" />
+
                         )}
-                      </div>
+                      </button>
                     ))}
                 </div>
               </motion.div>
             )}
+
 
             {/* Niveau 3 */}
             {activeSubMenu && (
@@ -255,34 +220,27 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                     .find(item => item.slug === activeMenu)
                     ?.subItems.find(sub => sub.slug === activeSubMenu)
                     ?.level3Items?.map((level3Item) => (
-                      <div
-                        key={level3Item.slug}
-                        onMouseEnter={() => handleLevel3Hover(level3Item.slug)}
-                        className="w-full"
-                      >
-                        {level3Item.level4Items && level3Item.level4Items.length > 0 ? (
-                          <button
-                            className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
-                              activeLevel3 === level3Item.slug ? 'bg-gray-50' : ''
-                            }`}
-                          >
-                            <span>{level3Item.title}</span>
-                            <FaChevronRight className="w-4 h-4 text-gray-400" />
-                          </button>
-                        ) : (
-                          <Link
-                            to={`/categorie/${activeMenu}/${activeSubMenu}/${level3Item.slug}`}
-                            onClick={onClose}
-                            className="block w-full"
-                          >
-                            <button
-                              className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-                            >
-                              <span>{level3Item.title}</span>
-                            </button>
-                          </Link>
-                        )}
-                      </div>
+                      level3Item.level4Items ? (
+                        <button
+                          key={level3Item.slug}
+                          onClick={(e) => handleLevel3Click(level3Item.slug, e)}
+                          className={`w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors ${
+                            activeLevel3 === level3Item.slug ? 'bg-gray-50' : ''
+                          }`}
+                        >
+                          <span>{level3Item.title}</span>
+                          <FaChevronRight className="w-4 h-4 text-gray-400" />
+                        </button>
+                      ) : (
+                        <Link
+                          key={level3Item.slug}
+                          to={`/nos-produits/${activeMenu}/${activeSubMenu}/${level3Item.slug}`}
+                          onClick={onClose}
+                          className="flex items-center px-6 py-4 hover:bg-gray-50 transition-colors"
+                        >
+                          {level3Item.title}
+                        </Link>
+                      )
                     ))}
                 </div>
               </motion.div>
@@ -313,7 +271,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                     ?.level4Items?.map((level4Item) => (
                       <Link
                         key={level4Item.slug}
-                        to={`/categorie/${activeMenu}/${activeSubMenu}/${activeLevel3}/${level4Item.slug}`}
+                        to={`/nos-produits/${activeMenu}/${activeSubMenu}/${activeLevel3}/${level4Item.slug}`}
                         onClick={onClose}
                         className="flex items-center px-6 py-4 hover:bg-gray-50 transition-colors"
                       >
@@ -323,6 +281,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                 </div>
               </motion.div>
             )}
+
           </motion.div>
         </>
       )}
