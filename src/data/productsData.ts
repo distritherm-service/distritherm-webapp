@@ -314,4 +314,7 @@ export const productsData: Record<string, Product[]> = {
       reviews: 51
     }
   ]
-}; 
+};
+
+// Export un tableau de produits directement (utilisé dans CategoryPage.tsx)
+export const products: Product[] = Object.values(productsData).flat(); 
