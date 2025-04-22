@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaPhone, FaEnvelope, FaClock, FaBuilding, FaSpinner, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
-import axiosInstance from '../services/axiosConfig';
+import { axiosInstance } from '../services/axiosConfig';
 import Footer from '../components/layout/Footer';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 import Layout from '../components/layout/Layout';

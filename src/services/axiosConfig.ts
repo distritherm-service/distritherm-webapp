@@ -35,6 +35,9 @@ const axiosInstance = axios.create({
   withCredentials: true, // Important pour les cookies de session et refresh token
 });
 
+// Export de l'instance axios (à la fois par défaut et nommé)
+export { axiosInstance };
+
 // Fonction pour sauvegarder les données d'authentification
 export const saveAuthData = (data: AuthResponse): void => {
   if (data.accessToken) {

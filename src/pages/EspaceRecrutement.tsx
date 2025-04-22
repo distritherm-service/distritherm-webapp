@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Layout from '../components/layout/Layout';
 import { FaUsers, FaGraduationCap, FaHandshake, FaChartLine, FaFileUpload, FaSpinner, FaCheckCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import axiosInstance from '../services/axiosConfig';
+import { axiosInstance } from '../services/axiosConfig';
 import Footer from '../components/layout/Footer';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 
