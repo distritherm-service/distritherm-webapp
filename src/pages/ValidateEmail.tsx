@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaSpinner, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { authService } from '../services/authService';
-import Footer from '../components/Footer';
-import Breadcrumb from '../components/Breadcrumb';
+import Footer from '../components/layout/Footer';
+import Breadcrumb from '../components/navigation/Breadcrumb';
 
 const ValidateEmail: React.FC = () => {
   const navigate = useNavigate();

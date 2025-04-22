@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
-import api from '../services/axiosConfig';
+import { axiosInstance } from '../services/axiosConfig';
 
 interface UseApiOptions<T> {
   immediate?: boolean;
@@ -47,25 +47,25 @@ export function useApi<T = any, P = any>(
 
         switch (method) {
           case 'get':
-            response = await api.get<T>(url, {
+            response = await axiosInstance.get<T>(url, {
               params,
               ...config
             });
             break;
           case 'post':
-            response = await api.post<T>(url, params, config);
+            response = await axiosInstance.post<T>(url, params, config);
             break;
           case 'put':
-            response = await api.put<T>(url, params, config);
+            response = await axiosInstance.put<T>(url, params, config);
             break;
           case 'delete':
-            response = await api.delete<T>(url, {
+            response = await axiosInstance.delete<T>(url, {
               params,
               ...config
             });
             break;
           case 'patch':
-            response = await api.patch<T>(url, params, config);
+            response = await axiosInstance.patch<T>(url, params, config);
             break;
           default:
             throw new Error(`Méthode HTTP non supportée: ${method}`);

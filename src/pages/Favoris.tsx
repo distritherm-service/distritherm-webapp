@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { FaHeart, FaTrash, FaShoppingCart } from 'react-icons/fa';
 import { motion } from 'framer-motion';
-import Slider from '../components/Slider';
-import Breadcrumb from '../components/Breadcrumb';
-import Footer from '../components/Footer';
+import Breadcrumb from '../components/navigation/Breadcrumb';
+import Footer from '../components/layout/Footer';
 import { Product } from '../data/products';
 import { Promotion } from '../data/promotions';
-import { useCart } from '../contexts/CartContext';  
+import { useCart } from '../contexts/CartContext';
+import Layout from '../components/layout/Layout';
 
 const Favoris: React.FC = () => {
   const { favorites, removeFromFavorites } = useFavorites();
@@ -55,7 +55,6 @@ const Favoris: React.FC = () => {
 
   return (
     <>
-      <Slider />
       <div className="min-h-screen bg-gray-50">
         <Breadcrumb />
         <div className="container mx-auto px-4 py-8">

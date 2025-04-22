@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import Footer from '../components/Footer';
-import Breadcrumb from '../components/Breadcrumb';
-import PromotionGrid from '../components/PromotionGrid';
-import PromotionFilters from '../components/PromotionFilters';
+import Footer from '../components/layout/Footer';
+import Breadcrumb from '../components/navigation/Breadcrumb';
+import PromotionGrid from '../components/promotions/PromotionGrid';
+import PromotionFilters from '../components/promotions/PromotionFilters';
 import { promotions, Promotion, getPromotionPriceRange } from '../data/promotions';
+import Layout from '../components/layout/Layout';
 
 const Promotions: React.FC = () => {
   const initialPriceRange = getPromotionPriceRange();

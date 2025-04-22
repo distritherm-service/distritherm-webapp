@@ -1,20 +1,21 @@
 export type Product = {
   id: string;
-  title: string;
+  name: string;
   description: string;
   price: number;
   compareAtPrice?: number;
   image: string;
   brand: string;
   rating: number;
-  reviewCount: number;
+  reviews: number;
   isNew?: boolean;
   isPromo?: boolean;
   category: string;
-  subcategory: string;
+  subCategory: string;
   level3category?: string;
   level4category?: string;
   stock: number;
+  features: string[];
   specifications?: Record<string, string>;
 };
 
@@ -23,20 +24,21 @@ export const products: Product[] = [
   // Produits de la catégorie Chauffage > Chaudières > Chaudières à gaz
   {
     id: 'chaudiere-gaz-condensation-01',
-    title: 'Chaudière à gaz à condensation EcoCondens 25kW',
+    name: 'Chaudière à gaz à condensation EcoCondens 25kW',
     description: 'Chaudière murale à gaz à condensation, puissance 25kW, rendement jusqu\'à 108%, classe énergétique A+.',
     price: 1499.99,
     compareAtPrice: 1699.99,
-    image: '/products/chaudiere-gaz-condensation.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'EcoTherm',
     rating: 4.5,
-    reviewCount: 32,
+    reviews: 32,
     isNew: true,
     category: 'chauffage',
-    subcategory: 'chaudieres',
+    subCategory: 'chaudieres',
     level3category: 'chaudieres-gaz',
     level4category: 'condensation',
-    stock: 12,
+    stock:0,
+    features: [],
     specifications: {
       'Puissance': '25 kW',
       'Rendement': '108%',
@@ -47,18 +49,19 @@ export const products: Product[] = [
   },
   {
     id: 'chaudiere-gaz-basse-temperature-01',
-    title: 'Chaudière à gaz basse température PlusHeat 20kW',
+    name: 'Chaudière à gaz basse température PlusHeat 20kW',
     description: 'Chaudière murale à gaz basse température, puissance 20kW, économique et fiable.',
     price: 1099.99,
-    image: '/products/chaudiere-gaz-basse-temperature.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'PlusHeat',
     rating: 4.2,
-    reviewCount: 18,
+    reviews: 18,
     category: 'chauffage',
-    subcategory: 'chaudieres',
+    subCategory: 'chaudieres',
     level3category: 'chaudieres-gaz',
     level4category: 'basse-temperature',
-    stock: 8,
+    stock: 5,
+    features: [],
     specifications: {
       'Puissance': '20 kW',
       'Rendement': '93%',
@@ -71,19 +74,20 @@ export const products: Product[] = [
   // Produits de la catégorie Chauffage > Pompes à chaleur > PAC air/eau
   {
     id: 'pac-air-eau-01',
-    title: 'Pompe à chaleur air/eau Atlantic Alfea Excellia 11kW',
+    name: 'Pompe à chaleur air/eau Atlantic Alfea Excellia 11kW',
     description: 'Pompe à chaleur air/eau bi-bloc, puissance 11kW, COP jusqu\'à 4,5, idéale pour le chauffage et l\'eau chaude sanitaire.',
     price: 3999.99,
     compareAtPrice: 4399.99,
-    image: '/products/pac-air-eau.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'Atlantic',
     rating: 4.8,
-    reviewCount: 45,
+    reviews: 45,
     isPromo: true,
     category: 'chauffage',
-    subcategory: 'pompes-a-chaleur',
+    subCategory: 'pompes-a-chaleur',
     level3category: 'pac-air-eau',
     stock: 5,
+    features: [],
     specifications: {
       'Puissance': '11 kW',
       'COP': '4,5',
@@ -96,19 +100,20 @@ export const products: Product[] = [
   // Produits de la catégorie Plomberie > Sanitaires > WC
   {
     id: 'wc-suspendu-01',
-    title: 'WC suspendu Grohe Bau Ceramic avec abattant frein de chute',
+    name: 'WC suspendu Grohe Bau Ceramic avec abattant frein de chute',
     description: 'Pack WC suspendu en céramique, avec abattant à frein de chute, design moderne et compact.',
     price: 299.99,
     compareAtPrice: 349.99,
-    image: '/products/wc-suspendu.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'Grohe',
     rating: 4.6,
-    reviewCount: 58,
+    reviews: 58,
     category: 'plomberie',
-    subcategory: 'sanitaires',
+    subCategory: 'sanitaires',
     level3category: 'wc',
     level4category: 'suspendus',
     stock: 15,
+    features: [],
     specifications: {
       'Matériau': 'Céramique',
       'Couleur': 'Blanc',
@@ -121,17 +126,18 @@ export const products: Product[] = [
   // Produits de la catégorie Climatisation > Climatiseurs muraux
   {
     id: 'climatiseur-mural-01',
-    title: 'Climatiseur mural Daikin Perfera 3,5kW',
+    name: 'Climatiseur mural Daikin Perfera 3,5kW',
     description: 'Climatiseur mural réversible, puissance froid 3,5kW, puissance chaud 4kW, technologie inverter pour une consommation réduite.',
     price: 1199.99,
-    image: '/products/climatiseur-mural.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'Daikin',
     rating: 4.7,
-    reviewCount: 73,
+    reviews: 73,
     isNew: true,
     category: 'climatisation',
-    subcategory: 'climatiseurs-muraux',
+    subCategory: 'climatiseurs-muraux',
     stock: 7,
+    features: [],
     specifications: {
       'Puissance froid': '3,5 kW',
       'Puissance chaud': '4 kW',
@@ -145,16 +151,17 @@ export const products: Product[] = [
   // Produits de la catégorie Électricité > Éclairage
   {
     id: 'spot-led-01',
-    title: 'Lot de 5 spots LED encastrables orientables 7W',
+    name: 'Lot de 5 spots LED encastrables orientables 7W',
     description: 'Spots LED encastrables orientables, 7W, blanc chaud, compatible avec variateur, idéal pour salon et cuisine.',
     price: 49.99,
-    image: '/products/spot-led.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'LumiPro',
     rating: 4.4,
-    reviewCount: 127,
+    reviews: 127,
     category: 'electricite',
-    subcategory: 'eclairage',
+    subCategory: 'eclairage',
     stock: 32,
+    features: [],
     specifications: {
       'Puissance': '7W',
       'Équivalent incandescent': '50W',
@@ -168,18 +175,19 @@ export const products: Product[] = [
   // Produits de la catégorie Outillage > Outillage électrique
   {
     id: 'perceuse-visseuse-01',
-    title: 'Perceuse-visseuse sans fil Bosch GSR 18V-55 Professional',
+    name: 'Perceuse-visseuse sans fil Bosch GSR 18V-55 Professional',
     description: 'Perceuse-visseuse sans fil 18V, 2 batteries Li-ion 2.0Ah, couple max 55Nm, mandrin auto-serrant 13mm, livrée en coffret.',
     price: 199.99,
     compareAtPrice: 249.99,
-    image: '/products/perceuse-visseuse.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'Bosch',
     rating: 4.9,
-    reviewCount: 215,
+    reviews: 215,
     isPromo: true,
     category: 'outillage',
-    subcategory: 'outillage-electrique',
+    subCategory: 'outillage-electrique',
     stock: 14,
+    features: [],
     specifications: {
       'Tension': '18V',
       'Couple max': '55 Nm',
@@ -193,18 +201,19 @@ export const products: Product[] = [
   // Autres produits des différentes catégories
   {
     id: 'radiateur-inertie-01',
-    title: 'Radiateur à inertie sèche Atlantic Galapagos 1500W',
+    name: 'Radiateur à inertie sèche Atlantic Galapagos 1500W',
     description: 'Radiateur électrique à inertie sèche, puissance 1500W, pilotage intelligent, corps de chauffe en fonte.',
     price: 599.99,
-    image: '/products/radiateur-inertie.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'Atlantic',
     rating: 4.6,
-    reviewCount: 89,
+    reviews: 89,
     category: 'chauffage',
-    subcategory: 'radiateurs',
+    subCategory: 'radiateurs',
     level3category: 'radiateurs-electriques',
     level4category: 'inertie',
     stock: 9,
+    features: [],
     specifications: {
       'Puissance': '1500W',
       'Surface recommandée': '15-20 m²',
@@ -215,17 +224,18 @@ export const products: Product[] = [
   },
   {
     id: 'mitigeur-cuisine-01',
-    title: 'Mitigeur d\'évier cuisine Hansgrohe Talis S avec douchette extractible',
+    name: 'Mitigeur d\'évier cuisine Hansgrohe Talis S avec douchette extractible',
     description: 'Mitigeur d\'évier avec douchette extractible, finition chromée, installation sur plage, 2 jets.',
     price: 249.99,
-    image: '/products/mitigeur-cuisine.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'Hansgrohe',
     rating: 4.7,
-    reviewCount: 64,
+    reviews: 64,
     category: 'plomberie',
-    subcategory: 'robinetterie',
+    subCategory: 'robinetterie',
     level3category: 'robinets-cuisine',
     stock: 11,
+    features: [],
     specifications: {
       'Type': 'Mitigeur avec douchette extractible',
       'Finition': 'Chromé',
@@ -237,16 +247,17 @@ export const products: Product[] = [
   },
   {
     id: 'thermometre-ir-01',
-    title: 'Thermomètre infrarouge numérique Fluke 62 MAX+',
+    name: 'Thermomètre infrarouge numérique Fluke 62 MAX+',
     description: 'Thermomètre infrarouge professionnel, plage de mesure -30°C à +650°C, précision ±1%, résistant aux chutes jusqu\'à 3m.',
     price: 129.99,
-    image: '/products/thermometre-ir.jpg',
+    image: '/image-produit-defaut.jpeg',
     brand: 'Fluke',
     rating: 4.8,
-    reviewCount: 42,
+    reviews: 42,
     category: 'outillage',
-    subcategory: 'mesure-et-controle',
+    subCategory: 'mesure-et-controle',
     stock: 6,
+    features: [],
     specifications: {
       'Plage de mesure': '-30°C à +650°C',
       'Précision': '±1%',
@@ -268,7 +279,7 @@ export const getSubcategoriesByCategory = (category: string): string[] => {
   const subcategories = new Set(
     products
       .filter(product => product.category === category)
-      .map(product => product.subcategory)
+      .map(product => product.subCategory)
   );
   return Array.from(subcategories);
 };

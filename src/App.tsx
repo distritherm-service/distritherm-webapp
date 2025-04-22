@@ -1,16 +1,18 @@
 import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navbar';
+import Navbar from './components/navigation/Navbar';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { CartProvider } from './contexts/CartContext';
 import { SearchProvider } from './contexts/SearchContext';
 import { AuthProvider } from './contexts/AuthContext';
-import ScrollToTop from './components/ScrollToTop';
+import ScrollToTop from './components/layout/ScrollToTop';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from './contexts/AuthContext';
 import EmailVerification from './pages/EmailVerification';
 import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import ValidateEmail from './pages/ValidateEmail';
+import CategoryProducts from './pages/CategoryProducts';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Composant de chargement simple en attendant de créer le composant LoadingSpinner
 const LoadingSpinner = () => (
@@ -36,6 +38,7 @@ const LoginPage = () => {
 const Home = lazy(() => import('./pages/Home'));
 const NosProducts = lazy(() => import('./pages/NosProducts'));
 const Promotions = lazy(() => import('./pages/Promotions'));
+const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 const EspaceRecrutement = lazy(() => import('./pages/EspaceRecrutement'));
 const Contact = lazy(() => import('./pages/Contact'));
 const ConditionsVente = lazy(() => import('./pages/ConditionsVente'));
@@ -69,6 +72,8 @@ const AppRoutes = () => {
       {/* Routes publiques accessibles à tous */}
       <Route path="/" element={<Home />} />
       <Route path="/nos-produits" element={<NosProducts />} />
+      <Route path="/categorie" element={<Navigate to="/" replace />} />
+      <Route path="/categorie/:category/:subCategory?/:level3?/:level4?" element={<CategoryProducts />} />
       <Route path="/produit/:id" element={<ProductDetail />} />
       <Route path="/promotions" element={<Promotions />} />
       <Route path="/espace-recrutement" element={<EspaceRecrutement />} />
@@ -78,13 +83,29 @@ const AppRoutes = () => {
       <Route path="/sav" element={<SAV />} /> 
       <Route path="/a-propos" element={<APropos />} />
       <Route path="/panier" element={<Cart />} />
-      <Route path="/favoris" element={<Favoris />} />
+      
+      {/* Routes protégées nécessitant une authentification */}
+      <Route 
+        path="/favoris" 
+        element={
+          <ProtectedRoute>
+            <Favoris />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="/Mon-profil" element={<MonProfil />} />
       <Route path="/Mes-commandes" element={<MesCommandes />} />
       <Route path="/Mes-devis" element={<MesDevis />} />
       <Route path="/panier/delivery" element={<div>Page de livraison</div>} />
       <Route path="/panier/payment" element={<div>Page de paiement</div>} />
-      <Route path="/inscription-reussie" element={<RegisterSuccess />} />
+      <Route 
+        path="/inscription-reussie" 
+        element={
+          <ProtectedRoute>
+            <RegisterSuccess />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="/verification-email" element={<EmailVerification />} />
       <Route path="/validate-email" element={<ValidateEmail />} />
       <Route path="/password-forgot" element={<ResetPasswordForm />} />
@@ -103,9 +124,9 @@ const App: React.FC = () => {
     <GoogleOAuthProvider clientId="592794634648-38n0hj2dhk0frc5tm2o7c3gol5d06clc.apps.googleusercontent.com">
       <AuthProvider>
         <CartProvider>
-          <FavoritesProvider>
+          <Router>
             <SearchProvider>
-              <Router>
+              <FavoritesProvider>
                 <div className="min-h-screen bg-gray-50">
                   <Navbar />
                   <div className="navbar-spacer"></div>
@@ -116,9 +137,9 @@ const App: React.FC = () => {
                     </Suspense>
                   </main>
                 </div>
-              </Router>
+              </FavoritesProvider>
             </SearchProvider>
-          </FavoritesProvider>
+          </Router>
         </CartProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
