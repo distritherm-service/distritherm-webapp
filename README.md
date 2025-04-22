@@ -117,8 +117,8 @@ Le projet respecte les normes d'accessibilité :
 
 ## Licence
 
-Ce projet est sous licence [MIT](LICENSE).
+Ce projet est sous licence [Distritherm Services](LICENSE).
 
 ## Contact
 
-Pour toute question ou suggestion, veuillez nous contacter à [contact@distritherm.fr](mailto:contact@distritherm.fr).
+Pour toute question ou suggestion, veuillez nous contacter à [contact@distritherm.fr](mailto:info@distritherm.fr).

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FaLock } from 'react-icons/fa';
 import { authService } from '../../services/authService';
-import Footer from '../Footer';
+import Footer from '../../components/layout/Footer';
 
 interface ResetPasswordFormProps {
   token?: string;

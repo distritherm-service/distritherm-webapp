@@ -1,7 +1,7 @@
 import React from 'react';
-import Breadcrumb from '../components/Breadcrumb';
-import Footer from '../components/Footer';
-import ScrollToTop from '../components/ScrollToTop';
+import Breadcrumb from '../components/navigation/Breadcrumb';
+import Footer from '../components/layout/Footer';
+import ScrollToTop from '../components/layout/ScrollToTop';
 import { motion } from 'framer-motion';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';

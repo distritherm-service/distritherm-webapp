@@ -2,19 +2,24 @@ import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaHeart, FaShoppingCart, FaRuler, FaWeight, FaBox, FaChevronRight, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
-import Breadcrumb from '../components/Breadcrumb';
+import Breadcrumb from '../components/navigation/Breadcrumb';
 import { ProductDetails } from '../types/product';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
 import { products, Product } from '../data/products';
 import { FiChevronLeft, FiChevronRight, FiZoomIn, FiZoomOut } from 'react-icons/fi';
-import Footer from '../components/Footer';
-import ProductCard from '../components/ProductCard';
-import Slider from '../components/Slider';
+import Footer from '../components/layout/Footer';
+import ProductCard from '../components/products/ProductCard';
+import Slider from '../components/home/Slider';
+import Layout from '../components/layout/Layout';
+import ProductGallery from '../components/products/ProductGallery';
+import ProductInfo from '../components/products/ProductInfo';
+import ProductTabs from '../components/products/ProductTabs';
+import RelatedProducts from '../components/products/RelatedProducts';
 
 // Utilisation du lazy loading pour les composants de détails non critiques
-const ProductSpecifications = lazy(() => import('../components/ProductSpecifications'));
-const ProductDocuments = lazy(() => import('../components/ProductDocuments'));
+const ProductSpecifications = lazy(() => import('../components/products/ProductSpecifications'));
+const ProductDocuments = lazy(() => import('../components/products/ProductDocuments'));
 
 // Composant de chargement pour les sections lazy-loaded
 const SectionLoader = () => (

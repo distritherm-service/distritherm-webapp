@@ -3,7 +3,8 @@ import { motion } from 'framer-motion';
 import { FaTrash, FaArrowLeft, FaCreditCard } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
-import Breadcrumb from '../components/Breadcrumb';
+import Breadcrumb from '../components/navigation/Breadcrumb';
+import Layout from '../components/layout/Layout';
 
 const Cart: React.FC = () => {
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();

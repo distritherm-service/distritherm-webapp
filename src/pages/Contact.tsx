@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Layout from '../components/Layout';
 import { FaPhone, FaEnvelope, FaClock, FaBuilding, FaSpinner, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
-import axiosInstance from '../services/axiosConfig';
-import Footer from '../components/Footer';
-import Breadcrumb from '../components/Breadcrumb';
+import { axiosInstance } from '../services/axiosConfig';
+import Footer from '../components/layout/Footer';
+import Breadcrumb from '../components/navigation/Breadcrumb';
+import Layout from '../components/layout/Layout';
 
 // Interface pour les agences
 interface Agency {
@@ -351,7 +351,7 @@ const Contact: React.FC = () => {
                         name="agency_id"
                         value={formData.agency_id || ''}
                         onChange={handleAgencyChange}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
+                        className="w-full px-4 h-[45px] rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent bg-white/70"
                         required
                       >
                         <option value="">Choisissez votre Agence</option>

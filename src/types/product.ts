@@ -50,4 +50,19 @@ export interface ProductDetails {
   energyClass?: string;
   installationRequirements?: string;
   relatedProducts?: string[];
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  subCategory: string;
+  features: string[];
+  stock: number;
+  brand: string;
+  rating: number;
+  reviews: number;
 } 

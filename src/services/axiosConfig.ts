@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosResponse } from 'axios';
 
 // URL de l'API backend
-export const BASE_API_URL = 'https://distritherm-backend.onrender.com/';
+export const BASE_API_URL = 'https://distritherm-backend.onrender.com';
 // export const BASE_API_URL = 'http://192.168.1.8:3000';
 
 // Clés pour le localStorage
@@ -30,9 +30,13 @@ const axiosInstance = axios.create({
   timeout: 30000, // 30 secondes
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json'
   },
   withCredentials: true, // Important pour les cookies de session et refresh token
 });
+
+// Export de l'instance axios (à la fois par défaut et nommé)
+export { axiosInstance };
 
 // Fonction pour sauvegarder les données d'authentification
 export const saveAuthData = (data: AuthResponse): void => {
@@ -132,6 +136,16 @@ axiosInstance.interceptors.request.use(
     const token = getAccessToken();
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // S'assurer que les données sont bien formatées pour l'API
+    if (config.data) {
+      // Nettoyer les chaînes de caractères
+      Object.keys(config.data).forEach(key => {
+        if (typeof config.data[key] === 'string') {
+          config.data[key] = config.data[key].trim();
+        }
+      });
     }
 
     return config;

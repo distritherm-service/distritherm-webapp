@@ -18,8 +18,8 @@ export interface Promotion {
 export const promotions: Promotion[] = [
   {
     id: "promo1",
-    title: "POMPE À CHALEUR SPLIT 5 À 17 KW - OFFRE EXCLUSIVE",
-    description: "Profitez de -20% sur cette pompe à chaleur haute performance avec installation gratuite jusqu'au 30/06/2023.",
+    title: "POMPE À CHALEUR",
+    description: "Profitez de -20% sur cette pompe à chaleur haute performance avec installation",
     image: "/image-produit-defaut.jpeg",
     category: "POMPE À CHALEUR",
     subcategory: "Split",
@@ -29,12 +29,12 @@ export const promotions: Promotion[] = [
     discountPercentage: 20,
     validUntil: "2023-06-30",
     code: "PAC20",
-    inStock: true,
+    inStock: false,
     featured: true
   },
   {
     id: "promo2",
-    title: "PACK CLIMATISATION ÉTÉ - SPLIT MURAL + INSTALLATION",
+    title: "PACK CLIMATISATION",
     description: "Préparez votre été avec notre offre spéciale climatisation - garantie 5 ans incluse !",
     image: "/image-produit-defaut.jpeg",
     category: "CLIMATISATION",
@@ -50,7 +50,7 @@ export const promotions: Promotion[] = [
   },
   {
     id: "promo3",
-    title: "CHAUFFE-EAU THERMODYNAMIQUE - REMISE IMMÉDIATE",
+    title: "CHAUFFE-EAU THERMODYNAMIQUE",
     description: "Économisez sur votre facture d'eau chaude avec ce chauffe-eau nouvelle génération à prix réduit.",
     image: "/image-produit-defaut.jpeg",
     category: "EAU CHAUDE SANITAIRE",
@@ -65,7 +65,7 @@ export const promotions: Promotion[] = [
   },
   {
     id: "promo4",
-    title: "OFFRE PHOTOVOLTAÏQUE - ONDULEUR + 4 PANNEAUX",
+    title: "OFFRE PHOTOVOLTAÏQUE",
     description: "Kit complet photovoltaïque avec installation à prix promotionnel pour une autonomie énergétique.",
     image: "/image-produit-defaut.jpeg",
     category: "ONDULEUR",
@@ -80,7 +80,7 @@ export const promotions: Promotion[] = [
   },
   {
     id: "promo5",
-    title: "PACK VENTILATION DOUBLE FLUX - 30% DE REMISE",
+    title: "PACK VENTILATION DOUBLE FLUX",
     description: "Améliorez la qualité de l'air de votre maison avec notre système de ventilation haut de gamme.",
     image: "/image-produit-defaut.jpeg",
     category: "VENTILATION",
@@ -96,7 +96,7 @@ export const promotions: Promotion[] = [
   },
   {
     id: "promo6",
-    title: "RADIATEUR CONNECTÉ NOUVELLE GÉNÉRATION - PACK DE 3",
+    title: "RADIATEUR CONNECTÉ NOUVELLE GÉNÉRATION",
     description: "Contrôlez votre chauffage à distance et réalisez jusqu'à 30% d'économies d'énergie.",
     image: "/image-produit-defaut.jpeg",
     category: "CHAUFFAGE",

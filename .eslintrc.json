@@ -3,7 +3,9 @@
       "eslint:recommended",
       "plugin:react/recommended",
       "plugin:@typescript-eslint/recommended",
-      "plugin:prettier/recommended"
+      "plugin:prettier/recommended",
+      "react-app",
+      "react-app/jest"
     ],
     "plugins": ["react", "@typescript-eslint", "prettier"],
     "rules": {
@@ -14,6 +16,22 @@
     "settings": {
       "react": {
         "version": "detect"
+      },
+      "import/resolver": {
+        "alias": {
+          "map": [
+            ["@", "./src"],
+            ["@components", "./src/components"],
+            ["@pages", "./src/pages"],
+            ["@features", "./src/features"],
+            ["@contexts", "./src/contexts"],
+            ["@hooks", "./src/hooks"],
+            ["@types", "./src/types"],
+            ["@utils", "./src/utils"],
+            ["@services", "./src/services"]
+          ],
+          "extensions": [".js", ".jsx", ".ts", ".tsx"]
+        }
       }
     }
   }

@@ -206,4 +206,114 @@ import type { Product } from '../types/product';
 
 // 5. CSS/assets
 import '../styles/ProductList.css';
-``` 
+```
+
+# Standards de Code
+
+## Structure des Imports
+
+Les imports doivent être organisés dans l'ordre suivant :
+
+1. Imports React et React Native
+2. Imports de bibliothèques tierces
+3. Imports de composants
+4. Imports de contextes
+5. Imports de hooks
+6. Imports de types
+7. Imports de services
+8. Imports d'utilitaires
+9. Imports de styles
+
+Exemple :
+```typescript
+// Imports React
+import React, { useState } from 'react';
+
+// Imports de routing
+import { Link } from 'react-router-dom';
+
+// Imports d'icônes
+import { FaShoppingCart } from 'react-icons/fa';
+
+// Imports de composants
+import ProductCard from '@components/products/ProductCard';
+
+// Imports de contextes
+import { useCart } from '@contexts/CartContext';
+
+// Imports de hooks
+import { useProducts } from '@hooks/useProducts';
+
+// Imports de types
+import { Product } from '@types/product';
+
+// Imports de services
+import { productService } from '@services/productService';
+
+// Imports d'utilitaires
+import { formatPrice } from '@utils/format';
+```
+
+## Alias de Chemins
+
+Utilisez les alias de chemin suivants :
+
+- `@/` : Racine du projet (src/)
+- `@components/` : Composants réutilisables
+- `@pages/` : Pages de l'application
+- `@features/` : Fonctionnalités spécifiques
+- `@contexts/` : Contextes React
+- `@hooks/` : Hooks personnalisés
+- `@types/` : Types TypeScript
+- `@utils/` : Utilitaires
+- `@services/` : Services
+
+## Organisation des Fichiers
+
+- Les composants doivent être placés dans des dossiers correspondant à leur fonction
+- Les fichiers de test doivent être placés à côté des fichiers qu'ils testent
+- Les styles doivent être placés dans des fichiers séparés avec le même nom que le composant
+- Les types doivent être placés dans des fichiers séparés dans le dossier `@types`
+
+## Nommage
+
+- Les composants React doivent utiliser le PascalCase
+- Les fichiers doivent utiliser le kebab-case
+- Les variables et fonctions doivent utiliser le camelCase
+- Les constantes doivent utiliser le UPPER_SNAKE_CASE
+- Les interfaces et types doivent utiliser le PascalCase
+
+## Documentation
+
+- Tous les composants doivent avoir une documentation JSDoc
+- Les fonctions complexes doivent être commentées
+- Les types complexes doivent être documentés
+- Les hooks personnalisés doivent être documentés
+
+## Tests
+
+- Les tests doivent être écrits pour tous les composants
+- Les tests doivent couvrir les cas d'utilisation principaux
+- Les tests doivent être maintenables et lisibles
+- Les tests doivent être rapides à exécuter
+
+## Performance
+
+- Évitez les re-rendus inutiles
+- Utilisez React.memo pour les composants purs
+- Utilisez useMemo et useCallback pour les calculs coûteux
+- Évitez les boucles infinies dans les effets
+
+## Accessibilité
+
+- Utilisez les balises sémantiques appropriées
+- Ajoutez des attributs ARIA quand nécessaire
+- Assurez-vous que le contraste est suffisant
+- Testez avec un lecteur d'écran
+
+## Sécurité
+
+- Validez toutes les entrées utilisateur
+- Échappez le HTML
+- Utilisez HTTPS
+- Protégez les routes sensibles 
