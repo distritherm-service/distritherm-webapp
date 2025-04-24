@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { productsData } from '../data/productsData';
+import { Product, getProducts, FilterOptions, getPriceRange, getAllBrands } from '../services/productService';
 import ProductCard from '../components/products/ProductCard';
-import { categories } from '../data/categories';
+import { categoryService, Category } from '../services/categoryService';
 import ProductFilters from '../components/products/ProductFilters';
 import Footer from '../components/layout/Footer';
 import Breadcrumb from '../components/navigation/Breadcrumb';
-import { Product } from '../types/product';
-import Layout from '../components/layout/Layout';
-import ProductGrid from '../components/products/ProductGrid';
 
 const CategoryProducts: React.FC = () => {
   const { category } = useParams<{ category: string }>();
@@ -19,81 +16,112 @@ const CategoryProducts: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [filters, setFilters] = useState({
-    category: 'Toutes les catégories',
-    subcategory: 'Toutes les sous-catégories',
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoryData, setCategoryData] = useState<Category | null>(null);
+  const [availableBrands, setAvailableBrands] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>(initialPriceRange);
+  const [filters, setFilters] = useState<FilterOptions>({
+    category: category || '',
     brand: 'Toutes les marques',
     priceRange: initialPriceRange,
     inStockOnly: false,
     sortBy: 'featured',
-    priceRangeTouched: false
+    searchQuery: ''
   });
 
-  // Trouver la catégorie dans les données
-  const categoryData = categories.find(cat => cat.slug === category);
-
-  // Simuler le chargement
+  // Charger les données initiales (prix, marques)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    const loadInitialData = async () => {
+      try {
+        // Charger la plage de prix
+        const priceRangeData = await getPriceRange();
+        const newPriceRange: [number, number] = [priceRangeData.min, priceRangeData.max];
+        setPriceRange(newPriceRange);
+        
+        // Mettre à jour les filtres avec la nouvelle plage de prix
+        setFilters(prev => ({
+          ...prev,
+          priceRange: newPriceRange
+        }));
+        
+        // Charger les marques disponibles
+        const brands = await getAllBrands();
+        setAvailableBrands(brands);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données initiales:', error);
+      }
+    };
+    
+    loadInitialData();
   }, []);
+
+  // Charger les catégories et les produits
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      
+      try {
+        // Charger les catégories
+        const allCategories = await categoryService.getAllCategories();
+        setCategories(allCategories);
+        
+        // Trouver la catégorie correspondante
+        const foundCategory = allCategories.find(cat => 
+          cat.name.toLowerCase() === category?.toLowerCase()
+        );
+        setCategoryData(foundCategory || null);
+        
+        // Charger les produits avec les filtres
+        if (foundCategory) {
+          const productsResponse = await getProducts({
+            ...filters,
+            category: foundCategory.id.toString()
+          });
+          setFilteredProducts(productsResponse.products);
+        } else {
+          setFilteredProducts([]);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+        setFilteredProducts([]);
+      } finally {
+        // Simuler un délai de chargement pour une meilleure UX
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
+      }
+    };
+    
+    fetchData();
+  }, [category]);
 
   // Appliquer les filtres
   useEffect(() => {
-    let result = productsData[category || ''] || [];
-
-    // Filtrer par marque
-    if (filters.brand && filters.brand !== 'Toutes les marques') {
-      result = result.filter(product => product.brand === filters.brand);
-    }
-
-    // Filtrer par prix
-    result = result.filter(
-      product => 
-        product.price >= filters.priceRange[0] && 
-        product.price <= filters.priceRange[1]
-    );
-
-    // Filtrer par stock
-    if (filters.inStockOnly) {
-      result = result.filter(product => product.stock > 0);
-    }
-
-    // Trier les produits
-    if (filters.sortBy === 'order_first') {
-      // Si le tri est "Sur commande", ne garder que les produits avec stock = 0
-      result = result.filter(product => product.stock === 0);
-    } else if (filters.sortBy) {
-      result = sortProducts(result, filters.sortBy);
-    }
-
-    setFilteredProducts(result);
-  }, [category, filters]);
-
-  // Fonction pour trier les produits
-  const sortProducts = (productsToSort: Product[], sortBy: string): Product[] => {
-    const sortedProducts = [...productsToSort];
+    const applyFilters = async () => {
+      if (!categoryData) return;
+      
+      setIsLoading(true);
+      try {
+        const productsResponse = await getProducts({
+          ...filters,
+          category: categoryData.id.toString()
+        });
+        setFilteredProducts(productsResponse.products);
+      } catch (error) {
+        console.error('Erreur lors de l\'application des filtres:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    switch (sortBy) {
-      case 'stock_first':
-        return sortedProducts.sort((a, b) => (b.stock > 0 ? 1 : -1) - (a.stock > 0 ? 1 : -1));
-      case 'price_asc':
-        return sortedProducts.sort((a, b) => a.price - b.price);
-      case 'price_desc':
-        return sortedProducts.sort((a, b) => b.price - a.price);
-      case 'name_asc':
-        return sortedProducts.sort((a, b) => a.name.localeCompare(b.name));
-      case 'name_desc':
-        return sortedProducts.sort((a, b) => b.name.localeCompare(a.name));
-      default:
-        return sortedProducts;
+    // Ne pas déclencher l'effet lors du premier rendu qui est géré par l'effet précédent
+    if (categoryData) {
+      applyFilters();
     }
-  };
+  }, [filters, categoryData]);
 
-  const handleFilterChange = (newFilters: any) => {
-    setFilters({ ...filters, ...newFilters });
+  const handleFilterChange = (newFilters: Partial<FilterOptions>) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
   const handleSaveFilters = () => {
@@ -101,7 +129,7 @@ const CategoryProducts: React.FC = () => {
   };
 
   // Afficher un message si la catégorie n'existe pas
-  if (!categoryData) {
+  if (!categoryData && !isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Breadcrumb />
@@ -128,6 +156,13 @@ const CategoryProducts: React.FC = () => {
     );
   }
 
+  // Obtenir une image par défaut si aucune n'est disponible dans la catégorie
+  const getCategoryImage = () => {
+    // Utiliser l'URL de l'image si elle existe dans la catégorie
+    // Sinon utiliser une image par défaut
+    return '/images/default-category.jpg';
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Breadcrumb />
@@ -137,26 +172,26 @@ const CategoryProducts: React.FC = () => {
           <div className="text-center mb-7">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 relative inline-block">
               <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
-                {categoryData.title}
+                {categoryData?.name || 'Chargement...'}
               </span>
               <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full"></div>
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto mt-8">
-              Découvrez nos produits dans la catégorie {categoryData.title.toLowerCase()}
+              Découvrez nos produits dans la catégorie {categoryData?.name?.toLowerCase() || '...'}
             </p>
           </div>
           <div className="container mx-auto px-4 py-12">
             {/* Image de la catégorie */}
             <div className="mb-8 relative rounded-xl overflow-hidden shadow-lg h-64">
               <img 
-                src={categoryData.image} 
-                alt={categoryData.title}
+                src={getCategoryImage()} 
+                alt={categoryData?.name || 'Catégorie'}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
                 <div className="p-6 text-white">
                   <div className="w-12 h-12 mb-2">
-                    {categoryData.icon}
+                    {/* Icône de catégorie si disponible */}
                   </div>
                 </div>
               </div>
@@ -168,6 +203,8 @@ const CategoryProducts: React.FC = () => {
                 filters={filters} 
                 onFilterChange={handleFilterChange} 
                 onSaveFilters={handleSaveFilters}
+                priceRange={priceRange}
+                availableBrands={availableBrands}
               />
             </div>
             
@@ -259,16 +296,9 @@ const CategoryProducts: React.FC = () => {
                   </div>
                   <h3 className="text-lg font-semibold text-center text-gray-800 mb-3">Service rapide</h3>
                   <p className="text-gray-600 text-center">
-                    Livraison rapide et service après-vente de qualité pour tous nos produits. 
-                    Nous vous livrons vos produits dans les meilleures conditions et dans les détails les plus courts, en général dans les 48 heures ou en 72 heures dans tout la France.
+                    Livraison rapide et service après-vente de qualité pour tous nos produits.
                   </p>
                 </div>
-              </div>
-              
-              <div className="mt-10 text-center">
-                <button className="bg-gradient-to-r from-teal-600 to-blue-600 hover:from-teal-700 hover:to-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 shadow hover:shadow-lg transform hover:-translate-y-0.5">
-                  Demander un devis personnalisé
-                </button>
               </div>
             </div>
           </div>

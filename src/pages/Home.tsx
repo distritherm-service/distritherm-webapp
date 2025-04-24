@@ -1,18 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
-import Slider from '../components/home/Slider';
+//import Slider from '../components/home/Slider';
 import ValueProposition from '../components/home/ValueProposition';
 import QuoteSection from '../components/home/QuoteSection';
 import LocationSection from '../components/home/LocationSection';
 import ExpertAdviceSection from '../components/home/ExpertAdviceSection';
 import BrandsSection from '../components/home/BrandsSection';
-import ServicesSection from '../components/home/ServicesSection';
+//import ServicesSection from '../components/home/ServicesSection';
 import CategoryGrid from '../components/categories/CategoryGrid';
 import ProductGrid from '../components/products/ProductGrid';
-import { categories } from '../data/categories';
-import { products } from '../data/products';
+import { CATEGORIES as categories, Product } from '../services/productService';
+import { getProducts } from '../services/productService';
 import { FaMapMarkerAlt, FaUserPlus, FaTools, FaFileAlt, FaCalendarAlt, FaIndustry, FaHandshake, FaMapMarkedAlt } from 'react-icons/fa';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 // import Layout from '../components/Layout';
 // import FeaturedProducts from '../components/FeaturedProducts';
 // import PromoSection from '../components/PromoSection';
@@ -20,6 +20,23 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const response = await getProducts({ limit: 8 });
+        setFeaturedProducts(response.products);
+      } catch (error) {
+        console.error('Erreur lors du chargement des produits:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, []);
 
   const handleMapClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -232,10 +249,17 @@ const Home: React.FC = () => {
       {/* Section Produits */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <ProductGrid 
-            products={products} 
-            title="CONSULTER NOS PRODUITS" 
-          />
+          {loading ? (
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007FFF]"></div>
+            </div>
+          ) : (
+            <ProductGrid 
+              products={featuredProducts} 
+              title="CONSULTER NOS PRODUITS" 
+              showViewAllButton={true}
+            />
+          )}
         </div>
       </section>
 

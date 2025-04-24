@@ -1,59 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { getAllCategories, getSubcategoriesByCategory, getAllBrands, getPriceRange, CATEGORIES, SUBCATEGORIES } from "@/services/productService";
-
-interface FilterState {
-  category: string;
-  subcategory: string;
-  brand: string;
-  priceRange: [number, number];
-  sortBy: string;
-  inStockOnly: boolean;
-  priceRangeTouched: boolean;
-}
+import { FilterOptions } from "@/services/productService";
+import { Category, categoryService } from "@/services/categoryService";
+import axios from 'axios';
 
 interface ProductFiltersProps {
-  filters: FilterState;
-  onFilterChange: (newFilters: Partial<FilterState>) => void;
+  filters: FilterOptions;
+  onFilterChange: (newFilters: Partial<FilterOptions>) => void;
   onSaveFilters?: () => void;
+  priceRange: [number, number];
+  availableBrands: string[];
 }
 
-const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange, onSaveFilters }) => {
+const ProductFilters: React.FC<ProductFiltersProps> = ({ 
+  filters, 
+  onFilterChange, 
+  onSaveFilters,
+  priceRange,
+  availableBrands
+}) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [brands] = useState<string[]>(['Toutes les marques', ...getAllBrands()]);
-  const [priceRange] = useState(getPriceRange());
-  const [localPriceRange, setLocalPriceRange] = useState<[number, number]>(filters.priceRange);
+  const [brands, setBrands] = useState<string[]>(['Toutes les marques']);
+  const [localPriceRange, setLocalPriceRange] = useState<[number, number]>(
+    filters.priceRange || priceRange
+  );
+  const [searchQuery, setSearchQuery] = useState(filters.searchQuery || '');
+  
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [level1Categories, setLevel1Categories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mettre à jour les sous-catégories en fonction de la catégorie sélectionnée
+  // Mettre à jour les marques quand elles sont disponibles
   useEffect(() => {
-    if (filters.category !== 'Toutes les catégories') {
-      if (filters.subcategory === 'Toutes les sous-catégories' || 
-          !SUBCATEGORIES[filters.category]?.includes(filters.subcategory)) {
-        onFilterChange({ subcategory: 'Toutes les sous-catégories' });
-      }
+    if (availableBrands && availableBrands.length > 0) {
+      setBrands(['Toutes les marques', ...availableBrands]);
     }
-  }, [filters.category]);
+  }, [availableBrands]);
+
+  // Charger les catégories depuis l'API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const fetchedCategories = await categoryService.getAllCategories();
+        setCategories(fetchedCategories);
+        
+        // Filtrer les catégories de niveau 1
+        const level1 = fetchedCategories.filter(cat => cat.level === 1);
+        setLevel1Categories(level1);
+        
+        setError(null);
+      } catch (err) {
+        console.error('Erreur lors du chargement des catégories:', err);
+        setError('Erreur lors du chargement des données');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Mettre à jour localPriceRange quand filters.priceRange change
   useEffect(() => {
-    setLocalPriceRange(filters.priceRange);
-  }, [filters.priceRange]);
-
-  const handleFilterChange = (filterName: keyof FilterState, value: any) => {
-    if (filterName === 'category') {
-      // Si on change de catégorie, on réinitialise la sous-catégorie
-      onFilterChange({
-        [filterName]: value,
-        subcategory: 'Toutes les sous-catégories'
-      });
-    } else {
-      onFilterChange({ [filterName]: value });
+    if (filters.priceRange) {
+      setLocalPriceRange(filters.priceRange);
+    } else if (priceRange) {
+      setLocalPriceRange(priceRange);
     }
+  }, [filters.priceRange, priceRange]);
+
+  // Mettre à jour searchQuery quand filters.searchQuery change
+  useEffect(() => {
+    setSearchQuery(filters.searchQuery || '');
+  }, [filters.searchQuery]);
+
+  const handleFilterChange = (filterName: keyof FilterOptions, value: any) => {
+    onFilterChange({ [filterName]: value });
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onFilterChange({ searchQuery });
   };
 
   const handlePriceRangeApply = () => {
     onFilterChange({ 
-      priceRange: localPriceRange,
-      priceRangeTouched: true 
+      priceRange: localPriceRange
     });
   };
 
@@ -76,6 +113,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange
   };
 
   const sortOptions = [
+    { value: 'newest', label: 'Plus récents' },
     { value: 'featured', label: 'Produits vedettes' },
     { value: 'stock_first', label: 'En stock d\'abord' },
     { value: 'order_first', label: 'Sur commande d\'abord' },
@@ -84,6 +122,40 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange
     { value: 'name_asc', label: 'Nom (A-Z)' },
     { value: 'name_desc', label: 'Nom (Z-A)' }
   ];
+
+  // Helper pour vérifier si les filtres de prix sont actifs
+  const isPriceFilterActive = () => {
+    if (!filters.priceRange) return false;
+    return filters.priceRange[0] > priceRange[0] || filters.priceRange[1] < priceRange[1];
+  };
+
+  // Afficher un indicateur de chargement pendant le chargement des données
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
+        <div className="animate-pulse flex space-x-4">
+          <div className="flex-1 space-y-4 py-1">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Afficher un message d'erreur si le chargement a échoué
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
+        <div className="text-red-500 text-center">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
@@ -122,9 +194,10 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange
                 value={filters.category}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
               >
-                {CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+                <option value="Toutes les catégories">Toutes les catégories</option>
+                {level1Categories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
                   </option>
                 ))}
               </select>
@@ -136,37 +209,28 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange
             </div>
           </div>
 
-          {/* Sous-catégorie */}
+          {/* Recherche */}
           <div className="group">
             <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-teal-600 transition-colors">
-              Sous-catégorie
+              Recherche
             </label>
-            <div className="relative">
-              <select
-                className={`w-full border rounded-lg p-2.5 text-sm appearance-none bg-white pr-8 transition-colors ${
-                  filters.category === 'Toutes les catégories'
-                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'border-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-teal-300'
-                }`}
-                value={filters.subcategory}
-                onChange={(e) => handleFilterChange('subcategory', e.target.value)}
-                disabled={filters.category === 'Toutes les catégories'}
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Rechercher un produit..."
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-teal-300 transition-colors pr-10"
+              />
+              <button 
+                type="submit"
+                className="absolute right-0 top-0 h-full px-3 text-gray-500 hover:text-teal-600 transition-colors"
               >
-                {filters.category !== 'Toutes les catégories' 
-                  ? SUBCATEGORIES[filters.category].map((subcategory) => (
-                      <option key={subcategory} value={subcategory}>
-                        {subcategory}
-                      </option>
-                    ))
-                  : [<option key="default" value="Toutes les sous-catégories">Toutes les sous-catégories</option>]
-                }
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </div>
-            </div>
+              </button>
+            </form>
           </div>
 
           {/* Marque */}
@@ -301,16 +365,16 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange
             </span>
           )}
 
-          {filters.subcategory !== 'Toutes les sous-catégories' && (
+          {filters.searchQuery && (
             <span className="inline-flex items-center bg-gradient-to-r from-teal-50 to-blue-50 text-teal-700 text-sm px-3 py-1.5 rounded-full border border-teal-100 shadow-sm">
               <svg className="w-3.5 h-3.5 mr-1 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              {filters.subcategory}
+              {filters.searchQuery}
               <button
-                onClick={() => handleFilterChange('subcategory', 'Toutes les sous-catégories')}
+                onClick={() => handleFilterChange('searchQuery', '')}
                 className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                aria-label="Supprimer le filtre de sous-catégorie"
+                aria-label="Supprimer la recherche"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -337,16 +401,15 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange
             </span>
           )}
 
-          {(filters.priceRange[0] > priceRange[0] || filters.priceRange[1] < priceRange[1]) && filters.priceRangeTouched && (
+          {isPriceFilterActive() && (
             <span className="inline-flex items-center bg-gradient-to-r from-teal-50 to-blue-50 text-teal-700 text-sm px-3 py-1.5 rounded-full border border-teal-100 shadow-sm">
               <svg className="w-3.5 h-3.5 mr-1 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              {filters.priceRange[0].toLocaleString('fr-FR')}€ - {filters.priceRange[1].toLocaleString('fr-FR')}€
+              {filters.priceRange && `${filters.priceRange[0].toLocaleString('fr-FR')}€ - ${filters.priceRange[1].toLocaleString('fr-FR')}€`}
               <button
                 onClick={() => {
                   handleFilterChange('priceRange', [priceRange[0], priceRange[1]]);
-                  handleFilterChange('priceRangeTouched', false);
                 }}
                 className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
                 aria-label="Supprimer le filtre de prix"
@@ -377,18 +440,16 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({ filters, onFilterChange
           )}
 
           {(filters.category !== 'Toutes les catégories' ||
-            filters.subcategory !== 'Toutes les sous-catégories' ||
             filters.brand !== 'Toutes les marques' ||
-            (filters.priceRange[0] > priceRange[0] || filters.priceRange[1] < priceRange[1]) && filters.priceRangeTouched ||
-            filters.inStockOnly) && (
+            filters.searchQuery ||
+            isPriceFilterActive()) && (
             <button
               onClick={() => onFilterChange({
                 category: 'Toutes les catégories',
-                subcategory: 'Toutes les sous-catégories',
                 brand: 'Toutes les marques',
                 priceRange: [priceRange[0], priceRange[1]],
                 inStockOnly: false,
-                priceRangeTouched: false
+                searchQuery: ''
               })}
               className="ml-auto text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all flex items-center gap-1"
             >

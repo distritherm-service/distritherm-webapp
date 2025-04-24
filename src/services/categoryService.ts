@@ -19,56 +19,71 @@ export const categoryService = {
   getAllCategories: async (): Promise<Category[]> => {
     try {
       const response = await axiosInstance.get('/categories');
-      if (!response.data.categories) {
-        throw new Error('Aucune catégorie trouvée');
+      
+      // Vérification plus robuste des données de réponse
+      if (response.data && Array.isArray(response.data.categories)) {
+        return response.data.categories;
       }
-      return response.data.categories;
+      
+      // Si la réponse n'a pas le format attendu, retourner un tableau vide
+      console.warn('Format de réponse inattendu pour les catégories:', response.data);
+      return [];
     } catch (error) {
       console.error('Erreur lors de la récupération des catégories:', error);
-      throw error;
+      // Retourner un tableau vide au lieu de propager l'erreur
+      return [];
     }
   },
 
   getCategoryById: async (id: number): Promise<Category | null> => {
     try {
       const response = await axiosInstance.get(`/categories/${id}`);
-      if (!response.data.category) {
-        return null;
+      if (response.data && response.data.category) {
+        return response.data.category;
       }
-      return response.data.category;
+      return null;
     } catch (error) {
       console.error(`Erreur lors de la récupération de la catégorie ${id}:`, error);
-      throw error;
+      return null;
     }
   },
 
   getCategoryChildren: async (id: number): Promise<Category[]> => {
     try {
       const response = await axiosInstance.get(`/categories/${id}/childrens`);
-      return response.data.categories || [];
+      if (response.data && Array.isArray(response.data.categories)) {
+        return response.data.categories;
+      }
+      return [];
     } catch (error) {
       console.error(`Erreur lors de la récupération des sous-catégories de ${id}:`, error);
-      throw error;
+      return [];
     }
   },
 
   searchCategories: async (query: string): Promise<Category[]> => {
     try {
       const response = await axiosInstance.get(`/categories/search?q=${encodeURIComponent(query)}`);
-      return response.data.categories || [];
+      if (response.data && Array.isArray(response.data.categories)) {
+        return response.data.categories;
+      }
+      return [];
     } catch (error) {
       console.error('Erreur lors de la recherche des catégories:', error);
-      throw error;
+      return [];
     }
   },
 
   getCategoriesByAgency: async (agencyId: number): Promise<Category[]> => {
     try {
       const response = await axiosInstance.get(`/categories/agency/${agencyId}`);
-      return response.data.categories || [];
+      if (response.data && Array.isArray(response.data.categories)) {
+        return response.data.categories;
+      }
+      return [];
     } catch (error) {
       console.error(`Erreur lors de la récupération des catégories de l'agence ${agencyId}:`, error);
-      throw error;
+      return [];
     }
   }
 }; 
