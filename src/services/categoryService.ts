@@ -53,7 +53,110 @@ export const categoryService = {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         },
-        // ... autres catégories par défaut
+        {
+          id: 2,
+          name: 'Isolation',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Matériaux d\'isolation',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 3,
+          name: 'Chauffage',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Systèmes de chauffage',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 4,
+          name: 'Climatisation',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Systèmes de climatisation',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 5,
+          name: 'Sanitaire',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Équipements sanitaires',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 6,
+          name: 'Plomberie',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Matériel de plomberie',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 7,
+          name: 'Électricité',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Matériel électrique',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 8,
+          name: 'Outillage',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Outils et équipements',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        },
+        {
+          id: 9,
+          name: 'EPI',
+          level: 1,
+          haveParent: false,
+          haveChildren: true,
+          description: 'Équipements de protection individuelle',
+          imageUrl: '/images/category-placeholder.jpg',
+          parentCategoryId: null,
+          agenceId: 1,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
       ];
     }
   },

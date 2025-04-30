@@ -8,8 +8,7 @@ import {
   getAllBrands,
   type Product,
   type ProductsResponse,
-  type FilterOptions,
-  type PriceRange
+  type FilterOptions
 } from '../services/productService';
 import Footer from '../components/layout/Footer';
 

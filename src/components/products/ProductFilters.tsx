@@ -115,8 +115,8 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   const sortOptions = [
     { value: 'newest', label: 'Plus récents' },
     { value: 'featured', label: 'Produits vedettes' },
-    { value: 'stock_first', label: 'En stock d\'abord' },
-    { value: 'order_first', label: 'Sur commande d\'abord' },
+    { value: 'stock_first', label: 'En stock' },
+    { value: 'order_first', label: 'Sur commande' },
     { value: 'price_asc', label: 'Prix croissant' },
     { value: 'price_desc', label: 'Prix décroissant' },
     { value: 'name_asc', label: 'Nom (A-Z)' },

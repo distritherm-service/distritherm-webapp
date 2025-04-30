@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { FaHome, FaChevronRight } from 'react-icons/fa';
+import { getProductById } from '../../services/productService';
 
 interface BreadcrumbItem {
   path: string;
@@ -26,13 +27,33 @@ const routeLabels: { [key: string]: string } = {
   '/mes-commandes': 'Mes Commandes',
   '/mes-devis': 'Mes Devis',
   '/favoris': 'Mes Favoris',
-  '/categorie': 'Catégories'
+  '/categorie': 'Catégories',
+  '/produit': 'Nos Produits'
 };
 
 const Breadcrumb: React.FC = () => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
   const fromProfile = location.state?.from === 'profile';
+  const [productName, setProductName] = useState<string | null>(null);
+  
+  // Récupérer le nom du produit si on est sur une page produit
+  useEffect(() => {
+    const fetchProductName = async () => {
+      if (pathnames[0] === 'produit' && pathnames[1]) {
+        try {
+          const product = await getProductById(pathnames[1]);
+          if (product && product.name) {
+            setProductName(product.name);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération du nom du produit:', error);
+        }
+      }
+    };
+    
+    fetchProductName();
+  }, [pathnames]);
   
   const breadcrumbItems: BreadcrumbItem[] = [
     { path: '/', label: 'Accueil', id: 'home' }
@@ -69,6 +90,20 @@ const Breadcrumb: React.FC = () => {
           id: uniqueId
         });
       }
+    } else if (path.startsWith('/produit') && index === 0) {
+      // Pour le lien "Nos Produits"
+      breadcrumbItems.push({
+        path: '/nos-produits',
+        label: 'Nos Produits',
+        id: 'nos-produits'
+      });
+    } else if (path.startsWith('/produit/') && index === 1) {
+      // Pour le produit spécifique, utiliser le nom du produit s'il est disponible
+      breadcrumbItems.push({
+        path,
+        label: productName || 'Détails du produit',
+        id: uniqueId
+      });
     } else {
       // Ne pas ajouter l'élément si c'est le profil et qu'on vient du profil
       if (!(fromProfile && path === '/mon-profil')) {

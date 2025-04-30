@@ -12,20 +12,20 @@ export interface Product {
   imagesUrl: string[];
   categoryId: number;
   markId: number;
-  itemCode: string;
-  active: boolean;
-  directorWord1: string;
-  directorWord2: string;
-  directorWord3: string;
-  directorWord4: string;
-  directorWord5: string;
-  directorWordLink1: string;
-  directorWordLink2: string;
-  directorWordLink3: string;
-  directorWordLink4: string;
-  directorWordLink5: string;
-  brandLogo: string;
-  weight: number;
+  itemCode?: string;
+  active?: boolean;
+  directorWord1?: string;
+  directorWord2?: string;
+  directorWord3?: string;
+  directorWord4?: string;
+  directorWord5?: string;
+  directorWordLink1?: string;
+  directorWordLink2?: string;
+  directorWordLink3?: string;
+  directorWordLink4?: string;
+  directorWordLink5?: string;
+  brandLogo?: string;
+  weight?: number;
   createdAt: string;
   updatedAt: string;
   category?: {
@@ -40,6 +40,27 @@ export interface Product {
   promotionPrice?: number;
   promotionEndDate?: string;
   promotionPercentage?: number;
+  isFavorited?: boolean;
+  productDetail?: {
+    id: number;
+    productId: number;
+    itemCode: string;
+    directorWord1?: string;
+    directorWord2?: string;
+    designation1?: string;
+    designation2?: string;
+    complementDesignation?: string;
+    packaging?: string;
+    packagingType?: string;
+    submissionFgaz?: string;
+    active: boolean;
+    label?: string;
+    unity?: string;
+    weight?: number;
+    familyCode?: string;
+    ecoContributionPercentage?: number;
+    ecoContributionApplication?: boolean;
+  };
 }
 
 // Interface pour les options de filtrage
@@ -146,7 +167,9 @@ export const getProducts = async (filters?: FilterOptions): Promise<ProductsResp
       brandLogo: '',
       weight: 1,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      category: { id: 1, name: 'Catégorie test' },
+      mark: { id: 1, name: 'Marque test' }
     }));
 
     return {
@@ -160,15 +183,15 @@ export const getProducts = async (filters?: FilterOptions): Promise<ProductsResp
 };
 
 /**
- * Récupère un produit par son identifiant
+ * Récupère un produit par son ID
  */
-export const getProductById = async (id: number): Promise<Product | null> => {
+export const getProductById = async (id: string): Promise<Product> => {
   try {
     const response = await axiosInstance.get(`/products/${id}`);
-    return response.data;
+    return response.data.product;
   } catch (error) {
-    console.error(`Erreur lors de la récupération du produit ${id}:`, error);
-    return null;
+    console.error('Erreur lors de la récupération du produit:', error);
+    throw error;
   }
 };
 
