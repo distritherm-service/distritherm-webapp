@@ -5,7 +5,6 @@ import ProductGrid from '../components/products/ProductGrid';
 import ProductFilters from '../components/products/ProductFilters';
 import { 
   getProducts, 
-  getPriceRange,
   getAllBrands,
   type Product,
   type ProductsResponse,
@@ -38,49 +37,28 @@ const NosProducts: React.FC = () => {
 
   // Charger les plages de prix et les marques au premier chargement
   useEffect(() => {
-    const loadInitialData = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        setHasError(false);
+        const productsData = await getProducts();
+        setFilteredProducts(productsData.products);
+        setTotalProducts(productsData.total || productsData.products.length);
+        setTotalPages(Math.ceil((productsData.total || productsData.products.length) / itemsPerPage));
         
-        // Charger la plage de prix
-        try {
-          const priceRangeData: PriceRange = await getPriceRange();
-          const minMax: [number, number] = [priceRangeData.min, priceRangeData.max];
-          setPriceRange(minMax);
-          setFilters(prev => ({
-            ...prev,
-            priceRange: minMax
-          }));
-        } catch (priceError) {
-          console.error('Erreur lors du chargement de la plage de prix:', priceError);
-          // Utiliser des valeurs par défaut
-          const defaultRange: [number, number] = [0, 1000];
-          setPriceRange(defaultRange);
-          setFilters(prev => ({
-            ...prev,
-            priceRange: defaultRange
-          }));
-        }
-
-        // Charger les marques
-        try {
-          const brandsData = await getAllBrands();
-          setBrands(brandsData);
-        } catch (brandsError) {
-          console.error('Erreur lors du chargement des marques:', brandsError);
-          // Utiliser des marques par défaut
-          setBrands(['Daikin', 'Atlantic', 'Samsung', 'Mitsubishi', 'LG', 'Toshiba']);
-        }
+        // Calculer la plage de prix à partir des produits
+        const prices = productsData.products.map(p => p.priceHt);
+        setPriceRange([Math.min(...prices), Math.max(...prices)]);
+        
+        const brandsData = await getAllBrands();
+        setBrands(brandsData);
       } catch (error) {
-        console.error('Erreur lors du chargement des données initiales:', error);
+        console.error('Erreur lors du chargement des données:', error);
         setHasError(true);
-      } finally {
         setIsLoading(false);
       }
     };
 
-    loadInitialData();
+    fetchData();
   }, []);
 
   // Charger les produits en fonction des filtres

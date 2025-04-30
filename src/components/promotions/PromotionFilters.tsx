@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getAllPromotionCategories, 
-  getPromotionSubcategoriesByCategory, 
-  getAllPromotionBrands, 
-  getPromotionPriceRange 
-} from '../../data/promotions';
+import { categoryService, Category } from '../../services/categoryService';
+import { getAllMarks } from '../../services/markService';
 
 interface FilterState {
   category: string;
-  subcategory: string;
   brand: string;
   priceRange: [number, number];
   sortBy: string;
   inStockOnly: boolean;
   priceRangeTouched: boolean;
+  searchQuery?: string;
 }
 
 interface PromotionFiltersProps {
@@ -24,37 +20,61 @@ interface PromotionFiltersProps {
 
 const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterChange, onSaveFilters }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [categories] = useState<string[]>(['Toutes les catégories', ...getAllPromotionCategories()]);
-  const [subcategories, setSubcategories] = useState<string[]>(['Toutes les sous-catégories']);
-  const [brands] = useState<string[]>(['Toutes les marques', ...getAllPromotionBrands()]);
-  const [priceRange] = useState(getPromotionPriceRange());
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [brands, setBrands] = useState<string[]>(['Toutes les marques']);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [priceRange] = useState({ min: 0, max: 10000 }); // À adapter si besoin
   const [localPriceRange, setLocalPriceRange] = useState<[number, number]>(filters.priceRange);
+  const [searchQuery, setSearchQuery] = useState(filters.searchQuery || '');
 
-  // S'assurer que les sous-catégories sont mises à jour quand la catégorie change
+  // Charger les catégories depuis l'API
   useEffect(() => {
-    if (filters.category !== 'Toutes les catégories') {
-      const subcats = getPromotionSubcategoriesByCategory(filters.category);
-      setSubcategories(['Toutes les sous-catégories', ...subcats]);
-    } else {
-      setSubcategories(['Toutes les sous-catégories']);
-    }
-  }, [filters.category]);
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const fetchedCategories = await categoryService.getAllCategories();
+        setCategories(fetchedCategories);
+        setError(null);
+      } catch (err) {
+        setError('Erreur lors du chargement des catégories');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Charger les marques depuis l'API
+  useEffect(() => {
+    const fetchBrands = async () => {
+      const fetchedBrands = await getAllMarks();
+      setBrands(['Toutes les marques', ...fetchedBrands]);
+    };
+    fetchBrands();
+  }, []);
 
   // Mettre à jour localPriceRange quand filters.priceRange change
   useEffect(() => {
     setLocalPriceRange(filters.priceRange);
   }, [filters.priceRange]);
 
+  // Mettre à jour searchQuery quand filters.searchQuery change
+  useEffect(() => {
+    setSearchQuery(filters.searchQuery || '');
+  }, [filters.searchQuery]);
+
   const handleFilterChange = (filterName: keyof FilterState, value: any) => {
-    if (filterName === 'category') {
-      // Si on change de catégorie, on réinitialise la sous-catégorie
-      onFilterChange({
-        [filterName]: value,
-        subcategory: 'Toutes les sous-catégories'
-      });
-    } else {
       onFilterChange({ [filterName]: value });
-    }
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onFilterChange({ searchQuery });
   };
 
   const handlePriceRangeApply = () => {
@@ -68,12 +88,10 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterCh
     if (onSaveFilters) {
       onSaveFilters();
     }
-    
     const notification = document.createElement('div');
     notification.classList.add('fixed', 'bottom-4', 'right-4', 'bg-purple-600', 'text-white', 'p-4', 'rounded-lg', 'shadow-lg', 'z-50', 'animate-fade-in');
     notification.textContent = 'Filtres sauvegardés avec succès';
     document.body.appendChild(notification);
-    
     setTimeout(() => {
       notification.classList.add('animate-fade-out');
       setTimeout(() => notification.remove(), 500);
@@ -88,6 +106,32 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterCh
     { value: 'price_desc', label: 'Prix décroissant' },
     { value: 'ending_soon', label: 'Se termine bientôt' }
   ];
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
+        <div className="animate-pulse flex space-x-4">
+          <div className="flex-1 space-y-4 py-1">
+            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+            <div className="space-y-2">
+              <div className="h-4 bg-gray-200 rounded"></div>
+              <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4">
+        <div className="text-red-500 text-center">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
@@ -126,9 +170,10 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterCh
                 value={filters.category}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
               >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
+                <option value="Toutes les catégories">Toutes les catégories</option>
+                {categories.filter(cat => cat.level === 1).map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
                   </option>
                 ))}
               </select>
@@ -140,34 +185,28 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterCh
             </div>
           </div>
 
-          {/* Sous-catégorie */}
+          {/* Recherche */}
           <div className="group">
             <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-purple-600 transition-colors">
-              Sous-catégorie
+              Recherche
             </label>
-            <div className="relative">
-              <select
-                className={`w-full border rounded-lg p-2.5 text-sm appearance-none bg-white pr-8 transition-colors ${
-                  filters.category === 'Toutes les catégories'
-                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-300'
-                }`}
-                value={filters.subcategory}
-                onChange={(e) => handleFilterChange('subcategory', e.target.value)}
-                disabled={filters.category === 'Toutes les catégories'}
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="Rechercher une promotion..."
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-300 transition-colors pr-10"
+              />
+              <button 
+                type="submit"
+                className="absolute right-0 top-0 h-full px-3 text-gray-500 hover:text-purple-600 transition-colors"
               >
-                {subcategories.map((subcategory) => (
-                  <option key={subcategory} value={subcategory}>
-                    {subcategory}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </div>
-            </div>
+              </button>
+            </form>
           </div>
 
           {/* Marque */}
@@ -302,16 +341,16 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterCh
             </span>
           )}
 
-          {filters.subcategory !== 'Toutes les sous-catégories' && (
+          {filters.searchQuery && (
             <span className="inline-flex items-center bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm px-3 py-1.5 rounded-full border border-purple-100 shadow-sm">
               <svg className="w-3.5 h-3.5 mr-1 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              {filters.subcategory}
+              {filters.searchQuery}
               <button
-                onClick={() => handleFilterChange('subcategory', 'Toutes les sous-catégories')}
+                onClick={() => handleFilterChange('searchQuery', '')}
                 className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                aria-label="Supprimer le filtre de sous-catégorie"
+                aria-label="Supprimer la recherche"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -378,18 +417,18 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterCh
           )}
 
           {(filters.category !== 'Toutes les catégories' ||
-            filters.subcategory !== 'Toutes les sous-catégories' ||
             filters.brand !== 'Toutes les marques' ||
+            filters.searchQuery ||
             (filters.priceRange[0] > priceRange.min || filters.priceRange[1] < priceRange.max) && filters.priceRangeTouched ||
             filters.inStockOnly) && (
             <button
               onClick={() => onFilterChange({
                 category: 'Toutes les catégories',
-                subcategory: 'Toutes les sous-catégories',
                 brand: 'Toutes les marques',
                 priceRange: [priceRange.min, priceRange.max],
                 inStockOnly: false,
-                priceRangeTouched: false
+                priceRangeTouched: false,
+                searchQuery: ''
               })}
               className="ml-auto text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all flex items-center gap-1"
             >

@@ -3,84 +3,32 @@ import Footer from '../components/layout/Footer';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 import PromotionGrid from '../components/promotions/PromotionGrid';
 import PromotionFilters from '../components/promotions/PromotionFilters';
-import { promotions, Promotion, getPromotionPriceRange } from '../data/promotions';
-import Layout from '../components/layout/Layout';
+import { getPromotions, Promotion } from '../services/promotionService';
+//import Layout from '../components/layout/Layout';
 
 const Promotions: React.FC = () => {
-  const initialPriceRange = getPromotionPriceRange();
   const [isLoading, setIsLoading] = useState(true);
   const [filteredPromotions, setFilteredPromotions] = useState<Promotion[]>([]);
   const [filters, setFilters] = useState({
     category: 'Toutes les catégories',
     subcategory: 'Toutes les sous-catégories',
     brand: 'Toutes les marques',
-    priceRange: [initialPriceRange.min, initialPriceRange.max] as [number, number],
+    priceRange: [0, 10000] as [number, number],
     sortBy: 'featured',
     inStockOnly: false,
-    discountLevel: 'all'
+    discountLevel: 'all',
+    priceRangeTouched: false,
   });
 
   useEffect(() => {
-    // Simuler un temps de chargement
     setIsLoading(true);
-    
-    const timer = setTimeout(() => {
-      // Appliquer les filtres
-      let filtered = [...promotions];
-      
-      // Filtrer par catégorie
-      if (filters.category !== 'Toutes les catégories') {
-        filtered = filtered.filter(promo => promo.category === filters.category);
-      }
-      
-      // Filtrer par sous-catégorie
-      if (filters.subcategory !== 'Toutes les sous-catégories') {
-        filtered = filtered.filter(promo => promo.subcategory === filters.subcategory);
-      }
-      
-      // Filtrer par marque
-      if (filters.brand !== 'Toutes les marques') {
-        filtered = filtered.filter(promo => promo.brand === filters.brand);
-      }
-      
-      // Filtrer par prix après réduction
-      filtered = filtered.filter(
-        promo => promo.discountPrice >= filters.priceRange[0] && promo.discountPrice <= filters.priceRange[1]
-      );
-      
-      // Filtrer par niveau de réduction
-      if (filters.discountLevel !== 'all') {
-        filtered = filtered.filter(promo => {
-          const discount = promo.discountPercentage;
-          switch(filters.discountLevel) {
-            case 'upto10':
-              return discount <= 10;
-            case '10to20':
-              return discount > 10 && discount <= 20;
-            case '20to30':
-              return discount > 20 && discount <= 30;
-            case 'over30':
-              return discount > 30;
-            default:
-              return true;
-          }
-        });
-      }
-      
-      // Filtrer les promotions en stock
-      if (filters.inStockOnly) {
-        filtered = filtered.filter(promo => promo.inStock);
-      }
-      
-      // Trier les promotions
-      filtered = sortPromotions(filtered, filters.sortBy);
-      
-      setFilteredPromotions(filtered);
-      setIsLoading(false);
-    }, 400); // Délai de simulation
-
-    return () => clearTimeout(timer);
-  }, [filters]);
+    getPromotions(1, 20)
+      .then((promos) => {
+        setFilteredPromotions(promos);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, []);
 
   // Fonction pour trier les promotions
   const sortPromotions = (promotionsList: Promotion[], sortBy: string): Promotion[] => {
@@ -128,7 +76,6 @@ const Promotions: React.FC = () => {
   const handleSaveFilters = () => {
     // Simulation de sauvegarde des filtres
     console.log('Filtres sauvegardés:', filters);
-    // Dans une vraie application, on pourrait les sauvegarder dans localStorage ou sur un serveur
   };
 
   return (

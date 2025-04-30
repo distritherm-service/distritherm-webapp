@@ -9,10 +9,12 @@ import BrandsSection from '../components/home/BrandsSection';
 //import ServicesSection from '../components/home/ServicesSection';
 import CategoryGrid from '../components/categories/CategoryGrid';
 import ProductGrid from '../components/products/ProductGrid';
-import { CATEGORIES as categories, Product } from '../services/productService';
+import { Product, getCategories, getAllCategories } from '../services/productService';
 import { getProducts } from '../services/productService';
 import { FaMapMarkerAlt, FaUserPlus, FaTools, FaFileAlt, FaCalendarAlt, FaIndustry, FaHandshake, FaMapMarkedAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { Category } from '../types/category';
+import { categoryService } from '../services/categoryService';
 // import Layout from '../components/Layout';
 // import FeaturedProducts from '../components/FeaturedProducts';
 // import PromoSection from '../components/PromoSection';
@@ -22,20 +24,34 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [apiUnavailable, setApiUnavailable] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [showSubcategories, setShowSubcategories] = useState(false);
+  const [subcategories, setSubcategories] = useState<Category[]>([]);
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       try {
+        // Charger les produits
         const response = await getProducts({ limit: 8 });
         setFeaturedProducts(response.products);
+        
+        // Charger les catégories
+        const categoryNames = await getAllCategories();
+        setCategories(categoryNames);
+        
+        // Si on arrive ici, l'API est disponible
+        setApiUnavailable(false);
       } catch (error) {
-        console.error('Erreur lors du chargement des produits:', error);
+        console.error('Erreur lors du chargement des données:', error);
+        setApiUnavailable(true);
       } finally {
         setLoading(false);
       }
     };
 
-    loadProducts();
+    loadData();
   }, []);
 
   const handleMapClick = (e: React.MouseEvent) => {
@@ -48,6 +64,18 @@ const Home: React.FC = () => {
         mapSection.scrollIntoView({ behavior: 'smooth' });
       }
     }, 100);
+  };
+
+  const handleCategoryClick = async (category: Category) => {
+    setSelectedCategory(category);
+    const children = await categoryService.getCategoryChildren(category.id);
+    setSubcategories(children);
+    setShowSubcategories(true);
+  };
+
+  const handleSubcategoryClick = (subcategory: Category) => {
+    // Naviguer vers la page de la sous-catégorie
+    navigate(`/category/${subcategory.id}`);
   };
 
   return (
@@ -241,8 +269,50 @@ const Home: React.FC = () => {
               </p>
           </div>
 
-          {/* Grille de catégories */}
-          <CategoryGrid categories={categories} />
+          {/* Liste des catégories */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {categories.map((category) => (
+              <div
+                key={category.id}
+                className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => handleCategoryClick(category)}
+              >
+                <div className="flex flex-col items-center">
+                  <img
+                    src={category.imageUrl}
+                    alt={category.name}
+                    className="w-16 h-16 object-cover rounded-full mb-2"
+                  />
+                  <h3 className="text-lg font-semibold text-center">{category.name}</h3>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Liste des sous-catégories */}
+          {showSubcategories && selectedCategory && (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-4">Sous-catégories de {selectedCategory.name}</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {subcategories.map((subcategory) => (
+                  <div
+                    key={subcategory.id}
+                    className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => handleSubcategoryClick(subcategory)}
+                  >
+                    <div className="flex flex-col items-center">
+                      <img
+                        src={subcategory.imageUrl}
+                        alt={subcategory.name}
+                        className="w-16 h-16 object-cover rounded-full mb-2"
+                      />
+                      <h3 className="text-lg font-semibold text-center">{subcategory.name}</h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -254,11 +324,29 @@ const Home: React.FC = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007FFF]"></div>
             </div>
           ) : (
-            <ProductGrid 
-              products={featuredProducts} 
-              title="CONSULTER NOS PRODUITS" 
-              showViewAllButton={true}
-            />
+            <>
+              {apiUnavailable && (
+                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8 rounded-md">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-yellow-700">
+                        Le serveur est actuellement indisponible. Affichage des données de démonstration.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <ProductGrid 
+                products={featuredProducts} 
+                title="CONSULTER NOS PRODUITS" 
+                showViewAllButton={true}
+              />
+            </>
           )}
         </div>
       </section>

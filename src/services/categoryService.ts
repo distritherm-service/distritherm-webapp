@@ -1,19 +1,7 @@
+import { Category } from '@/types/category';
 import axiosInstance from './axiosConfig';
 
-export interface Category {
-  id: number;
-  name: string;
-  level: number;
-  haveParent: boolean;
-  haveChildren: boolean;
-  description: string;
-  parentCategoryId: number | null;
-  agenceId: number;
-  createdAt: string;
-  updatedAt: string;
-  products?: any[];
-  childCategories?: Category[];
-}
+
 
 export const categoryService = {
   getAllCategories: async (): Promise<Category[]> => {
@@ -31,6 +19,22 @@ export const categoryService = {
     } catch (error) {
       console.error('Erreur lors de la récupération des catégories:', error);
       // Retourner un tableau vide au lieu de propager l'erreur
+      return [];
+    }
+  },
+
+  getCategoriesByLevel: async (level: number): Promise<Category[]> => {
+    try {
+      const response = await axiosInstance.get(`/categories/level/${level}`);
+      
+      if (response.data && Array.isArray(response.data.categories)) {
+        return response.data.categories;
+      }
+      
+      console.warn('Format de réponse inattendu pour les catégories par niveau:', response.data);
+      return [];
+    } catch (error) {
+      console.error(`Erreur lors de la récupération des catégories de niveau ${level}:`, error);
       return [];
     }
   },

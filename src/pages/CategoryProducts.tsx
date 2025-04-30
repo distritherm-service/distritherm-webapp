@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Product, getProducts, FilterOptions, getPriceRange, getAllBrands } from '../services/productService';
+import { Product, getProducts, FilterOptions } from '../services/productService';
+import { getAllMarks } from '../services/markService';
 import ProductCard from '../components/products/ProductCard';
 import { categoryService, Category } from '../services/categoryService';
 import ProductFilters from '../components/products/ProductFilters';
@@ -10,20 +11,16 @@ import Breadcrumb from '../components/navigation/Breadcrumb';
 const CategoryProducts: React.FC = () => {
   const { category } = useParams<{ category: string }>();
   
-  // Obtenir la plage de prix des produits
-  const priceRangeObj = { min: 0, max: 1000 }; // À adapter selon vos données
-  const initialPriceRange: [number, number] = [priceRangeObj.min, priceRangeObj.max];
-
   const [isLoading, setIsLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>(initialPriceRange);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [filters, setFilters] = useState<FilterOptions>({
     category: category || '',
     brand: 'Toutes les marques',
-    priceRange: initialPriceRange,
+    priceRange: [0, 1000],
     inStockOnly: false,
     sortBy: 'featured',
     searchQuery: ''
@@ -33,22 +30,12 @@ const CategoryProducts: React.FC = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        // Charger la plage de prix
-        const priceRangeData = await getPriceRange();
-        const newPriceRange: [number, number] = [priceRangeData.min, priceRangeData.max];
-        setPriceRange(newPriceRange);
-        
-        // Mettre à jour les filtres avec la nouvelle plage de prix
-        setFilters(prev => ({
-          ...prev,
-          priceRange: newPriceRange
-        }));
-        
-        // Charger les marques disponibles
-        const brands = await getAllBrands();
-        setAvailableBrands(brands);
+        // Charger les marques depuis l'API /marks
+        const marks = await getAllMarks();
+        setAvailableBrands(marks);
       } catch (error) {
         console.error('Erreur lors du chargement des données initiales:', error);
+        setAvailableBrands([]);
       }
     };
     
@@ -78,6 +65,10 @@ const CategoryProducts: React.FC = () => {
             category: foundCategory.id.toString()
           });
           setFilteredProducts(productsResponse.products);
+          
+          // Calculer la plage de prix à partir des produits
+          const prices = productsResponse.products.map(p => p.priceHt);
+          setPriceRange([Math.min(...prices), Math.max(...prices)]);
         } else {
           setFilteredProducts([]);
         }
