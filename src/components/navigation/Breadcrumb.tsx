@@ -6,7 +6,11 @@ import { getProductById } from '../../services/productService';
 interface BreadcrumbItem {
   path: string;
   label: string;
-  id: string;
+  id?: string;
+}
+
+interface BreadcrumbProps {
+  items?: BreadcrumbItem[];
 }
 
 const routeLabels: { [key: string]: string } = {
@@ -31,7 +35,7 @@ const routeLabels: { [key: string]: string } = {
   '/produit': 'Nos Produits'
 };
 
-const Breadcrumb: React.FC = () => {
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ items: propItems }) => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x);
   const fromProfile = location.state?.from === 'profile';
@@ -52,9 +56,53 @@ const Breadcrumb: React.FC = () => {
       }
     };
     
-    fetchProductName();
-  }, [pathnames]);
+    if (!propItems) {
+      fetchProductName();
+    }
+  }, [pathnames, propItems]);
   
+  // Si les items sont passés en props, les utiliser directement
+  if (propItems) {
+    return (
+      <nav className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 mt-12 md:mt-14">
+        <div className="container mx-auto px-3">
+          <div className="flex items-center space-x-1.5 py-1.5 overflow-x-auto whitespace-nowrap scrollbar-hide">
+            {propItems.map((item, index) => (
+              <React.Fragment key={item.id || index}>
+                {index === 0 ? (
+                  <Link
+                    to="/"
+                    className="flex items-center text-gray-600 hover:text-teal-600 transition-colors duration-200 group shrink-0"
+                  >
+                    <FaHome className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
+                  </Link>
+                ) : (
+                  <>
+                    <FaChevronRight className="w-3 h-3 text-gray-400 shrink-0" />
+                    <Link
+                      to={item.path}
+                      className={`
+                        text-xs font-medium transition-all duration-200 shrink-0
+                        ${index === propItems.length - 1
+                          ? 'text-teal-600 cursor-default pointer-events-none'
+                          : 'text-gray-600 hover:text-teal-600'
+                        }
+                        hover:scale-105 transform
+                      `}
+                    >
+                      {item.label}
+                    </Link>
+                  </>
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+      </nav>
+    );
+  }
+  
+  // Sinon, générer les items à partir de l'emplacement
   const breadcrumbItems: BreadcrumbItem[] = [
     { path: '/', label: 'Accueil', id: 'home' }
   ];

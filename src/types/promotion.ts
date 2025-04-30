@@ -25,4 +25,12 @@ export interface PromotionAPI {
   promotionEndDate: string;
   isFavorited: boolean;
   promotionPercentage: number;
+  category?: {
+    id: number;
+    name: string;
+  };
+  mark?: {
+    id: number;
+    name: string;
+  };
 } 
