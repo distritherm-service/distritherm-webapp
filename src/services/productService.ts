@@ -1,7 +1,4 @@
 import axiosInstance from './axiosConfig';
-// Importation du service de catégorie
-import { categoryService } from './categoryService';
-import { Category } from '@/types/category';
 import { getAllMarks } from './markService';
 
 // Interface du produit correspondant à l'API
@@ -31,6 +28,18 @@ export interface Product {
   weight: number;
   createdAt: string;
   updatedAt: string;
+  category?: {
+    id: number;
+    name: string;
+  };
+  mark?: {
+    id: number;
+    name: string;
+  };
+  isInPromotion?: boolean;
+  promotionPrice?: number;
+  promotionEndDate?: string;
+  promotionPercentage?: number;
 }
 
 // Interface pour les options de filtrage
@@ -52,6 +61,13 @@ export interface ProductsResponse {
   page: number;
   limit: number;
   totalPages: number;
+}
+
+// Interface pour les produits recommandés
+export interface RecommendedProductsResponse {
+  message: string;
+  products: Product[];
+  count: number;
 }
 
 /**
@@ -169,228 +185,58 @@ export const getAllBrands = async (): Promise<string[]> => {
   }
 };
 
-// Cache pour stocker les catégories récupérées de l'API
-let categoriesCache: Category[] = [];
-
-// Fonctions pour gérer les catégories avec l'API
-export const getCategories = async (): Promise<string[]> => {
+/**
+ * Récupère les produits recommandés depuis l'API
+ */
+export const getRecommendedProducts = async (): Promise<RecommendedProductsResponse> => {
   try {
-    const categories = await categoryService.getAllCategories();
-    return categories.filter(cat => cat.level === 1).map(cat => cat.name);
+    const response = await axiosInstance.get('/products/recommendations');
+    return response.data;
   } catch (error) {
-    console.error('Erreur lors de la récupération des catégories:', error);
-    return ['Chauffage', 'Climatisation', 'Ventilation', 'Plomberie', 'Électricité'];
-  }
-};
-
-export const filterProductsByCategory = (categoryId: string) => {
-  // Cette fonction utilise maintenant l'ID de catégorie depuis l'API
-  return getProducts({ category: categoryId });
-};
-
-// Fonction pour récupérer toutes les catégories depuis l'API
-export const getAllCategories = async (): Promise<Category[]> => {
-  try {
-    try {
-      // Utiliser le cache si disponible
-      if (categoriesCache.length > 0) {
-        return categoriesCache;
-      }
-      
-      // Récupérer les catégories de niveau 1 depuis l'API
-      const categories = await categoryService.getCategoriesByLevel(1);
-      categoriesCache = categories;
-      
-      return categories;
-    } catch (apiError) {
-      console.warn('API de catégories indisponible, utilisation des données de test:', apiError);
-      throw apiError;
-    }
-  } catch (error) {
-    console.error('Erreur lors de la récupération des catégories:', error);
-    // Valeurs par défaut en cas d'erreur
-    return [
-      {
-        id: 1,
-        name: 'Plâtrerie',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Matériaux de plâtrerie',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
+    console.error('Erreur lors de la récupération des produits recommandés:', error);
+    // Retourner des données de test en cas d'erreur
+    return {
+      message: "Produits recommandés récupérés avec succès",
+      products: Array.from({ length: 4 }, (_, i) => ({
+        id: i + 1,
+        name: `Produit recommandé ${i + 1}`,
+        description: "Description du produit recommandé test",
+        priceHt: 99.99,
+        priceTtc: 119.99,
+        quantity: 50,
+        imagesUrl: ['/image-produit-defaut.jpeg'],
+        categoryId: 1,
+        markId: 1,
+        category: {
+          id: 1,
+          name: "Catégorie test"
+        },
+        mark: {
+          id: 1,
+          name: "Marque test"
+        },
+        isInPromotion: true,
+        promotionPrice: 89.99,
+        promotionEndDate: "2024-12-31T23:59:59Z",
+        promotionPercentage: 10,
+        itemCode: `PROMO${i + 100}`,
+        active: true,
+        directorWord1: '',
+        directorWord2: '',
+        directorWord3: '',
+        directorWord4: '',
+        directorWord5: '',
+        directorWordLink1: '',
+        directorWordLink2: '',
+        directorWordLink3: '',
+        directorWordLink4: '',
+        directorWordLink5: '',
+        brandLogo: '',
+        weight: 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      },
-      {
-        id: 2,
-        name: 'Isolation',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Matériaux d\'isolation',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 3,
-        name: 'Chauffage',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Systèmes de chauffage',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 4,
-        name: 'Climatisation',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Systèmes de climatisation',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 5,
-        name: 'Sanitaire',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Équipements sanitaires',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 6,
-        name: 'Plomberie',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Matériel de plomberie',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 7,
-        name: 'Électricité',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Matériel électrique',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 8,
-        name: 'Outillage',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Outils et équipements',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 9,
-        name: 'EPI',
-        level: 1,
-        haveParent: false,
-        haveChildren: true,
-        description: 'Équipements de protection individuelle',
-        imageUrl: '/images/category-placeholder.jpg',
-        parentCategoryId: null,
-        agenceId: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    ];
-  }
-};
-
-// Fonction pour récupérer les sous-catégories d'une catégorie depuis l'API
-export const getSubcategoriesByCategory = async (categoryName: string): Promise<string[]> => {
-  try {
-    // Chercher d'abord la catégorie parente par son nom
-    let categoryId: number | null = null;
-    
-    // Utiliser le cache si disponible
-    if (categoriesCache.length > 0) {
-      const category = categoriesCache.find(cat => 
-        cat.name.toLowerCase() === categoryName.toLowerCase()
-      );
-      categoryId = category?.id || null;
-    } else {
-      // Sinon rechercher dans l'API
-      const categories = await categoryService.getAllCategories();
-      categoriesCache = categories;
-      const category = categories.find(cat => 
-        cat.name.toLowerCase() === categoryName.toLowerCase()
-      );
-      categoryId = category?.id || null;
-    }
-    
-    // Si on a trouvé la catégorie, récupérer ses enfants
-    if (categoryId) {
-      const children = await categoryService.getCategoryChildren(categoryId);
-      return children.map(child => child.name);
-    }
-    
-    return [];
-  } catch (error) {
-    console.error(`Erreur lors de la récupération des sous-catégories pour ${categoryName}:`, error);
-    
-    // Valeurs par défaut en cas d'erreur
-    const defaultSubcategories: { [key: string]: string[] } = {
-      'Plâtrerie': [
-        'Plaque standard', 'Plaque hydro', 'Plaque technique', 'Carreau de plâtre',
-        'Faux plafonds', 'Colle', 'Enduit', 'Mortier', 'Peinture', 'Ossature', 
-        'Outils et accessoires du plaquiste'
-      ],
-      'Isolation': ['Isolation intérieure', 'Isolation extérieure'],
-      'Chauffage': [
-        'Pompe à chaleur AIR/EAU', 'Chaudières', 'Radiateurs', 'Plancher chauffant',
-        'Poêles', 'Accessoires'
-      ],
-      'Climatisation': [
-        'Pompe à chaleur AIR/EAU', 'Climatiseur', 'VRV VRF', 'Ventilation', 'Accessoires'
-      ],
-      'Sanitaire': [
-        'Chauffe-eaux et ballons', 'Mobilier', 'Robinetterie', 'Sèche serviette',
-        'Espace douche', 'Espace WC', 'Traitement de l\'eau'
-      ],
-      'Plomberie': ['Alimentation', 'Fixations', 'Évacuation', 'Accessoires'],
-      'Électricité': ['Thermostats', 'Câbles', 'Gaines', 'Disjoncteurs', 'Panneaux solaires'],
-      'Outillage': ['Électroportatif', 'À main', 'Accessoires'],
-      'EPI': [
-        'Casques et protections auditives', 'Lunettes et masques de protection',
-        'Gants', 'Chaussures', 'Vêtements'
-      ]
+      })),
+      count: 4
     };
-    
-    return defaultSubcategories[categoryName] || [];
   }
 }; 

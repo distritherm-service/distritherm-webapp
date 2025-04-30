@@ -7,9 +7,9 @@ import LocationSection from '../components/home/LocationSection';
 import ExpertAdviceSection from '../components/home/ExpertAdviceSection';
 import BrandsSection from '../components/home/BrandsSection';
 //import ServicesSection from '../components/home/ServicesSection';
-import CategoryGrid from '../components/categories/CategoryGrid';
+//import CategoryGrid from '../components/categories/CategoryGrid';
 import ProductGrid from '../components/products/ProductGrid';
-import { Product, getCategories, getAllCategories } from '../services/productService';
+import { Product, getRecommendedProducts } from '../services/productService';
 import { getProducts } from '../services/productService';
 import { FaMapMarkerAlt, FaUserPlus, FaTools, FaFileAlt, FaCalendarAlt, FaIndustry, FaHandshake, FaMapMarkedAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +29,7 @@ const Home: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [showSubcategories, setShowSubcategories] = useState(false);
   const [subcategories, setSubcategories] = useState<Category[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -38,8 +39,8 @@ const Home: React.FC = () => {
         setFeaturedProducts(response.products);
         
         // Charger les catégories
-        const categoryNames = await getAllCategories();
-        setCategories(categoryNames);
+        const mainCategories = await categoryService.getCategories();
+        setCategories(mainCategories);
         
         // Si on arrive ici, l'API est disponible
         setApiUnavailable(false);
@@ -54,6 +55,24 @@ const Home: React.FC = () => {
     loadData();
   }, []);
 
+  useEffect(() => {
+    const fetchRecommendedProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await getRecommendedProducts();
+        setRecommendedProducts(response.products);
+        setApiUnavailable(false);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des produits recommandés:', error);
+        setApiUnavailable(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendedProducts();
+  }, []);
+
   const handleMapClick = (e: React.MouseEvent) => {
     e.preventDefault();
     navigate('/a-propos');
@@ -66,11 +85,8 @@ const Home: React.FC = () => {
     }, 100);
   };
 
-  const handleCategoryClick = async (category: Category) => {
-    setSelectedCategory(category);
-    const children = await categoryService.getCategoryChildren(category.id);
-    setSubcategories(children);
-    setShowSubcategories(true);
+  const handleCategoryClick = (category: Category) => {
+    navigate(`/category/${category.id}`);
   };
 
   const handleSubcategoryClick = (subcategory: Category) => {
@@ -265,54 +281,39 @@ const Home: React.FC = () => {
               <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
             </h2>
             <p className="text-xl text-gray-600 mt-8 max-w-3xl mx-auto">
-            Une offre complète de matériaux et équipements 
-              </p>
+              Une offre complète de matériaux et équipements
+            </p>
           </div>
 
           {/* Liste des catégories */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {categories.map((category) => (
-              <div
-                key={category.id}
-                className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => handleCategoryClick(category)}
-              >
-                <div className="flex flex-col items-center">
-                  <img
-                    src={category.imageUrl}
-                    alt={category.name}
-                    className="w-16 h-16 object-cover rounded-full mb-2"
-                  />
-                  <h3 className="text-lg font-semibold text-center">{category.name}</h3>
-                </div>
+            {loading ? (
+              <div className="col-span-full flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007FFF]"></div>
               </div>
-            ))}
-          </div>
-
-          {/* Liste des sous-catégories */}
-          {showSubcategories && selectedCategory && (
-            <div className="mt-8">
-              <h2 className="text-2xl font-bold mb-4">Sous-catégories de {selectedCategory.name}</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {subcategories.map((subcategory) => (
-                  <div
-                    key={subcategory.id}
-                    className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                    onClick={() => handleSubcategoryClick(subcategory)}
-                  >
-                    <div className="flex flex-col items-center">
-                      <img
-                        src={subcategory.imageUrl}
-                        alt={subcategory.name}
-                        className="w-16 h-16 object-cover rounded-full mb-2"
-                      />
-                      <h3 className="text-lg font-semibold text-center">{subcategory.name}</h3>
-                    </div>
+            ) : categories.length > 0 ? (
+              categories.map((category) => (
+                <div
+                  key={category.id}
+                  className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
+                  onClick={() => handleCategoryClick(category)}
+                >
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={category.imageUrl || '/images/categories/default.jpg'}
+                      alt={category.name}
+                      className="w-16 h-16 object-cover rounded-full mb-2"
+                    />
+                    <h3 className="text-lg font-semibold text-center">{category.name}</h3>
                   </div>
-                ))}
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                Aucune catégorie disponible
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
@@ -342,9 +343,10 @@ const Home: React.FC = () => {
                 </div>
               )}
               <ProductGrid 
-                products={featuredProducts} 
-                title="CONSULTER NOS PRODUITS" 
+                products={recommendedProducts} 
+                title="Produits Recommandés" 
                 showViewAllButton={true}
+                isRecommended={true}
               />
             </>
           )}

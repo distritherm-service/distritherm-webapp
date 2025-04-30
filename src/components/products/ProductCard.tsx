@@ -75,6 +75,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 relative group">
       {/* Image avec overlay au hover */}
       <div className="relative aspect-square overflow-hidden">
+        {product.isInPromotion && (
+          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
+            -{product.promotionPercentage}%
+          </div>
+        )}
         <img
           src={imageUrl}
           alt={product.name}

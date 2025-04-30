@@ -129,6 +129,40 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
     return filters.priceRange[0] > priceRange[0] || filters.priceRange[1] < priceRange[1];
   };
 
+  const handleApplyFilters = () => {
+    // Appliquer tous les filtres en une seule fois
+    onFilterChange({
+      category: filters.category,
+      brand: filters.brand,
+      priceRange: localPriceRange,
+      inStockOnly: filters.inStockOnly,
+      searchQuery: searchQuery,
+      sortBy: filters.sortBy
+    });
+
+    // Afficher une notification de succès
+    const notification = document.createElement('div');
+    notification.classList.add(
+      'fixed', 'bottom-4', 'right-4', 'bg-teal-600', 
+      'text-white', 'p-4', 'rounded-lg', 'shadow-lg', 
+      'z-50', 'animate-fade-in', 'flex', 'items-center', 
+      'gap-2'
+    );
+    
+    notification.innerHTML = `
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span>Filtres appliqués avec succès</span>
+    `;
+    
+    document.body.appendChild(notification);
+    setTimeout(() => {
+      notification.classList.add('animate-fade-out');
+      setTimeout(() => notification.remove(), 500);
+    }, 3000);
+  };
+
   // Afficher un indicateur de chargement pendant le chargement des données
   if (loading) {
     return (
@@ -163,7 +197,6 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
       <button
         className="md:hidden w-full p-4 flex items-center justify-between text-gray-800 font-medium bg-gradient-to-r from-teal-50 to-blue-50 border-b border-gray-100 sticky top-0 z-30"
         onClick={() => setIsOpen(!isOpen)}
-        style={{ minHeight: 56 }}
       >
         <span className="flex items-center">
           <svg className="w-5 h-5 mr-2 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -182,10 +215,10 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
       </button>
 
       <div className={`${isOpen ? 'block' : 'hidden'} md:block p-4 md:p-6`}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Catégorie */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-teal-600 transition-colors">
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Catégorie
             </label>
             <div className="relative">
@@ -210,32 +243,29 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           </div>
 
           {/* Recherche */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-teal-600 transition-colors">
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Recherche
             </label>
-            <form onSubmit={handleSearchSubmit} className="relative">
+            <div className="relative">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={handleSearchChange}
                 placeholder="Rechercher un produit..."
-                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-teal-300 transition-colors pr-10"
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 pr-10 hover:border-teal-300 transition-colors"
               />
-              <button 
-                type="submit"
-                className="absolute right-0 top-0 h-full px-3 text-gray-500 hover:text-teal-600 transition-colors"
-              >
+              <div className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
-            </form>
+              </div>
+            </div>
           </div>
 
           {/* Marque */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-teal-600 transition-colors">
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Marque
             </label>
             <div className="relative">
@@ -259,93 +289,86 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
           </div>
 
           {/* Fourchette de prix */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-teal-600 transition-colors">
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Prix (€)
             </label>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={priceRange[0]}
-                  max={priceRange[1]}
-                  value={localPriceRange[0]}
-                  onChange={(e) => setLocalPriceRange([parseInt(e.target.value) || priceRange[0], localPriceRange[1]])}
-                  className="flex-1 border border-gray-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-teal-300 transition-colors"
-                  placeholder="Min"
-                />
-                <span className="text-gray-500">à</span>
-                <input
-                  type="number"
-                  min={priceRange[0]}
-                  max={priceRange[1]}
-                  value={localPriceRange[1]}
-                  onChange={(e) => setLocalPriceRange([localPriceRange[0], parseInt(e.target.value) || priceRange[1]])}
-                  className="flex-1 border border-gray-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-teal-300 transition-colors"
-                  placeholder="Max"
-                />
-              </div>
-              <button
-                onClick={handlePriceRangeApply}
-                className="w-full bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white py-1.5 px-3 rounded-lg text-sm transition-colors shadow-sm hover:shadow"
-              >
-                Appliquer
-              </button>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={priceRange[0]}
+                max={priceRange[1]}
+                value={localPriceRange[0]}
+                onChange={(e) => setLocalPriceRange([parseInt(e.target.value) || priceRange[0], localPriceRange[1]])}
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-teal-300 transition-colors"
+                placeholder="Min"
+              />
+              <span className="text-gray-500">à</span>
+              <input
+                type="number"
+                min={priceRange[0]}
+                max={priceRange[1]}
+                value={localPriceRange[1]}
+                onChange={(e) => setLocalPriceRange([localPriceRange[0], parseInt(e.target.value) || priceRange[1]])}
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 hover:border-teal-300 transition-colors"
+                placeholder="Max"
+              />
             </div>
           </div>
 
           {/* Tri et options supplémentaires */}
-          <div className="space-y-4">
-            <div className="group">
-              <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-teal-600 transition-colors">
-                Trier par
-              </label>
-              <div className="relative">
-                <select
-                  className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none bg-white pr-8 hover:border-teal-300 transition-colors"
-                  value={filters.sortBy}
-                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+          <div className="w-full">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Trier par
+            </label>
+            <div className="relative">
+              <select
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 focus:border-teal-500 appearance-none bg-white pr-8 hover:border-teal-300 transition-colors"
+                value={filters.sortBy}
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
               </div>
             </div>
-
-            <div className="flex items-center pb-1">
-              <input
-                type="checkbox"
-                id="inStockOnly"
-                checked={filters.inStockOnly}
-                onChange={(e) => handleFilterChange('inStockOnly', e.target.checked)}
-                className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
-              />
-              <label htmlFor="inStockOnly" className="ml-2 block text-sm text-gray-700 hover:text-teal-600 cursor-pointer transition-colors">
-                Produits en stock uniquement
-              </label>
-            </div>
-            
-            <button
-              onClick={handleSaveFilters}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-              </svg>
-              Sauvegarder ce filtre
-            </button>
           </div>
         </div>
 
-        {/* Filtres actifs et bouton réinitialiser */}
+        {/* Checkbox et bouton Appliquer */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="inStockOnly"
+              checked={filters.inStockOnly}
+              onChange={(e) => handleFilterChange('inStockOnly', e.target.checked)}
+              className="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+            />
+            <label htmlFor="inStockOnly" className="ml-2 block text-sm text-gray-700">
+              Produits en stock uniquement
+            </label>
+          </div>
+
+          <button
+            onClick={handleApplyFilters}
+            className="w-full sm:w-auto bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] hover:from-[#7CB9E8]/90 hover:to-[#007FFF]/90 text-white px-8 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+            </svg>
+            Appliquer les filtres
+          </button>
+        </div>
+
+        {/* Filtres actifs */}
         <div className="mt-6 flex flex-wrap items-center gap-2">
           {filters.category !== 'Toutes les catégories' && (
             <span className="inline-flex items-center bg-gradient-to-r from-teal-50 to-blue-50 text-teal-700 text-sm px-3 py-1.5 rounded-full border border-teal-100 shadow-sm">
@@ -437,27 +460,6 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
                 </svg>
               </button>
             </span>
-          )}
-
-          {(filters.category !== 'Toutes les catégories' ||
-            filters.brand !== 'Toutes les marques' ||
-            filters.searchQuery ||
-            isPriceFilterActive()) && (
-            <button
-              onClick={() => onFilterChange({
-                category: 'Toutes les catégories',
-                brand: 'Toutes les marques',
-                priceRange: [priceRange[0], priceRange[1]],
-                inStockOnly: false,
-                searchQuery: ''
-              })}
-              className="ml-auto text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all flex items-center gap-1"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Réinitialiser
-            </button>
           )}
         </div>
       </div>
