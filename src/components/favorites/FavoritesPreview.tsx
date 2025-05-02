@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaHeart, FaShoppingCart, FaTrash, FaImage } from 'react-icons/fa';
+import { FaHeart, FaShoppingCart, FaTrash, FaImage, FaSpinner } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
-import { formatPrice } from '../../utils/format';
 import { FavoriteItem } from '../../types/favorites';
 
 interface FavoritesPreviewProps {
@@ -13,7 +12,7 @@ interface FavoritesPreviewProps {
 }
 
 const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) => {
-  const { favorites, removeFromFavorites } = useFavorites();
+  const { favorites, removeFromFavorites, isLoading } = useFavorites();
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
@@ -23,16 +22,12 @@ const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) 
   };
 
   const handleAddToCart = (item: FavoriteItem) => {
-    // Calculer les prix HT et TTC
-    const priceTTC = item.price;
-    const priceHT = item.price / 1.2; // TVA à 20%
-
     // Créer un objet compatible avec CartItem
     const cartItem = {
-      id: item.id,
+      id: item.id.toString(),
       name: item.name,
-      price: item.price,
-      image: item.image,
+      price: item.priceTtc,
+      image: item.image || (item.imagesUrl && item.imagesUrl.length > 0 ? item.imagesUrl[0] : ''),
       quantity: 1
     };
 
@@ -40,26 +35,36 @@ const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) 
   };
 
   const renderProductImage = (item: FavoriteItem) => {
-    if (!item.image) {
+    const imageUrl = item.image || (item.imagesUrl && item.imagesUrl.length > 0 ? item.imagesUrl[0] : '');
+    
+    if (!imageUrl) {
       return (
         <div className="h-full w-full flex items-center justify-center bg-gray-100">
-          <FaImage className="h-6 w-6 text-gray-400" />
+          <img 
+            src="/image-produit-defaut.jpeg" 
+            alt="Image par défaut" 
+            className="h-full w-full object-cover object-center"
+          />
         </div>
       );
     }
 
     return (
       <img
-        src={item.image}
+        src={imageUrl}
         alt={item.name || 'Produit'}
         className="h-full w-full object-cover object-center"
         onError={(e) => {
           const target = e.target as HTMLImageElement;
           target.onerror = null;
-          target.src = '/images/placeholder.png';
+          target.src = '/image-produit-defaut.jpeg';
         }}
       />
     );
+  };
+
+  const formatPrice = (price: number): string => {
+    return `${price.toFixed(2)} €`;
   };
 
   return (
@@ -83,7 +88,12 @@ const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) 
           </div>
 
           <div className="max-h-96 overflow-y-auto">
-            {favorites.length === 0 ? (
+            {isLoading ? (
+              <div className="p-8 text-center">
+                <FaSpinner className="mx-auto h-8 w-8 text-teal-600 animate-spin mb-2" />
+                <p className="text-gray-500">Chargement de vos favoris...</p>
+              </div>
+            ) : favorites.length === 0 ? (
               <div className="p-4 text-center">
                 <FaHeart className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 <p className="text-gray-500">Votre liste de favoris est vide</p>
@@ -105,15 +115,22 @@ const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) 
                     <div className="ml-4 flex-1">
                       <div className="flex justify-between">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-900">
+                          <h4 className="text-sm font-medium text-gray-900 line-clamp-1">
                             {item.name || 'Produit sans nom'}
                           </h4>
                           <p className="mt-1 text-sm text-gray-500">
-                            {item.price ? formatPrice(item.price) : 'Prix non disponible'}
+                            {item.isInPromotion && item.promotionPrice ? (
+                              <span className="flex flex-col">
+                                <span className="line-through text-xs text-gray-400">{formatPrice(item.priceTtc)}</span>
+                                <span className="text-red-600">{formatPrice(item.promotionPrice)}</span>
+                              </span>
+                            ) : (
+                              formatPrice(item.priceTtc)
+                            )}
                           </p>
-                          {item.reference && (
-                            <p className="text-xs text-gray-400">
-                              Réf: {item.reference}
+                          {item.category && (
+                            <p className="text-xs text-gray-400 line-clamp-1">
+                              {item.category.name}
                             </p>
                           )}
                         </div>

@@ -1,92 +1,144 @@
 import React from 'react';
-import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  siblingCount?: number;
   className?: string;
 }
 
-export function Pagination({
+const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   totalPages,
   onPageChange,
-  className
-}: PaginationProps) {
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-  
-  // Limiter le nombre de pages affichées
-  const getVisiblePages = () => {
-    const delta = 2; // Nombre de pages à afficher de chaque côté de la page courante
-    const range = [];
+  siblingCount = 1,
+  className = ''
+}) => {
+  // Ne pas afficher la pagination s'il n'y a qu'une page
+  if (totalPages <= 1) return null;
+
+  // Fonction pour générer la plage de pages à afficher
+  const generatePagination = () => {
+    // Toujours inclure la première et la dernière page
+    const startPage = Math.max(1, currentPage - siblingCount);
+    const endPage = Math.min(totalPages, currentPage + siblingCount);
     
-    for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 || // Première page
-        i === totalPages || // Dernière page
-        (i >= currentPage - delta && i <= currentPage + delta) // Pages autour de la page courante
-      ) {
-        range.push(i);
-      } else if (range[range.length - 1] !== null) {
-        range.push(null); // Ajouter des points de suspension
+    const pages: (number | string)[] = [];
+    
+    // Première page
+    if (startPage > 1) {
+      pages.push(1);
+      if (startPage > 2) {
+        // Ajouter des ellipses si nécessaire
+        pages.push('...');
       }
     }
     
-    return range;
+    // Pages intermédiaires
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    
+    // Dernière page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        // Ajouter des ellipses si nécessaire
+        pages.push('...');
+      }
+      pages.push(totalPages);
+    }
+    
+    return pages;
   };
-
-  const visiblePages = getVisiblePages();
-
+  
+  const pages = generatePagination();
+  
+  // Désactiver les boutons de navigation si nécessaire
+  const isFirstPage = currentPage === 1;
+  const isLastPage = currentPage === totalPages;
+  
   return (
-    <nav
-      className={cn(
-        'flex items-center justify-center space-x-2',
-        className
-      )}
-    >
-      <button
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+    <div className={`flex items-center justify-center space-x-1 ${className}`}>
+      {/* Bouton première page */}
+      <button 
+        onClick={() => onPageChange(1)} 
+        disabled={isFirstPage}
+        className={`p-2 rounded-md ${
+          isFirstPage 
+            ? 'text-gray-400 cursor-not-allowed' 
+            : 'text-gray-700 hover:bg-gray-100'
+        }`}
+        aria-label="Première page"
       >
-        Précédent
+        <ChevronsLeft size={16} />
       </button>
-
-      <div className="flex items-center space-x-1">
-        {visiblePages.map((page, index) => {
-          if (page === null) {
-            return (
-              <span key={`ellipsis-${index}`} className="px-3 py-1">
-                ...
-              </span>
-            );
-          }
-
-          return (
+      
+      {/* Bouton page précédente */}
+      <button 
+        onClick={() => onPageChange(currentPage - 1)} 
+        disabled={isFirstPage}
+        className={`p-2 rounded-md ${
+          isFirstPage 
+            ? 'text-gray-400 cursor-not-allowed' 
+            : 'text-gray-700 hover:bg-gray-100'
+        }`}
+        aria-label="Page précédente"
+      >
+        <ChevronLeft size={16} />
+      </button>
+      
+      {/* Pages */}
+      {pages.map((page, index) => (
+        <React.Fragment key={index}>
+          {typeof page === 'number' ? (
             <button
-              key={page}
               onClick={() => onPageChange(page)}
-              className={cn(
-                'px-3 py-1 rounded-md',
+              className={`w-8 h-8 flex items-center justify-center rounded-md ${
                 currentPage === page
-                  ? 'bg-primary text-white'
-                  : 'bg-gray-100 hover:bg-gray-200'
-              )}
+                  ? 'bg-primary-600 text-white font-medium'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+              aria-current={currentPage === page ? 'page' : undefined}
             >
               {page}
             </button>
-          );
-        })}
-      </div>
-
-      <button
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          ) : (
+            <span className="text-gray-400 px-1">...</span>
+          )}
+        </React.Fragment>
+      ))}
+      
+      {/* Bouton page suivante */}
+      <button 
+        onClick={() => onPageChange(currentPage + 1)} 
+        disabled={isLastPage}
+        className={`p-2 rounded-md ${
+          isLastPage 
+            ? 'text-gray-400 cursor-not-allowed' 
+            : 'text-gray-700 hover:bg-gray-100'
+        }`}
+        aria-label="Page suivante"
       >
-        Suivant
+        <ChevronRight size={16} />
       </button>
-    </nav>
+      
+      {/* Bouton dernière page */}
+      <button 
+        onClick={() => onPageChange(totalPages)} 
+        disabled={isLastPage}
+        className={`p-2 rounded-md ${
+          isLastPage 
+            ? 'text-gray-400 cursor-not-allowed' 
+            : 'text-gray-700 hover:bg-gray-100'
+        }`}
+        aria-label="Dernière page"
+      >
+        <ChevronsRight size={16} />
+      </button>
+    </div>
   );
-} 
+};
+
+export default Pagination; 
