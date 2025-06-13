@@ -38,7 +38,13 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta>(defaultPaginationMeta);
+  const [isClient, setIsClient] = useState(false);
   const { isAuthenticated, user } = useAuth();
+
+  // S'assurer que nous sommes côté client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Fonction pour formater un produit en FavoriteItem
   const formatProductToFavoriteItem = (product: Product): FavoriteItem => {
@@ -156,8 +162,10 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  // Charger les favoris depuis l'API si l'utilisateur est connecté
+  // Charger les favoris depuis l'API si l'utilisateur est connecté - seulement côté client
   useEffect(() => {
+    if (!isClient) return;
+    
     const loadInitialFavorites = async () => {
       await fetchFavoritesPage(1);
       if (isAuthenticated && user) {
@@ -166,10 +174,14 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
     
     loadInitialFavorites();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, isClient]);
 
-  // Obtenir les favoris du localStorage
+  // Obtenir les favoris du localStorage - seulement côté client
   const getLocalFavorites = (): FavoriteItem[] => {
+    if (!isClient || typeof window === 'undefined') {
+      return [];
+    }
+    
     try {
       const key = isAuthenticated && user ? `favorites_${user.id}` : 'temp_favorites';
       const savedFavorites = localStorage.getItem(key);
@@ -180,8 +192,10 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   };
 
-  // Charger les favoris depuis le localStorage
+  // Charger les favoris depuis le localStorage - seulement côté client
   const loadFromLocalStorage = () => {
+    if (!isClient) return;
+    
     const localFavorites = getLocalFavorites();
     setFavorites(localFavorites.slice(0, paginationMeta.limit));
     setAllFavorites(localFavorites);
@@ -193,8 +207,12 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   };
 
-  // Sauvegarder les favoris localement
+  // Sauvegarder les favoris localement - seulement côté client
   const saveToLocalStorage = (updatedFavorites: FavoriteItem[]) => {
+    if (!isClient || typeof window === 'undefined') {
+      return;
+    }
+    
     try {
       const key = isAuthenticated && user ? `favorites_${user.id}` : 'temp_favorites';
       localStorage.setItem(key, JSON.stringify(updatedFavorites));
@@ -307,6 +325,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const isFavorite = (id: string | number): boolean => {
+    if (!isClient) return false;
     // Convertir en string pour la comparaison
     const idStr = id.toString();
     return allFavorites.some(item => item.id.toString() === idStr);

@@ -10,6 +10,18 @@ export interface Promotion {
   isActive: boolean;
 }
 
+// Interface pour la structure complète de la réponse API /products/promotions
+export interface PromotionsApiResponse {
+  message: string;
+  products: PromotionAPI[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    lastPage: number;
+  };
+}
+
 // Interface pour la structure de l'API /products/promotions
 export interface PromotionAPI {
   id: number;
@@ -23,8 +35,8 @@ export interface PromotionAPI {
   isInPromotion: boolean;
   promotionPrice: number;
   promotionEndDate: string;
-  isFavorited: boolean;
   promotionPercentage: number;
+  isFavorited: boolean;
   category?: {
     id: number;
     name: string;

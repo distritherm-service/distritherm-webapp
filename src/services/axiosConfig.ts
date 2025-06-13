@@ -169,30 +169,38 @@ axiosInstance.interceptors.response.use(
     const originalRequest: any = error.config;
     const errorResponse = error.response?.data as any;
     
-    // console.error('Erreur de réponse:', {
-    //   status: error.response?.status,
-    //   message: errorResponse?.message || error.message
-    // });
+    console.error('Erreur de réponse:', {
+      status: error.response?.status,
+      message: errorResponse?.message || error.message,
+      url: originalRequest?.url
+    });
     
     // Vérifier si l'erreur est liée à un token invalide (401)
     if (
       error.response?.status === 401 &&
-      (errorResponse?.message === 'Token invalide' || errorResponse?.message === 'Non autorisé') &&
+      (errorResponse?.message === 'Token invalide' || 
+       errorResponse?.message === 'Non autorisé' ||
+       errorResponse?.message === 'jwt expired' ||
+       errorResponse?.message === 'Unauthorized') &&
       !originalRequest._retry
     ) {
-      // console.log('Token invalide détecté, tentative de rafraîchissement...');
+      console.log('Token invalide détecté, tentative de rafraîchissement...');
       
       // Marquer la requête pour éviter les boucles infinies
       originalRequest._retry = true;
       
       // Si un rafraîchissement est déjà en cours, mettre la requête en attente
       if (isRefreshing) {
-        // console.log('Rafraîchissement déjà en cours, mise en file d\'attente de la requête');
+        console.log('Rafraîchissement déjà en cours, mise en file d\'attente de la requête');
         try {
           // Attendre le nouveau token et réessayer la requête
-          const newToken = await new Promise<string>((resolve) => {
+          const newToken = await new Promise<string>((resolve, reject) => {
             subscribeTokenRefresh((token: string) => {
-              resolve(token);
+              if (token) {
+                resolve(token);
+              } else {
+                reject(new Error('Échec du rafraîchissement du token'));
+              }
             });
           });
           
@@ -200,7 +208,13 @@ axiosInstance.interceptors.response.use(
           originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
-          // console.error('Erreur lors de l\'attente du rafraîchissement:', refreshError);
+          console.error('Erreur lors de l\'attente du rafraîchissement:', refreshError);
+          clearAuthData();
+          
+          // Déclencher un événement pour informer l'application
+          const event = new CustomEvent('auth:logout', { detail: 'Session expirée' });
+          window.dispatchEvent(event);
+          
           return Promise.reject(refreshError);
         }
       }
@@ -222,7 +236,13 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         // Gérer les erreurs de rafraîchissement
-        // console.error('Échec du processus de rafraîchissement:', refreshError);
+        console.error('Échec du processus de rafraîchissement:', refreshError);
+        
+        // Nettoyer les données d'authentification
+        clearAuthData();
+        
+        // Notifier les requêtes en attente
+        onTokenRefreshed('');
         
         // Déclencher un événement pour informer l'application
         const event = new CustomEvent('auth:logout', { detail: 'Session expirée' });

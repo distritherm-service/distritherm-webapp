@@ -8,110 +8,18 @@ interface PromotionGridProps {
   title?: string;
   showViewAllButton?: boolean;
   isLoading?: boolean;
-  currentPage?: number;
-  totalPages?: number;
-  onPageChange?: (page: number) => void;
-  totalItems?: number;
 }
 
 const PromotionGrid: React.FC<PromotionGridProps> = ({ 
   promotions = [], 
   title, 
   showViewAllButton = false,
-  isLoading = false,
-  currentPage = 1,
-  totalPages = 1,
-  onPageChange,
-  totalItems = 0
+  isLoading = false
 }) => {
   // Vérification que promotions est un tableau valide
   const validPromotions = Array.isArray(promotions) ? promotions : [];
   
-  // Fonction pour générer les boutons de pagination de manière dynamique
-  const renderPaginationButtons = () => {
-    const buttons = [];
-    const maxButtonsToShow = 5; // Nombre maximum de boutons numériques à afficher
-    
-    // Calculer la plage de boutons à afficher
-    let startPage = Math.max(1, currentPage - Math.floor(maxButtonsToShow / 2));
-    let endPage = Math.min(totalPages, startPage + maxButtonsToShow - 1);
-    
-    // Ajuster si nous sommes proches de la fin
-    if (endPage - startPage + 1 < maxButtonsToShow && startPage > 1) {
-      startPage = Math.max(1, endPage - maxButtonsToShow + 1);
-    }
-    
-    // Bouton pour la première page si on n'y est pas déjà
-    if (startPage > 1) {
-      buttons.push(
-        <button
-          key="first"
-          onClick={() => onPageChange?.(1)}
-          className="px-3 py-1.5 rounded-md bg-white text-gray-700 hover:bg-blue-50 border border-gray-300"
-          aria-label="Première page"
-        >
-          1
-        </button>
-      );
-      
-      // Ajouter des points de suspension si on n'est pas juste après la première page
-      if (startPage > 2) {
-        buttons.push(
-          <span key="ellipsis1" className="px-2 py-1.5 text-gray-500">
-            ...
-          </span>
-        );
-      }
-    }
-    
-    // Pages numériques
-    for (let i = startPage; i <= endPage; i++) {
-      buttons.push(
-        <button
-          key={i}
-          onClick={() => onPageChange?.(i)}
-          className={`px-3 py-1.5 rounded-md ${
-            currentPage === i
-              ? 'bg-blue-500 text-white'
-              : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-300'
-          }`}
-          aria-label={`Page ${i}`}
-          aria-current={currentPage === i ? 'page' : undefined}
-        >
-          {i}
-        </button>
-      );
-    }
-    
-    // Bouton pour la dernière page si on n'y est pas déjà
-    if (endPage < totalPages) {
-      // Ajouter des points de suspension si on n'est pas juste avant la dernière page
-      if (endPage < totalPages - 1) {
-        buttons.push(
-          <span key="ellipsis2" className="px-2 py-1.5 text-gray-500">
-            ...
-          </span>
-        );
-      }
-      
-      buttons.push(
-        <button
-          key="last"
-          onClick={() => onPageChange?.(totalPages)}
-          className="px-3 py-1.5 rounded-md bg-white text-gray-700 hover:bg-blue-50 border border-gray-300"
-          aria-label="Dernière page"
-        >
-          {totalPages}
-        </button>
-      );
-    }
-    
-    return buttons;
-  };
-  
-  // Calcul des indices de début et de fin pour l'affichage
-  const startIndex = (currentPage - 1) * validPromotions.length + 1;
-  const endIndex = Math.min(currentPage * validPromotions.length, totalItems || validPromotions.length * totalPages);
+
   
   return (
     <div>
@@ -174,63 +82,9 @@ const PromotionGrid: React.FC<PromotionGridProps> = ({
         </div>
       )}
       
-      {/* Pagination améliorée */}
-      {!isLoading && totalPages > 1 && onPageChange && (
-        <div className="mt-8 flex justify-center">
-          <nav className="flex items-center space-x-2" aria-label="Pagination">
-            <button 
-              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className={`px-3 py-1.5 rounded-md flex items-center ${
-                currentPage === 1 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-300'
-              }`}
-              aria-label="Page précédente"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              <span>Précédent</span>
-            </button>
-            
-            <div className="hidden md:flex space-x-1">
-              {renderPaginationButtons()}
-            </div>
-            
-            <div className="md:hidden flex items-center space-x-2">
-              <span className="text-sm text-gray-700">
-                Page {currentPage} sur {totalPages}
-              </span>
-            </div>
-            
-            <button 
-              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-              className={`px-3 py-1.5 rounded-md flex items-center ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-blue-50 border border-gray-300'
-              }`}
-              aria-label="Page suivante"
-            >
-              <span>Suivant</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </nav>
-        </div>
-      )}
+
       
-      {/* Information sur le nombre total de résultats */}
-      {!isLoading && validPromotions.length > 0 && totalItems > 0 && (
-        <div className="mt-4 text-center text-sm text-gray-500">
-          Affichage des produits <span className="font-medium">{startIndex}</span> 
-          à <span className="font-medium">{endIndex}</span> 
-          sur un total de <span className="font-medium">{totalItems}</span>
-        </div>
-      )}
+
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import axiosInstance from './axiosConfig';
-import { PromotionAPI } from '../types/promotion';
+import { PromotionAPI, PromotionsApiResponse } from '../types/promotion';
 
 // Interface adaptée à l'UI (PromotionGrid, PromotionCard)
 export interface Promotion {
@@ -83,11 +83,43 @@ export const getPromotions = async (page = 1, limit = 10, categoryId?: string, m
       params.mark = mark;
     }
     
-    const response = await axiosInstance.get('/products/promotions', { params });
+    console.log('Récupération des promotions avec params:', params);
     
-    if (response?.data?.data && Array.isArray(response.data.data)) {
-      const data = response.data.data as PromotionAPI[];
-      return data.map(mapPromotionAPIToPromotion).filter(Boolean);
+    const response = await axiosInstance.get<PromotionsApiResponse>('/products/promotions', { params });
+    
+    console.log('Réponse API promotions:', response.data);
+    
+    // Vérifier la structure de la réponse selon l'exemple JSON fourni
+    if (response?.data?.products && Array.isArray(response.data.products)) {
+      const products = response.data.products;
+      console.log('Produits en promotion trouvés:', products.length);
+      
+      // Filtrer seulement les produits qui sont réellement en promotion
+      const actualPromotions = products.filter(product => 
+        product.isInPromotion === true && 
+        product.promotionPrice && 
+        product.promotionPrice > 0 &&
+        product.promotionPrice < product.priceTtc
+      );
+      
+      console.log('Produits réellement en promotion:', actualPromotions.length);
+      
+      return actualPromotions.map(mapPromotionAPIToPromotion).filter(Boolean);
+    }
+    
+    // Fallback pour l'ancienne structure si elle existe encore
+    if ((response as any)?.data?.data && Array.isArray((response as any).data.data)) {
+      const data = (response as any).data.data as PromotionAPI[];
+      console.log('Produits en promotion trouvés (ancienne structure):', data.length);
+      
+      const actualPromotions = data.filter(product => 
+        product.isInPromotion === true && 
+        product.promotionPrice && 
+        product.promotionPrice > 0 &&
+        product.promotionPrice < product.priceTtc
+      );
+      
+      return actualPromotions.map(mapPromotionAPIToPromotion).filter(Boolean);
     }
     
     console.warn('Format de réponse inattendu pour les promotions:', response?.data);
@@ -115,13 +147,23 @@ export const getPromotionsCount = async (categoryId?: string, mark?: string): Pr
     
     const response = await axiosInstance.get('/products/promotions', { params });
     
-    // Vérifier si nous avons des méta-données de pagination
+    console.log('Réponse API count promotions:', response.data);
+    
+    // Vérifier si nous avons des méta-données de pagination selon la nouvelle structure
     if (response?.data?.meta?.total !== undefined) {
+      console.log('Total promotions depuis meta:', response.data.meta.total);
       return response.data.meta.total;
     }
     
-    // Vérifier s'il y a des données et les compter (fallback)
+    // Vérifier s'il y a des produits et les compter selon la nouvelle structure
+    if (response?.data?.products && Array.isArray(response.data.products)) {
+      console.log('Count promotions depuis products array:', response.data.products.length);
+      return response.data.products.length;
+    }
+    
+    // Fallback pour l'ancienne structure
     if (response?.data?.data && Array.isArray(response.data.data)) {
+      console.log('Count promotions depuis data array (ancienne structure):', response.data.data.length);
       return response.data.data.length;
     }
     
@@ -148,10 +190,24 @@ export const getPromotionsPaginationMeta = async (page = 1, limit = 10, category
     
     const response = await axiosInstance.get('/products/promotions', { params });
     
+    console.log('Réponse API pagination meta promotions:', response.data);
+    
+    // Vérifier la nouvelle structure de réponse selon l'exemple JSON
     if (response?.data?.meta) {
-      return response.data.meta as PaginationMeta;
+      console.log('Meta données trouvées:', response.data.meta);
+      // Adapter la structure de meta selon l'exemple JSON fourni
+      const meta = response.data.meta;
+      return {
+        total: meta.total || 0,
+        per_page: meta.limit || limit,
+        current_page: meta.page || page,
+        last_page: meta.lastPage || 1,
+        from: ((meta.page || page) - 1) * (meta.limit || limit) + 1,
+        to: Math.min((meta.page || page) * (meta.limit || limit), meta.total || 0)
+      } as PaginationMeta;
     }
     
+    console.warn('Méta-données non trouvées dans la réponse:', response?.data);
     return null;
   } catch (error) {
     console.error('Erreur lors de la récupération des méta-données de pagination:', error);

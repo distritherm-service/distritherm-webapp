@@ -33,8 +33,7 @@ const ConfirmationStep: React.FC = () => {
   };
 
   const totalTTC = cart.reduce((sum, item) => sum + (item.price || item.priceTTC) * item.quantity, 0);
-  const livraison = 6.90;
-  const totalWithShipping = totalTTC + livraison;
+  const totalWithShipping = totalTTC;
 
   // Calcul du prix HT (Prix TTC / 1.2 pour une TVA à 20%)
   const totalHT = totalTTC / 1.2;
@@ -69,10 +68,6 @@ const ConfirmationStep: React.FC = () => {
           <div className="flex justify-between">
             <span className="text-gray-600">TVA (20%):</span>
             <span>{TVA.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Livraison:</span>
-            <span>{livraison.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
           </div>
           <div className="flex justify-between font-bold text-base sm:text-lg pt-2 sm:pt-3 border-t border-gray-200">
             <span>Total:</span>
@@ -246,7 +241,7 @@ const ConfirmationStep: React.FC = () => {
         {paymentMethod === 'acompte' && (
           <div className="mt-3 p-4 bg-blue-50 rounded-md border border-blue-100">
             <h4 className="font-medium text-blue-800 mb-2">Paiement par acompte</h4>
-            <p className="text-sm text-blue-700 mb-3">Versez 30% maintenant et le reste à la livraison:</p>
+            <p className="text-sm text-blue-700 mb-3">Versez 30% maintenant et le reste à la réception:</p>
             <div className="space-y-2 text-sm">
               <div className="grid grid-cols-3 gap-1">
                 <span className="text-blue-800 font-medium">Acompte (30%):</span>

@@ -285,9 +285,9 @@ const CategoryProducts: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-semibold text-center text-gray-800 mb-3">Service rapide</h3>
+                  <h3 className="text-lg font-semibold text-center text-gray-800 mb-3">Service après-vente de qualité</h3>
                   <p className="text-gray-600 text-center">
-                    Livraison rapide et service après-vente de qualité pour tous nos produits.
+                    Service après-vente de qualité pour tous nos produits.
                   </p>
                 </div>
               </div>

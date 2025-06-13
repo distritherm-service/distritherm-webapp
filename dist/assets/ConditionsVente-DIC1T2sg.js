@@ -1,0 +1,1 @@
+import{j as e}from"./index-BEi8WKuF.js";import{L as s}from"./Layout-Dj9Dgcds.js";const o=()=>e.jsx(s,{children:e.jsxs("div",{className:"container mx-auto px-4 py-8",children:[e.jsx("h1",{className:"text-3xl font-bold text-gray-800 mb-6",children:"Conditions Générales de Vente"}),e.jsx("div",{className:"prose max-w-none"})]})});export{o as default};

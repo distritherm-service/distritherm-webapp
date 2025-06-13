@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+//import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
 
 interface TabProps {
@@ -12,28 +12,27 @@ interface TabProps {
 }
 
 const Tab: React.FC<TabProps> = ({ number, title, isActive, isCompleted, isDisabled, onClick }) => {
-  const baseClasses = "relative flex-1 py-3 sm:py-4 px-2 sm:px-4 text-center transition-all duration-200 text-xs sm:text-sm md:text-base";
+  const baseClasses = "relative flex-1 py-3 sm:py-4 px-2 sm:px-4 text-center transition-all duration-300 text-xs sm:text-sm md:text-base";
   let classes = baseClasses;
-  let indicatorClasses = "absolute bottom-0 left-0 w-full h-0.5 transition-all duration-200";
+  let indicatorClasses = "absolute bottom-0 left-0 w-full h-0.5 transition-all duration-300 ease-in-out";
   
   if (isActive) {
     classes += " bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 font-medium shadow-sm";
-    indicatorClasses += " bg-blue-600";
+    indicatorClasses += " bg-blue-600 scale-x-105";
   } else if (isCompleted) {
-    classes += " bg-gradient-to-br from-green-50 to-green-100 text-gray-800 font-medium cursor-pointer hover:from-green-100 hover:to-green-200";
+    classes += " bg-gradient-to-br from-green-50 to-green-100 text-gray-800 font-medium cursor-pointer hover:from-green-100 hover:to-green-200 hover:scale-105";
     indicatorClasses += " bg-green-500";
   } else if (isDisabled) {
     classes += " bg-gray-50 text-gray-400 cursor-not-allowed";
     indicatorClasses += " bg-gray-200";
   } else {
-    classes += " bg-white text-gray-700 cursor-pointer hover:bg-blue-50 hover:text-blue-600";
+    classes += " bg-white text-gray-700 cursor-pointer hover:bg-blue-50 hover:text-blue-600 hover:scale-105";
     indicatorClasses += " bg-gray-200";
   }
 
   // Pour les écrans mobiles, utiliser des titres plus courts
   const mobileTitle = title === "Récapitulatif" ? "Panier" : 
                      title === "Connexion" ? "Connexion" : 
-                     title === "Livraison" ? "Livraison" : 
                      title === "Confirmation" ? "Paiement" : title;
 
   return (
@@ -62,8 +61,7 @@ const OrderTabs: React.FC<{ activeTab: number; onChangeTab: (tab: number) => voi
   const tabs = [
     { number: "01", title: "Récapitulatif", path: "recap" },
     { number: "02", title: "Connexion", path: "login" },
-    { number: "03", title: "Livraison", path: "delivery" },
-    { number: "04", title: "Confirmation", path: "confirmation" }
+    { number: "03", title: "Confirmation", path: "confirmation" }
   ];
 
   const isTabDisabled = (tabIndex: number) => {

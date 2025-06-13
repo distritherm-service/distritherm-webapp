@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTrash, FaShoppingCart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -13,8 +13,31 @@ interface CartPreviewProps {
 const CartPreview: React.FC<CartPreviewProps> = ({ isOpen, onClose }) => {
   const { cart, removeFromCart, updateQuantity } = useCart();
   const navigate = useNavigate();
+  const [isNavbarHidden, setIsNavbarHidden] = useState(false);
 
   const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+  // Détecter si la navbar est cachée
+  useEffect(() => {
+    const navbar = document.getElementById('main-navbar');
+    if (!navbar) return;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          const hasHiddenClass = navbar.classList.contains('nav-hidden');
+          setIsNavbarHidden(hasHiddenClass);
+        }
+      });
+    });
+
+    observer.observe(navbar, { attributes: true });
+    
+    // Vérification initiale
+    setIsNavbarHidden(navbar.classList.contains('nav-hidden'));
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleViewCart = () => {
     navigate('/panier');
@@ -29,7 +52,11 @@ const CartPreview: React.FC<CartPreviewProps> = ({ isOpen, onClose }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.2 }}
-          className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl z-50"
+          className={`w-96 bg-white rounded-lg shadow-xl z-[9999] ${
+            isNavbarHidden 
+              ? 'fixed top-4 right-4' 
+              : 'absolute right-0 mt-2'
+          }`}
           onMouseLeave={onClose}
         >
           <div className="p-4 border-b border-gray-100">

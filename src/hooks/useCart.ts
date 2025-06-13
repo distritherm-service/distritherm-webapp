@@ -9,14 +9,38 @@ interface CartItem {
 }
 
 export const useCart = () => {
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isClient, setIsClient] = useState(false);
 
+  // S'assurer que nous sommes côté client
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cart));
-  }, [cart]);
+    setIsClient(true);
+  }, []);
+
+  // Charger le panier depuis localStorage seulement côté client
+  useEffect(() => {
+    if (!isClient || typeof window === 'undefined') return;
+    
+    try {
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      }
+    } catch (error) {
+      console.error('Erreur lors du chargement du panier:', error);
+    }
+  }, [isClient]);
+
+  // Sauvegarder le panier dans localStorage seulement côté client
+  useEffect(() => {
+    if (!isClient || typeof window === 'undefined') return;
+    
+    try {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du panier:', error);
+    }
+  }, [cart, isClient]);
 
   const addToCart = (item: CartItem) => {
     setCart(prevCart => {
@@ -53,6 +77,7 @@ export const useCart = () => {
     addToCart,
     removeFromCart,
     updateQuantity,
-    clearCart
+    clearCart,
+    isClient
   };
 }; 

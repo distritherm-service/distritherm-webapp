@@ -242,27 +242,49 @@ const Contact: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Breadcrumb />
+      
       <main className="flex-grow">
+      <section className="relative h-64 md:h-80 lg:h-[420px] w-full overflow-hidden shadow-md">
+          {/* Image d'arrière-plan */}
+          <div className="absolute inset-0">
+            <img
+              src="/icone/image-contact.png"
+              alt="Recrutement Distritherm Services"
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Voile sombre en dégradé pour une meilleure lisibilité */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent backdrop-blur-sm" />
+          </div>
+
+          {/* Contenu : Titre + Breadcrumb */}
+          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+            <h1 className="text-4xl md:text-6xl lg:text-6xl font-extrabold text-white drop-shadow-lg mb-4 tracking-tight">Besoin d'aide ?</h1>
+            <br />
+            <Breadcrumb />
+          </div>
+
+          {/* Ombre courbée en bas */}
+          <div className="absolute bottom-0 left-1/2 w-full max-w-none -translate-x-1/2">
+            <svg viewBox="0 0 1600 100" className="w-full h-6 md:h-8" preserveAspectRatio="none">
+              <path d="M0,0 C600,100 1000,100 1600,0 L1600,100 L0,100 Z" fill="#f8f9ff"/>
+            </svg>
+          </div>
+        </section>
         <section className="relative py-20 overflow-hidden">
           {/* Arrière-plan décoratif */}
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-[#7CB9E8]/30">
-            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.2]" />
-            <div className="absolute w-96 h-96 -top-48 -left-48 bg-[#7CB9E8] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-            <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-[#007FFF] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-          </div>
+        
 
           <div className="container relative mx-auto px-4">
             {/* En-tête de la page */}
             <div className="text-center mb-16">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 relative inline-block">
+              <h1 className="text-4xl md:text-4xl font-bold text-gray-800 mb-4 relative inline-block">
                 <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
-                  Contacter votre agence
+                  Contactez-nous
                 </span>
                 <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
               </h1>
-              <p className="text-gray-600 max-w-2xl mx-auto mt-8">
-                Notre équipe est à votre disposition pour répondre à toutes vos questions
+              <p className="text-gray-600 max-w-4xl mx-auto mt-7">
+                Nous sommes à votre écoute pour répondre à toutes vos questions et vous accompagner dans vos projets
               </p>
             </div>
 

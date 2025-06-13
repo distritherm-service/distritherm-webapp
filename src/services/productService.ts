@@ -96,6 +96,8 @@ export interface RecommendedProductsResponse {
  */
 export const getProducts = async (filters?: FilterOptions): Promise<ProductsResponse> => {
   try {
+    console.log('Récupération des produits avec filtres:', filters);
+    
     // Construire les paramètres de requête à partir des filtres
     const params: Record<string, any> = {};
     
@@ -117,64 +119,91 @@ export const getProducts = async (filters?: FilterOptions): Promise<ProductsResp
       params.limit = filters.limit || 12;
     }
     
+    console.log('Paramètres de requête API:', params);
+    
     const response = await axiosInstance.get('/products', { params });
+    console.log('Réponse API brute:', response.data);
+    
+    // Vérifier la structure de la réponse
+    if (!response.data || !Array.isArray(response.data.products)) {
+      console.error('Structure de réponse inattendue:', response.data);
+      throw new Error('Structure de réponse API invalide');
+    }
+    
     let products = response.data.products;
+    
+    // Normaliser les produits - ajouter priceHt si manquant
+    products = products.map((product: any) => ({
+      ...product,
+      priceHt: product.priceHt || product.priceTtc || 0,
+      priceTtc: product.priceTtc || product.priceHt || 0,
+    }));
+
+    // Récupérer les marques pour le filtrage
+    let marksMap: { [name: string]: number } = {};
+    try {
+      const marks = await getAllMarks();
+      // Créer un mapping nom -> id si on a accès aux données complètes
+      // Pour l'instant, on va utiliser le nom directement
+      console.log('Marques disponibles:', marks);
+    } catch (error) {
+      console.warn('Impossible de récupérer les marques pour le filtrage:', error);
+    }
 
     // Filtrer les produits par prix côté client si un filtre de prix est défini
     if (filters?.priceRange) {
-      products = products.filter((product: Product) => 
-        product.priceHt >= filters.priceRange![0] && 
-        product.priceHt <= filters.priceRange![1]
-      );
+      const [minPrice, maxPrice] = filters.priceRange;
+      products = products.filter((product: Product) => {
+        const price = product.priceHt || product.priceTtc || 0;
+        return price >= minPrice && price <= maxPrice;
+      });
+      console.log(`Filtre prix [${minPrice}, ${maxPrice}] appliqué. Produits restants:`, products.length);
     }
 
     // Filtrer les produits par marque côté client
     if (filters?.brand && filters.brand !== 'Toutes les marques') {
-      products = products.filter((product: Product) => 
-        product.markId.toString() === filters.brand
-      );
+      products = products.filter((product: Product) => {
+        // Comparer avec le nom de la marque au lieu de l'ID
+        const productBrandName = product.mark?.name || '';
+        const matches = productBrandName.toLowerCase() === filters.brand!.toLowerCase();
+        return matches;
+      });
+      console.log(`Filtre marque "${filters.brand}" appliqué. Produits restants:`, products.length);
     }
 
-    return {
-      ...response.data,
-      products
+    // Filtrer les produits en stock uniquement
+    if (filters?.inStockOnly) {
+      products = products.filter((product: Product) => product.quantity > 0);
+      console.log('Filtre stock appliqué. Produits restants:', products.length);
+    }
+
+    // Construire la réponse avec la structure attendue
+    const totalPages = response.data.meta?.lastPage || Math.ceil((response.data.meta?.total || products.length) / (params.limit || 12));
+    
+    const result: ProductsResponse = {
+      products,
+      total: response.data.meta?.total || products.length,
+      page: response.data.meta?.page || 1,
+      limit: response.data.meta?.limit || 12,
+      totalPages
     };
+    
+    console.log('Résultat final:', {
+      nombreProduits: result.products.length,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages
+    });
+    
+    return result;
   } catch (error) {
     console.error('Erreur lors de la récupération des produits:', error);
-    // Créer des produits de test en cas d'erreur
-    const mockProducts: Product[] = Array.from({ length: 10 }, (_, i) => ({
-      id: i + 1,
-      name: `Produit test ${i + 1}`,
-      description: "Description du produit test. Ce produit est généré automatiquement car l'API est inaccessible.",
-      priceHt: 100 + i * 10,
-      priceTtc: (100 + i * 10) * 1.2,
-      quantity: Math.floor(Math.random() * 10),
-      imagesUrl: ['/image-produit-defaut.jpeg'],
-      categoryId: 1,
-      markId: 1,
-      itemCode: `ITEM${i + 100}`,
-      active: true,
-      directorWord1: '',
-      directorWord2: '',
-      directorWord3: '',
-      directorWord4: '',
-      directorWord5: '',
-      directorWordLink1: '',
-      directorWordLink2: '',
-      directorWordLink3: '',
-      directorWordLink4: '',
-      directorWordLink5: '',
-      brandLogo: '',
-      weight: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      category: { id: 1, name: 'Catégorie test' },
-      mark: { id: 1, name: 'Marque test' }
-    }));
-
+    
+    // Au lieu de retourner des produits mock, on propage l'erreur pour permettre un meilleur debugging
+    // Mais on peut retourner une réponse vide pour éviter les crashes
     return {
-      products: mockProducts,
-      total: mockProducts.length,
+      products: [],
+      total: 0,
       page: 1,
       limit: 12,
       totalPages: 1
@@ -188,7 +217,14 @@ export const getProducts = async (filters?: FilterOptions): Promise<ProductsResp
 export const getProductById = async (id: string): Promise<Product> => {
   try {
     const response = await axiosInstance.get(`/products/${id}`);
-    return response.data.product;
+    const product = response.data.product;
+    
+    // Normaliser le produit
+    return {
+      ...product,
+      priceHt: product.priceHt || product.priceTtc || 0,
+      priceTtc: product.priceTtc || product.priceHt || 0,
+    };
   } catch (error) {
     console.error('Erreur lors de la récupération du produit:', error);
     throw error;
@@ -200,11 +236,13 @@ export const getProductById = async (id: string): Promise<Product> => {
  */
 export const getAllBrands = async (): Promise<string[]> => {
   try {
-    return await getAllMarks();
+    const marks = await getAllMarks();
+    console.log('Marques récupérées:', marks);
+    return marks;
   } catch (error) {
     console.error('Erreur lors de la récupération des marques:', error);
-    // Retourner des marques par défaut en cas d'erreur
-    return ['Daikin', 'Atlantic', 'Samsung', 'Mitsubishi', 'LG', 'Toshiba'];
+    // Retourner un tableau vide au lieu de marques par défaut
+    return [];
   }
 };
 
@@ -214,52 +252,26 @@ export const getAllBrands = async (): Promise<string[]> => {
 export const getRecommendedProducts = async (): Promise<RecommendedProductsResponse> => {
   try {
     const response = await axiosInstance.get('/products/recommendations');
-    return response.data;
+    const products = response.data.products || [];
+    
+    // Normaliser les produits recommandés
+    const normalizedProducts = products.map((product: any) => ({
+      ...product,
+      priceHt: product.priceHt || product.priceTtc || 0,
+      priceTtc: product.priceTtc || product.priceHt || 0,
+    }));
+    
+    return {
+      ...response.data,
+      products: normalizedProducts
+    };
   } catch (error) {
     console.error('Erreur lors de la récupération des produits recommandés:', error);
-    // Retourner des données de test en cas d'erreur
+    // Retourner une réponse vide au lieu de données mock
     return {
-      message: "Produits recommandés récupérés avec succès",
-      products: Array.from({ length: 4 }, (_, i) => ({
-        id: i + 1,
-        name: `Produit recommandé ${i + 1}`,
-        description: "Description du produit recommandé test",
-        priceHt: 99.99,
-        priceTtc: 119.99,
-        quantity: 50,
-        imagesUrl: ['/image-produit-defaut.jpeg'],
-        categoryId: 1,
-        markId: 1,
-        category: {
-          id: 1,
-          name: "Catégorie test"
-        },
-        mark: {
-          id: 1,
-          name: "Marque test"
-        },
-        isInPromotion: true,
-        promotionPrice: 89.99,
-        promotionEndDate: "2024-12-31T23:59:59Z",
-        promotionPercentage: 10,
-        itemCode: `PROMO${i + 100}`,
-        active: true,
-        directorWord1: '',
-        directorWord2: '',
-        directorWord3: '',
-        directorWord4: '',
-        directorWord5: '',
-        directorWordLink1: '',
-        directorWordLink2: '',
-        directorWordLink3: '',
-        directorWordLink4: '',
-        directorWordLink5: '',
-        brandLogo: '',
-        weight: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      })),
-      count: 4
+      message: "Aucun produit recommandé disponible",
+      products: [],
+      count: 0
     };
   }
 }; 

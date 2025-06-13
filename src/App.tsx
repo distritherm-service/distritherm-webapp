@@ -13,6 +13,7 @@ import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import ValidateEmail from './pages/ValidateEmail';
 import CategoryProducts from './pages/CategoryProducts';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { Toaster } from 'react-hot-toast';
 
 // Composant de chargement simple en attendant de créer le composant LoadingSpinner
 const LoadingSpinner = () => (
@@ -38,12 +39,10 @@ const LoginPage = () => {
 const Home = lazy(() => import('./pages/Home'));
 const NosProducts = lazy(() => import('./pages/NosProducts'));
 const Promotions = lazy(() => import('./pages/Promotions'));
-const EspaceRecrutement = lazy(() => import('./pages/EspaceRecrutement'));
 const Contact = lazy(() => import('./pages/Contact'));
 const ConditionsVente = lazy(() => import('./pages/ConditionsVente'));
 const ConditionsUtilisation = lazy(() => import('./pages/ConditionsUtilisation'));
 const SAV = lazy(() => import('./pages/SAV'));
-const APropos = lazy(() => import('./pages/APropos'));
 const Connexion = lazy(() => import('./pages/Connexion'));
 const Favoris = lazy(() => import('./pages/Favoris'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
@@ -75,12 +74,12 @@ const AppRoutes = () => {
       <Route path="/categorie/:category/:subCategory?/:level3?/:level4?" element={<CategoryProducts />} />
       <Route path="/produit/:id" element={<ProductDetail />} />
       <Route path="/promotions" element={<Promotions />} />
-      <Route path="/espace-recrutement" element={<EspaceRecrutement />} />
+      {/* <Route path="/espace-recrutement" element={<EspaceRecrutement />} /> */}
       <Route path="/nous-contact" element={<Contact />} />
       <Route path="/conditions-vente" element={<ConditionsVente />} />
       <Route path="/conditions-utilisation" element={<ConditionsUtilisation />} />
       <Route path="/sav" element={<SAV />} /> 
-      <Route path="/a-propos" element={<APropos />} />
+      {/* <Route path="/a-propos" element={<APropos />} /> */}
       <Route path="/panier" element={<Cart />} />
       
       {/* Routes protégées nécessitant une authentification */}
@@ -95,7 +94,6 @@ const AppRoutes = () => {
       <Route path="/Mon-profil" element={<MonProfil />} />
       <Route path="/Mes-commandes" element={<MesCommandes />} />
       <Route path="/Mes-devis" element={<MesDevis />} />
-      <Route path="/panier/delivery" element={<div>Page de livraison</div>} />
       <Route path="/panier/payment" element={<div>Page de paiement</div>} />
       <Route 
         path="/inscription-reussie" 
@@ -130,6 +128,24 @@ const App: React.FC = () => {
                   <Navbar />
                   <div className="navbar-spacer"></div>
                   <ScrollToTop />
+                  <Toaster position="top-right" toastOptions={{
+                    duration: 4000,
+                    style: {
+                      borderRadius: '8px',
+                      background: '#333',
+                      color: '#fff',
+                    },
+                    success: {
+                      style: {
+                        background: '#10B981',
+                      },
+                    },
+                    error: {
+                      style: {
+                        background: '#EF4444',
+                      },
+                    }
+                  }} />
                   <main>
                     <Suspense fallback={<LoadingSpinner />}>
                       <AppRoutes />

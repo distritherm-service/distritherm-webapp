@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaShoppingCart, FaCheck, FaInfoCircle, FaHeart, FaRegHeart } from 'react-icons/fa';
+import { FaShoppingCart, FaCheck, FaInfoCircle, FaHeart, FaRegHeart, FaTag } from 'react-icons/fa';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { Product } from '../../services/productService';
@@ -16,9 +16,18 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
   const [showAdded, setShowAdded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   
-  // Vérifier si le produit est dans les favoris
-  const isFavorite = (id: number) => favorites.some(fav => fav.id.toString() === id.toString());
+  // S'assurer que le composant est hydraté côté client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Vérifier si le produit est dans les favoris seulement côté client
+  const isFavorite = (id: number) => {
+    if (!isClient) return false;
+    return favorites.some(fav => fav.id.toString() === id.toString());
+  };
   
   // Image à afficher (première image ou image par défaut en cas d'erreur)
   const imageUrl = imageError || !product.imagesUrl || product.imagesUrl.length === 0 
@@ -27,10 +36,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    // Adapter l'objet product à la structure attendue par addToCart
     const cartItem = {
       ...product,
-      id: product.id.toString(), // Convertir l'ID en string pour le panier
+      id: product.id.toString(),
       quantity: 1,
       image: imageUrl,
       price: product.priceTtc
@@ -45,10 +53,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     if (isFavorite(product.id)) {
       removeFromFavorites(product.id.toString());
     } else {
-      // Adapter l'objet product à la structure attendue par addToFavorites
       const favoriteItem = {
         ...product,
-        id: product.id.toString(), // Convertir l'ID en string pour les favoris
+        id: product.id.toString(),
         price: product.priceTtc,
         image: imageUrl,
         addedAt: new Date().toISOString()
@@ -57,137 +64,142 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     }
   };
   
-  // Gérer l'erreur de chargement d'image
   const handleImageError = () => {
     setImageError(true);
   };
   
-  // Formater les prix pour éviter NaN et sans ajouter le symbole euro
   const formatProductPrice = (price: number | undefined): string => {
     if (price === undefined || isNaN(price)) {
       return "0,00";
     }
-    // Utiliser formatPrice avec l'option showCurrency à false pour ne pas afficher le symbole €
     return formatPrice(price, { showCurrency: false });
   };
  
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 relative group">
-      {/* Image avec overlay au hover */}
-      <div className="relative aspect-square overflow-hidden">
-        {product.isInPromotion && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
+    <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out overflow-hidden border border-blue-100/50 hover:border-blue-300/70 transform hover:-translate-y-2">
+      {/* Image container with modern aspect ratio */}
+      <div className="relative h-64 overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100">
+        {/* Badges */}
+        {product.isInPromotion && product.promotionPercentage && (
+          <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+            <FaTag className="w-3 h-3" />
             -{product.promotionPercentage}%
           </div>
         )}
+        
+        {product.quantity > 0 && product.quantity <= 5 && (
+          <div className="absolute top-4 right-4 z-20 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg">
+            Stock limité: {product.quantity}
+          </div>
+        )}
+
+        {/* Product Image */}
         <img
           src={imageUrl}
           alt={product.name}
-          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
           onError={handleImageError}
         />
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <Link
-            to={`/produit/${product.id}`}
-            className="bg-white/90 text-[#007FFF] px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-white transition-colors"
-          >
-            <FaInfoCircle />
-            Voir les détails
-          </Link>
-        </div>
-        {/* Bouton favoris */}
-        <button
-          onClick={handleToggleFavorite}
-          className="absolute top-3 right-3 z-10 bg-white/90 p-2 rounded-full shadow-md hover:bg-white transition-colors"
-        >
-          {isFavorite(product.id) ? (
-            <FaHeart className="w-5 h-5 text-red-500" />
-          ) : (
-            <FaRegHeart className="w-5 h-5 text-gray-600 hover:text-red-500" />
-          )}
-        </button>
-      </div>
+        
+        {/* Overlay with gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-blue-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        {/* Floating Action Buttons - Seulement côté client */}
+        {isClient && (
+          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
+            {/* Favorite Button */}
+            <button
+              onClick={handleToggleFavorite}
+              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
+            >
+              {isFavorite(product.id) ? (
+                <FaHeart className="w-4 h-4 text-blue-500" />
+              ) : (
+                <FaRegHeart className="w-4 h-4 text-gray-600 hover:text-blue-500" />
+              )}
+            </button>
+            
+            {/* View Details Button */}
+            <Link
+              to={`/produit/${product.id}`}
+              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-blue-600 hover:text-blue-700"
+            >
+              <FaInfoCircle className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
 
-      {/* Contenu */}
-      <div className="p-4">
-        {/* Nom du produit */}
-        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2 min-h-[3.5rem]">
-          {product.name}
-        </h3>
-
-        {/* Description courte */}
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2 min-h-[2.5rem]">
-          {product.description}
-        </p>
-
-        {/* Disponibilité */}
-        <div className="mb-3">
+        {/* Status Badge */}
+        <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
           {product.quantity > 0 ? (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-              </svg>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-500/90 text-white backdrop-blur-sm shadow-lg">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               En stock
             </span>
           ) : (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-              <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-blue-400/90 text-white backdrop-blur-sm shadow-lg">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
               Sur commande
             </span>
           )}
         </div>
+      </div>
 
-        {/* Prix */}
-        <div className="space-y-1 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Prix HT:</span>
-            <span className="text-lg font-semibold text-gray-800">
+      {/* Content Section */}
+      <div className="p-6 space-y-4">
+        {/* Product Title */}
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 line-clamp-2 leading-tight mb-2 group-hover:text-blue-700 transition-colors duration-300">
+            {product.name}
+          </h3>
+          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+            {product.description}
+          </p>
+        </div>
+
+        {/* Pricing Section */}
+        <div className="space-y-2">
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-medium text-blue-600">Prix HT</span>
+            <span className="text-lg font-semibold text-blue-700">
               {formatProductPrice(product.priceHt)} €
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Prix TTC:</span>
-            <span className="text-lg font-bold text-[#007FFF]">
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-medium text-blue-600">Prix TTC</span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
               {formatProductPrice(product.priceTtc)} €
             </span>
           </div>
         </div>
 
-        {/* Boutons d'action */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleAddToCart}
-            className={`flex-1 py-2.5 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-300 ${
-              showAdded
-                ? 'bg-green-500 text-white'
-                : product.quantity > 0 
-                  ? 'bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] text-white hover:shadow-lg hover:from-[#7CB9E8]/90 hover:to-[#007FFF]/90'
-                  : 'bg-amber-500 text-white hover:bg-amber-600'
-            }`}
-          >
-            {showAdded ? (
-              <>
-                <FaCheck />
-                Ajouté
-              </>
-            ) : (
-              <>
-                <FaShoppingCart />
-                {product.quantity > 0 ? 'Ajouter au panier' : 'Commander'}
-              </>
-            )}
-          </button>
-        </div>
+        {/* Action Button */}
+        <button
+          onClick={handleAddToCart}
+          className={`w-full py-3.5 px-6 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 shadow-lg ${
+            showAdded
+              ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-blue-200'
+              : product.quantity > 0 
+                ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-blue-200 hover:shadow-blue-300'
+                : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-blue-200'
+          }`}
+        >
+          {showAdded ? (
+            <>
+              <FaCheck className="w-4 h-4" />
+              <span>Ajouté au panier !</span>
+            </>
+          ) : (
+            <>
+              <FaShoppingCart className="w-4 h-4" />
+              <span>{product.quantity > 0 ? 'Ajouter au panier' : 'Commander'}</span>
+            </>
+          )}
+        </button>
       </div>
 
-      {/* Badge stock */}
-      {product.quantity > 0 && product.quantity <= 5 && (
-        <div className="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-          Plus que {product.quantity} en stock
-        </div>
-      )}
+      {/* Subtle bottom accent */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 via-blue-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
     </div>
   );
 };

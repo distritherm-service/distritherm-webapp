@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FaHeart, FaShoppingCart, FaRuler, FaWeight, FaBox, FaChevronRight, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { useParams, useNavigate } from 'react-router-dom';
+import {  FaShoppingCart, FaRuler, FaWeight, FaBox, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 import { useCart } from '../contexts/CartContext';
@@ -327,7 +327,7 @@ const ProductDetail: React.FC = () => {
         price: product.priceTtc,
         inStock: product.quantity > 0
       };
-      addToFavorites(favoriteItem);
+      addToFavorites(favoriteItem);  
     }
   };
 

@@ -411,10 +411,6 @@ const CartSummary: React.FC = () => {
                 <span>{formattedTotalTTC}</span>
               </div>
             </div>
-            
-            <div className="mt-4 text-xs sm:text-sm text-gray-500">
-              Frais de livraison calculés à l'étape suivante
-            </div>
           </div>
         </>
       )}

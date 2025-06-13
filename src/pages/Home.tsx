@@ -1,35 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
-//import Slider from '../components/home/Slider';
-import ValueProposition from '../components/home/ValueProposition';
-import QuoteSection from '../components/home/QuoteSection';
-import LocationSection from '../components/home/LocationSection';
-import ExpertAdviceSection from '../components/home/ExpertAdviceSection';
-import BrandsSection from '../components/home/BrandsSection';
-//import ServicesSection from '../components/home/ServicesSection';
-//import CategoryGrid from '../components/categories/CategoryGrid';
-import ProductGrid from '../components/products/ProductGrid';
-import { Product, getRecommendedProducts } from '../services/productService';
+
+// import ProductGrid from '../components/products/ProductGrid';
+import { Product } from '../services/productService';
 import { getProducts } from '../services/productService';
-import { FaMapMarkerAlt, FaUserPlus, FaTools, FaFileAlt, FaCalendarAlt, FaIndustry, FaHandshake, FaMapMarkedAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaUserPlus, FaTools, FaFileAlt, FaCheckCircle, FaExternalLinkAlt, FaPhone, FaEnvelope, FaHeadset, FaTruck, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
-import { Category } from '../types/category';
-import { categoryService } from '../services/categoryService';
-// import Layout from '../components/Layout';
-// import FeaturedProducts from '../components/FeaturedProducts';
-// import PromoSection from '../components/PromoSection';
-// import ServicesSection from '../components/ServicesSection';
+import ProduitRecommanderHome from '../components/home/ProduitRecommanderHome';
+import CategorieHome from '../components/home/CategorieHome';
+
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [apiUnavailable, setApiUnavailable] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [showSubcategories, setShowSubcategories] = useState(false);
-  const [subcategories, setSubcategories] = useState<Category[]>([]);
-  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -37,10 +22,6 @@ const Home: React.FC = () => {
         // Charger les produits
         const response = await getProducts({ limit: 8 });
         setFeaturedProducts(response.products);
-        
-        // Charger les catégories
-        const mainCategories = await categoryService.getCategories();
-        setCategories(mainCategories);
         
         // Si on arrive ici, l'API est disponible
         setApiUnavailable(false);
@@ -55,23 +36,7 @@ const Home: React.FC = () => {
     loadData();
   }, []);
 
-  useEffect(() => {
-    const fetchRecommendedProducts = async () => {
-      setLoading(true);
-      try {
-        const response = await getRecommendedProducts();
-        setRecommendedProducts(response.products);
-        setApiUnavailable(false);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des produits recommandés:', error);
-        setApiUnavailable(true);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchRecommendedProducts();
-  }, []);
 
   const handleMapClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -85,98 +50,163 @@ const Home: React.FC = () => {
     }, 100);
   };
 
-  const handleCategoryClick = (category: Category) => {
-    navigate(`/category/${category.id}`);
-  };
-
-  const handleSubcategoryClick = (subcategory: Category) => {
-    // Naviguer vers la page de la sous-catégorie
-    navigate(`/category/${subcategory.id}`);
-  };
-
   return (
     <Layout>
       {/* Section titre et services */}
       <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           {/* Titre principal */}
-          <div className="text-center mb-16 max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-800 mb-6 relative">
-              <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
-                Distritherm Services
-              </span>
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-600 mt-8 leading-relaxed font-light">
-              Distritherm votre <span className="font-medium text-[#007FFF]">partenaire</span> independant spécialisé dans la distribution de matériel pour la {' '}
-              <span className="font-medium text-[#007FFF]">rénovation énergetique </span>de l'habitat
-            </p>
-          </div>
+          <div className="text-center mb-16">
+              <h2 className="text-5xl font-bold text-gray-800 mb-4 relative inline-block">
+                <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
+                  Distritherm Services
+                </span>
+                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
+              </h2>
+              <p className="text-xl text-gray-600 mt-8 max-w-6xl mx-auto">
+                Distritherm <span className="font-medium text-[#007FFF]">partenaire </span> independant spécialisé dans la distribution de matériel pour la <span className="font-medium text-[#007FFF]">renovation énergétique</span> de l'habitat
+              </p>
+            </div>
 
           {/* Grille des services */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
             {/* Nos Agences en France */}
-            <div className="group flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(0,127,255,0.2)] transition-all duration-300 border border-gray-100">
-              <div className="w-16 h-16 flex items-center justify-center mb-4 bg-[#7CB9E8]/20 rounded-full group-hover:bg-[#7CB9E8]/30 transition-colors">
-                <FaMapMarkerAlt className="w-8 h-8 text-[#007FFF]" />
+            <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out border border-blue-100/50 hover:border-blue-300/50 transform hover:-translate-y-3">
+              {/* Background Pattern */}
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/20 to-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="relative p-8 flex flex-col items-center text-center h-full">
+                {/* Icon Container */}
+                <div className="w-20 h-20 flex items-center justify-center mb-6 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl group-hover:scale-110 transition-all duration-500 shadow-lg group-hover:shadow-xl">
+                  <img 
+                    src="/icone/localisation.png" 
+                    alt="Localisation" 
+                    className="w-12 h-12 object-contain"
+                  />
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-700 transition-colors duration-300">
+                  Nos Agences en France
+                </h3>
+                <p className="text-gray-600 mb-6 text-sm leading-relaxed flex-grow">
+                  Trouvez l'agence la plus proche de vous et bénéficiez d'un accompagnement personnalisé.
+                </p>
+                
+                {/* Modern CTA Button */}
+                <button 
+                  onClick={handleMapClick}
+                  className="group/btn relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  aria-label="Voir nos agences sur la carte"
+                >
+                  <span className="relative z-10">Voir la carte</span>
+                  <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300 origin-left"></div>
+                </button>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Nos Agences en France</h3>
-              <p className="text-gray-600 mb-4 text-sm">Trouvez l'agence la plus proche de vous.</p>
-              <button 
-                onClick={handleMapClick}
-                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
-                aria-label="Voir nos agences sur la carte"
-              >
-                +
-              </button>
             </div>
 
             {/* Ouverture de compte */}
-            <div className="group flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(0,127,255,0.2)] transition-all duration-300 border border-gray-100">
-              <div className="w-16 h-16 flex items-center justify-center mb-4 bg-[#7CB9E8]/20 rounded-full group-hover:bg-[#7CB9E8]/30 transition-colors">
-                <FaUserPlus className="w-8 h-8 text-[#007FFF]" />
+            <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out border border-blue-100/50 hover:border-blue-300/50 transform hover:-translate-y-3">
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/20 to-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="relative p-8 flex flex-col items-center text-center h-full">
+                <div className="w-20 h-20 flex items-center justify-center mb-6 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl group-hover:scale-110 transition-all duration-500 shadow-lg group-hover:shadow-xl">
+                  <img 
+                    src="/icone/ouverture-compte.png" 
+                    alt="Ouverture de compte" 
+                    className="w-12 h-12 object-contain"
+                  />
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-700 transition-colors duration-300">
+                  Ouverture de compte
+                </h3>
+                <p className="text-gray-600 mb-6 text-sm leading-relaxed flex-grow">
+                  Ouvrez votre compte PRO en ligne et bénéficiez de tous les avantages DISTRITHERM.
+                </p>
+                
+                <button 
+                  onClick={() => navigate('/connexion')}
+                  className="group/btn relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  aria-label="Créer un compte"
+                >
+                  <span className="relative z-10">Créer mon compte</span>
+                  <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300 origin-left"></div>
+                </button>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Ouverture de compte</h3>
-              <p className="text-gray-600 mb-4 text-sm">Ouvrez votre compte PRO en ligne et bénéficiez de tous les avantages DISTRITHERM.</p>
-              <button 
-                onClick={() => navigate('/connexion')}
-                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
-                aria-label="Créer un compte"
-              >
-                +
-              </button>
             </div>
 
             {/* SAV en ligne */}
-            <div className="group flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(0,127,255,0.2)] transition-all duration-300 border border-gray-100">
-              <div className="w-16 h-16 flex items-center justify-center mb-4 bg-[#7CB9E8]/20 rounded-full group-hover:bg-[#7CB9E8]/30 transition-colors">
-                <FaTools className="w-8 h-8 text-[#007FFF]" />
+            <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out border border-blue-100/50 hover:border-blue-300/50 transform hover:-translate-y-3">
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/20 to-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="relative p-8 flex flex-col items-center text-center h-full">
+                <div className="w-20 h-20 flex items-center justify-center mb-6 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl group-hover:scale-110 transition-all duration-500 shadow-lg group-hover:shadow-xl">
+                  <img 
+                    src="/icone/sav.png" 
+                    alt="SAV" 
+                    className="w-12 h-12 object-contain"
+                  />
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-700 transition-colors duration-300">
+                  SAV en ligne
+                </h3>
+                <p className="text-gray-600 mb-6 text-sm leading-relaxed flex-grow">
+                  Bénéficiez d'un service après-vente en ligne et gérez vos demandes en direct.
+                </p>
+                
+                <button 
+                  onClick={() => navigate('/nous-contact')}
+                  className="group/btn relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  aria-label="Accéder au SAV en ligne"
+                >
+                  <span className="relative z-10">Accéder au SAV</span>
+                  <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300 origin-left"></div>
+                </button>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">SAV en ligne</h3>
-              <p className="text-gray-600 mb-4 text-sm">Bénéficiez d'un service en ligne et gérez vos SAV en direct.</p>
-              <button 
-                onClick={() => navigate('/nous-contact')}
-                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
-                aria-label="Accéder au SAV en ligne"
-              >
-                +
-              </button>
             </div>
 
             {/* Devis en ligne */}
-            <div className="group flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgba(0,127,255,0.2)] transition-all duration-300 border border-gray-100">
-              <div className="w-16 h-16 flex items-center justify-center mb-4 bg-[#7CB9E8]/20 rounded-full group-hover:bg-[#7CB9E8]/30 transition-colors">
-                <FaFileAlt className="w-8 h-8 text-[#007FFF]" />
+            <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out border border-blue-100/50 hover:border-blue-300/50 transform hover:-translate-y-3">
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-blue-50/20 to-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              <div className="relative p-8 flex flex-col items-center text-center h-full">
+                <div className="w-20 h-20 flex items-center justify-center mb-6 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl group-hover:scale-110 transition-all duration-500 shadow-lg group-hover:shadow-xl">
+                  <img 
+                    src="/icone/devis.png" 
+                    alt="Devis" 
+                    className="w-12 h-12 object-contain"
+                  />
+                </div>
+                
+                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-700 transition-colors duration-300">
+                  Devis en ligne
+                </h3>
+                <p className="text-gray-600 mb-6 text-sm leading-relaxed flex-grow">
+                  Demandez vos devis en ligne et recevez nos offres personnalisées rapidement.
+                </p>
+                
+                <button 
+                  onClick={() => navigate('/nos-produits')}
+                  className="group/btn relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2"
+                  aria-label="Accéder aux produits pour devis"
+                >
+                  <span className="relative z-10">Demander un devis</span>
+                  <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300 origin-left"></div>
+                </button>
               </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Devis en ligne</h3>
-              <p className="text-gray-600 mb-4 text-sm">Demandez vos devis en ligne et recevez nos offres dans les plus brefs délais.</p>
-              <button 
-                onClick={() => navigate('/nos-produits')}
-                className="mt-auto w-8 h-8 rounded-full bg-[#007FFF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-all duration-300 transform group-hover:scale-110"
-                aria-label="Accéder aux produits pour devis"
-              >
-                +
-              </button>
             </div>
           </div>
 
@@ -190,77 +220,105 @@ const Home: React.FC = () => {
                 </span>
                 <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
               </h2>
-              <p className="text-xl text-gray-600 mt-8 max-w-3xl mx-auto">
-                Découvrez notre histoire, nos engagements et notre expertise dans la distribution de matériaux de construction
+              <p className="text-xl text-gray-600 mt-8 max-w-6xl mx-auto">
+                Votre <span className="font-medium text-[#007FFF]">partenaire de confiance</span> de confiance pour la distribution de matériaux de construction et de <span className="font-medium text-[#007FFF]">renovation énergétique</span> 
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Texte de présentation */}
+              {/* Présentation principale */}
               <div className="space-y-6">
                 <div className="bg-gradient-to-br from-white to-[#7CB9E8]/10 p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_20px_50px_rgba(0,127,255,0.15)] transition-all duration-300 border border-[#7CB9E8]/20 backdrop-blur-sm">
-                  <h2 className="text-3xl font-bold text-gray-800 mb-6 relative inline-block">
-                    Bienvenue Chez Distritherm Services
+                  <h3 className="text-3xl font-bold text-gray-800 mb-6 relative inline-block">
+                    Votre Expert en Distribution
                     <div className="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full transform origin-left transition-transform duration-300"></div>
-                  </h2>
-                  <p className="text-gray-700 leading-relaxed mb-8 text-lg">
-                    Distritherm Services, installé à Taverny (95), vous serez accueilli au sein d'un magasin par une équipe compétente 
-                    et professionnelle, à votre écoute et à votre disponibilité pour répondre à l'ensemble de vos besoins en matériels ou en conseils. 
-                    Nous connaissons vos attentes : rapidité, disponibilité et économie.
-                    Au service des professionnels, nous misons sur la proximité, l'efficacité, et le professionnalisme pour vous accompagner au quotidien 
-                    sur vos chantiers et projets de construction et de rénovation. 
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed mb-6 text-lg">
+                    Depuis 2022, Distritherm Services s'est imposé comme le partenaire privilégié des professionnels du bâtiment en Île-de-France. 
+                    Avec nos deux agences à Taverny et Drancy, nous offrons une proximité et une réactivité inégalées.
                   </p>
-                  <div className="flex items-center space-x-3 text-[#007FFF] bg-[#7CB9E8]/20 py-2 px-4 rounded-full inline-flex">
-                    <FaCalendarAlt className="w-5 h-5" />
-                    <span className="font-medium">Depuis 2022</span>
+                  <div className="space-y-4 mb-8">
+                    <div className="flex items-start space-x-3">
+                      <FaCheckCircle className="w-5 h-5 text-[#007FFF] mt-1 flex-shrink-0" />
+                      <span className="text-gray-700">Large gamme de produits : plâtrerie, isolation, chauffage, climatisation, plomberie et énergies renouvelables</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <FaCheckCircle className="w-5 h-5 text-[#007FFF] mt-1 flex-shrink-0" />
+                      <span className="text-gray-700">Conseils personnalisés par des experts du secteur</span>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <FaCheckCircle className="w-5 h-5 text-[#007FFF] mt-1 flex-shrink-0" />
+                      <span className="text-gray-700">Service après-vente de qualité</span>
+                    </div>
                   </div>
+                  <a 
+                    href="https://distritcherm-site-vitrine.vercel.app/qui-sommes-nous" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-2 bg-gradient-to-r from-[#007FFF] to-[#7CB9E8] text-white px-6 py-3 rounded-full font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-300"
+                  >
+                    <span>En savoir plus sur notre entreprise</span>
+                    <FaExternalLinkAlt className="w-4 h-4" />
+                  </a>
                 </div>
               </div>
 
-              {/* Cartes d'activités */}
+              {/* Cartes des points forts */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Expertise */}
+                {/* Chiffres clés */}
                 <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_20px_50px_rgba(0,127,255,0.15)] transition-all duration-300 border border-gray-100 group">
                   <div className="w-14 h-14 bg-gradient-to-br from-[#7CB9E8]/20 to-[#007FFF]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <FaIndustry className="w-7 h-7 text-[#007FFF]" />
+                    <FaChartLine className="w-7 h-7 text-[#007FFF]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Notre Expertise</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Spécialistes en climatisation, chauffage, électricité, et installations sanitaires.
-                    Nous vous accompagnons dans la réalisation de vos projets de construction, de rénovation et d'amélioration de votre habitat residenciel ou commercial.
-                  </p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Nos Chiffres</h3>
+                  <div className="space-y-2 text-gray-600">
+                    <p className="font-bold text-2xl text-[#007FFF]">2 agences</p>
+                    <p className="text-sm">en Île-de-France</p>
+                    <p className="font-bold text-2xl text-[#007FFF] mt-3">+1000</p>
+                    <p className="text-sm">références produits</p>
+                  </div>
                 </div>
 
-                {/* Engagement */}
+                {/* Services */}
                 <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_20px_50px_rgba(0,127,255,0.15)] transition-all duration-300 border border-gray-100 group">
                   <div className="w-14 h-14 bg-gradient-to-br from-[#007FFF]/20 to-[#7CB9E8]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <FaHandshake className="w-7 h-7 text-[#007FFF]" />
+                    <FaTruck className="w-7 h-7 text-[#007FFF]" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Notre Engagement</h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    Solutions de haute qualité adaptées aux besoins spécifiques de nos clients.
-                    Tous nos produits sont certifiés et répondent aux normes de qualité les plus strictes.
-                  </p>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Services Premium</h3>
+                  <ul className="space-y-2 text-gray-600">
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-[#007FFF] rounded-full"></span>
+                      <span>Devis en ligne</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-[#007FFF] rounded-full"></span>
+                      <span>Support technique</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <span className="w-2 h-2 bg-[#007FFF] rounded-full"></span>
+                      <span>Conseils experts</span>
+                    </li>
+                  </ul>
                 </div>
 
-                {/* Localisation */}
-                <div className="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_20px_50px_rgba(0,127,255,0.15)] transition-all duration-300 border border-gray-100 sm:col-span-2 group">
-                  <div className="w-14 h-14 bg-gradient-to-br from-[#7CB9E8]/20 to-[#007FFF]/20 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                    <FaMapMarkedAlt className="w-7 h-7 text-[#007FFF]" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-3">Notre Emplacement Stratégique</h3>
-                  <p className="text-gray-600 leading-relaxed mb-4">
-                    Situés à Taverny et à drancy, en Île-de-France, nous sommes idéalement positionnés pour servir les professionnels du bâtiment dans toute la région.
-                  </p>
-                  <div className="text-sm text-gray-500 bg-gray-50 py-2 px-4 rounded-full inline-flex items-center">
-                    <FaMapMarkerAlt className="w-4 h-4 mr-2 text-[#007FFF]" />
-                    16 rue Condorcet, 95150 Taverny, France
-                  </div>
-                  <br />
-                  <br />
-                  <div className="text-sm text-gray-500 bg-gray-50 py-2 px-4 rounded-full inline-flex items-center">
-                    <FaMapMarkerAlt className="w-4 h-4 mr-2 text-[#007FFF]" />
-                    151 rue Diderot, 93700 Drancy, France
+                {/* Contact rapide */}
+                <div className="bg-gradient-to-br from-[#007FFF] to-[#7CB9E8] p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_20px_50px_rgba(0,127,255,0.15)] transition-all duration-300 sm:col-span-2 group text-white">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-xl font-semibold mb-2">Besoin d'informations ?</h3>
+                      <p className="text-white/90 mb-4">Notre équipe est à votre écoute du lundi au vendredi</p>
+                      <div className="flex items-center space-x-4">
+                        <a href="tel:0171687212" className="flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-full hover:bg-white/30 transition-colors">
+                          <FaPhone className="w-4 h-4" />
+                          <span className="font-medium">01 71 68 72 12</span>
+                        </a>
+                        <a href="mailto:info@distritherm-services.fr" className="flex items-center space-x-2 bg-white/20 px-4 py-2 rounded-full hover:bg-white/30 transition-colors">
+                          <FaEnvelope className="w-4 h-4" />
+                          <span className="font-medium">Email</span>
+                        </a>
+                      </div>
+                    </div>
+                    <FaHeadset className="w-16 h-16 text-white/20 group-hover:scale-110 transition-transform duration-300" />
                   </div>
                 </div>
               </div>
@@ -269,102 +327,12 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Section Catégories de Produits */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          {/* Titre de la section */}
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4 relative inline-block">
-              <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
-                Découvrez notre gamme
-              </span>
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
-            </h2>
-            <p className="text-xl text-gray-600 mt-8 max-w-3xl mx-auto">
-              Une offre complète de matériaux et équipements
-            </p>
-          </div>
+      {/* Section Catégories */}
+      <CategorieHome />
 
-          {/* Liste des catégories */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {loading ? (
-              <div className="col-span-full flex justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007FFF]"></div>
-              </div>
-            ) : categories.length > 0 ? (
-              categories.map((category) => (
-                <div
-                  key={category.id}
-                  className="bg-white rounded-lg shadow-md p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => handleCategoryClick(category)}
-                >
-                  <div className="flex flex-col items-center">
-                    <img
-                      src={category.imageUrl || '/images/categories/default.jpg'}
-                      alt={category.name}
-                      className="w-16 h-16 object-cover rounded-full mb-2"
-                    />
-                    <h3 className="text-lg font-semibold text-center">{category.name}</h3>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center text-gray-500">
-                Aucune catégorie disponible
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
+      {/* Section Produits Recommandés */}
+      <ProduitRecommanderHome />
 
-      {/* Section Produits */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          {loading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#007FFF]"></div>
-            </div>
-          ) : (
-            <>
-              {apiUnavailable && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-8 rounded-md">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm text-yellow-700">
-                        Le serveur est actuellement indisponible. Affichage des données de démonstration.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-              <ProductGrid 
-                products={recommendedProducts} 
-                title="Produits Recommandés" 
-                showViewAllButton={true}
-                isRecommended={true}
-              />
-            </>
-          )}
-        </div>
-      </section>
-
-      {/* Section Devis */}
-      <QuoteSection />
-
-      {/* Section Localisation */}
-      <LocationSection />
-      {/* Section Conseil Expert */}
-      <ExpertAdviceSection />
-      {/* Section Marques Partenaires */}
-      <BrandsSection />
-
-      {/* Section Valeur Ajoutée */}
-      <ValueProposition />
 
       
     </Layout>
