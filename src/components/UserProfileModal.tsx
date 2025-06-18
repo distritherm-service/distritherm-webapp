@@ -39,10 +39,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
     navigate('/');
   };
 
-  const handleNavigateToOrders = () => {
-    navigate('/mes-commandes');
-    onClose();
-  };
+
 
   const handleNavigateToProfile = () => {
     navigate('/mon-profil');
@@ -126,14 +123,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
               <FaSignOutAlt className="mr-2 h-4 w-4" />
               Déconnexion
             </button>
-            <button
-              type="button"
-              onClick={handleNavigateToOrders}
-              className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-            >
-              <FaShoppingBag className="mr-2 h-4 w-4" />
-              Mes commandes
-            </button>
+
             <button
               type="button"
               onClick={handleNavigateToProfile}

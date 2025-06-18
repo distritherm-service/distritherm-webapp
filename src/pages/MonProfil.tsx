@@ -75,22 +75,8 @@ const MonProfil: React.FC = () => {
             </div>
 
             {/* Raccourcis */}
-            <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Link
-                to="/mes-commandes"
-                state={{ from: 'profile' }}
-                className="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:border-[#007FFF] transition-colors group"
-              >
-                <div className="w-12 h-12 bg-[#7CB9E8]/20 rounded-lg flex items-center justify-center group-hover:bg-[#007FFF] transition-colors">
-                  <svg className="w-6 h-6 text-[#007FFF] group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <h3 className="font-medium text-gray-900">Mes commandes</h3>
-                  <p className="text-sm text-gray-500">Suivre mes commandes</p>
-                </div>
-              </Link>
+            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+
 
               <Link
                 to="/mes-devis"

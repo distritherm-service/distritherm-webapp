@@ -184,7 +184,7 @@ const Promotions: React.FC = () => {
           {/* Image d'arrière-plan */}
           <div className="absolute inset-0">
             <img
-              src="/icone/image-arriere-plan-promotion.png"
+              src="/icone/image-arriere-plan-promotions.png"
               alt="Promotions Distritherm Services"
               className="w-full h-full object-cover object-center"
             />

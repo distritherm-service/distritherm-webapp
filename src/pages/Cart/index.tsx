@@ -56,7 +56,7 @@ const Cart: React.FC = () => {
       case 0:
         return <CartSummary />;
       case 1:
-        return <Connexion inCart={true} />;
+        return <Connexion inCart={true} onSuccess={handleNextStep} />;
       case 2:
         return <ConfirmationStep />;
       default:

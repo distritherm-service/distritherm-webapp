@@ -8,8 +8,6 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useAuth } from '../../contexts/AuthContext';
-import CartPreview from '../cart/CartPreview';
-import FavoritesPreview from '../favorites/FavoritesPreview';
 import CallbackForm from '../common/CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
 import MobileVerticalMenu from './MobileVerticalMenu';
@@ -42,10 +40,7 @@ const Navbar: React.FC = () => {
   } = useSearch();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
-  const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
-  const [isFavoritesPreviewOpen, setIsFavoritesPreviewOpen] = useState(false);
-  const cartPreviewRef = useRef<HTMLDivElement>(null);
-  const favoritesPreviewRef = useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
   const userMenuButtonRef = useRef<HTMLButtonElement>(null);
   const userMenuContentRef = useRef<HTMLDivElement>(null);
@@ -233,26 +228,7 @@ const Navbar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  const handleCartMouseEnter = () => {
-    setIsCartPreviewOpen(true);
-    setIsFavoritesPreviewOpen(false);
-  };
 
-  const handleFavoritesMouseEnter = () => {
-    setIsFavoritesPreviewOpen(true);
-    setIsCartPreviewOpen(false);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent) => {
-    const cartPreview = cartPreviewRef.current;
-    const favoritesPreview = favoritesPreviewRef.current;
-    const target = e.relatedTarget as Node;
-
-    if (cartPreview && !cartPreview.contains(target) && favoritesPreview && !favoritesPreview.contains(target)) {
-      setIsCartPreviewOpen(false);
-      setIsFavoritesPreviewOpen(false);
-    }
-  };
 
   // Gestion ouverture/fermeture du menu utilisateur
   const openUserMenu = () => setIsUserMenuOpen(true);
@@ -448,48 +424,28 @@ const Navbar: React.FC = () => {
                 >
                   <HiOutlineSearch className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
-                <div className="relative">
-                  <Link
-                    to="/favoris"
-                    className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
-                    onMouseEnter={handleFavoritesMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineHeart className="h-4 w-4 sm:h-5 sm:w-5" />
-                    {favoritesCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
-                        <span className="text-[10px] sm:text-xs">{favoritesCount}</span>
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <FavoritesPreview 
-                      isOpen={isFavoritesPreviewOpen} 
-                      onClose={() => setIsFavoritesPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
-                <div className="relative">
-                  <Link
-                    to="/panier"
-                    className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
-                    onMouseEnter={handleCartMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
-                    {cartItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
-                        <span className="text-[10px] sm:text-xs">{cartItemsCount}</span>
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <CartPreview 
-                      isOpen={isCartPreviewOpen} 
-                      onClose={() => setIsCartPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                <Link
+                  to="/favoris"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                >
+                  <HiOutlineHeart className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {favoritesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
+                      <span className="text-[10px] sm:text-xs">{favoritesCount}</span>
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  to="/panier"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                >
+                  <HiOutlineShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
+                      <span className="text-[10px] sm:text-xs">{cartItemsCount}</span>
+                    </span>
+                  )}
+                </Link>
                 <button
                   onClick={toggleMobileMenu}
                   className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-gray-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
@@ -635,50 +591,30 @@ const Navbar: React.FC = () => {
                 <div className="h-8 w-px bg-gray-200"></div>
                 
                 {/* Favoris avec design amélioré */}
-                <div className="relative">
-                  <Link
-                    to="/favoris"
-                    className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
-                    onMouseEnter={handleFavoritesMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineHeart className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                    {favoritesCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
-                        {favoritesCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <FavoritesPreview 
-                      isOpen={isFavoritesPreviewOpen} 
-                      onClose={() => setIsFavoritesPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                <Link
+                  to="/favoris"
+                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                >
+                  <HiOutlineHeart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  {favoritesCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
+                      {favoritesCount}
+                    </span>
+                  )}
+                </Link>
                 
                 {/* Panier avec design amélioré */}
-                <div className="relative">
-                  <Link
-                    to="/panier"
-                    className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
-                    onMouseEnter={handleCartMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                    {cartItemsCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
-                        {cartItemsCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <CartPreview 
-                      isOpen={isCartPreviewOpen} 
-                      onClose={() => setIsCartPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                <Link
+                  to="/panier"
+                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                >
+                  <HiOutlineShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                </Link>
               </div>
             </div>
           </div>
@@ -823,14 +759,7 @@ const Navbar: React.FC = () => {
                           <HiOutlineHeart className="mr-3 text-gray-400 w-4 h-4" />
                           <span className="font-medium">Mes Favoris</span>
                         </Link>
-                        <Link
-                          to="/mes-commandes"
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                          onClick={closeUserMenu}
-                        >
-                          <HiOutlineShoppingBag className="mr-3 text-gray-400 w-4 h-4" />
-                          <span className="font-medium">Mes commandes</span>
-                        </Link>
+
                         <Link
                           to="/Mes-devis"
                           className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"

@@ -167,7 +167,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           </div>
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-medium text-blue-600">Prix TTC</span>
-            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+            <span className="text-1xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
               {formatProductPrice(product.priceTtc)} €
             </span>
           </div>

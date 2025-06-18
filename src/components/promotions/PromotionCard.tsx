@@ -189,7 +189,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
           {/* Prix promotionnel en évidence */}
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-medium text-red-600">Prix promotion</span>
-            <span className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+            <span className="text-1xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
               {formatPrice(safeDiscountPrice)}
             </span>
           </div>

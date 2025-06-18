@@ -11,7 +11,7 @@ const slides = [
     alt: "Matériaux de construction",
     title: "Matériaux haut de gamme",
     description: "Des solutions professionnelles pour tous vos projets de construction en neuf et rénovation.",
-    cta: { text: "Nous connaitre", link: "/qui-sommes-nous" }
+    cta: { text: "Nous connaitre", link: "/nos-products" }
   },
   {
     id: 2,
@@ -19,7 +19,15 @@ const slides = [
     alt: "Isolation performante",
     title: "Isolation & Performance",
     description: "Optimisez l'efficacité énergétique de vos bâtiments avec nos produits innovants.",
-    cta: { text: "Decouvrir notre gamme", link: "/gamme" }
+    cta: { text: "Decouvrir notre gamme", link: "/nos-products" }
+  },
+  {
+    id: 3,
+    image: "/slider/slider3.png",
+    alt: "Rénovation énérgeique",
+    title: "Renovation énérgetique",
+    description: "Transformez votre habitat avec nos solutions de rénovation énergétique adaptées à vos besoins.",
+    cta: { text: "Decouvrir notre gamme", link: "/nos-products" }
   }
 ];
 
@@ -29,11 +37,11 @@ const Slider: React.FC<SliderProps> = ({ showOnPages = [] }) => {
   const [isPaused, setIsPaused] = useState(false);
 
   const nextSlide = useCallback(() => {
-    if (!isTransitioning && !isPaused) {
+    if (!isTransitioning) {
       setIsTransitioning(true);
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }
-  }, [isTransitioning, isPaused]);
+  }, [isTransitioning]);
 
   const prevSlide = useCallback(() => {
     if (!isTransitioning) {
@@ -51,10 +59,15 @@ const Slider: React.FC<SliderProps> = ({ showOnPages = [] }) => {
 
   useEffect(() => {
     if (!isPaused) {
-      const timer = setInterval(nextSlide, 6000);
+      const timer = setInterval(() => {
+        if (!isTransitioning) {
+          setIsTransitioning(true);
+          setCurrentSlide((prev) => (prev + 1) % slides.length);
+        }
+      }, 6000);
       return () => clearInterval(timer);
     }
-  }, [nextSlide, isPaused]);
+  }, [isPaused, isTransitioning]);
 
   useEffect(() => {
     const transitionTimer = setTimeout(() => {
