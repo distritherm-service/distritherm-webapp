@@ -7,12 +7,24 @@ interface BreadcrumbItem {
   href: string;
 }
 
-const Breadcrumb: React.FC = () => {
+interface BreadcrumbProps {
+  customItems?: BreadcrumbItem[];
+  productName?: string;
+}
+
+const Breadcrumb: React.FC<BreadcrumbProps> = ({ customItems, productName }) => {
   const location = useLocation();
   const pathname = location.pathname;
+  const searchParams = new URLSearchParams(location.search);
+  const fromPage = searchParams.get('from');
   
   // Fonction pour générer les éléments du fil d'Ariane
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
+    // Si des éléments personnalisés sont fournis, les utiliser
+    if (customItems) {
+      return customItems;
+    }
+    
     const paths = pathname.split('/').filter((path: string) => path);
     const breadcrumbs: BreadcrumbItem[] = [];
     
@@ -21,10 +33,39 @@ const Breadcrumb: React.FC = () => {
     
     // Construire les chemins pour chaque niveau
     let currentPath = '';
-    paths.forEach((path: string) => {
+    paths.forEach((path: string, index: number) => {
       currentPath += `/${path}`;
+      
       // Formater le label pour l'affichage
-      const label = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+      let label = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+      
+      // Cas spéciaux pour certaines routes
+      if (path === 'nos-produits') {
+        label = 'Nos Produits';
+      } else if (path === 'produit' && paths[index + 1]) {
+        // Pour les pages produit, déterminer la page parente selon d'où vient l'utilisateur
+        if (fromPage === 'promotions') {
+          // Vient de la page Promotions
+          if (!breadcrumbs.some(b => b.label === 'Promotions')) {
+            breadcrumbs.push({ label: 'Promotions', href: '/promotions' });
+          }
+        } else {
+          // Par défaut, vient de "Nos Produits"
+          if (!breadcrumbs.some(b => b.label === 'Nos Produits')) {
+            breadcrumbs.push({ label: 'Nos Produits', href: '/nos-produits' });
+          }
+        }
+        // Ne pas ajouter "produit" dans le breadcrumb, on passera directement au nom du produit
+        return;
+      } else if (paths[index - 1] === 'produit') {
+        // C'est un ID de produit, utiliser le nom du produit si fourni
+        if (productName) {
+          label = productName;
+        } else {
+          label = 'Détails du produit';
+        }
+      }
+      
       breadcrumbs.push({ label, href: currentPath });
     });
     

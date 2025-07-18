@@ -3,42 +3,41 @@ import axiosInstance from './axiosConfig';
 // Types pour la création de devis selon l'API
 export interface CreateQuoteRequest {
   cartId: number;
-  commercialId: number;
+  commercialId?: number; // Optionnel - sera assigné automatiquement côté serveur si non fourni
+}
+
+export interface User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
 }
 
 export interface Commercial {
   userId: number;
-  user: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+  user: User;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  price: number;
+  isFavorited: boolean;
+  isInPromotion: boolean;
+  promotionPrice?: number;
+  promotionEndDate?: string;
+  promotionPercentage?: number;
 }
 
 export interface CartItem {
   id: number;
   quantity: number;
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    isFavorited: boolean;
-    isInPromotion: boolean;
-    promotionPrice?: number;
-    promotionEndDate?: string;
-    promotionPercentage?: number;
-  };
+  product: Product;
 }
 
 export interface Cart {
   id: number;
-  user: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
+  user: User;
   cartItems: CartItem[];
 }
 
@@ -64,12 +63,40 @@ export interface CreateQuoteResponse {
 export interface GetQuotesParams {
   page?: number;
   limit?: number;
-  status?: string;
+  status?: 'SENDED' | 'PENDING' | 'ACCEPTED' | 'REJECTED';
+}
+
+export interface GetQuotesResponse {
+  devis: Quote[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface GetQuotesByClientParams {
+  page?: number;
+  limit?: number;
+  status?: 'SENDED' | 'CONSULTED' | 'PROGRESS' | 'EXPIRED';
+  s?: string; // recherche par nom commercial
+}
+
+export interface GetQuotesByClientResponse {
+  message: string;
+  devis: Quote[];
+  count: number;
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    lastPage: number;
+  };
 }
 
 export const quoteService = {
   /**
-   * Créer un nouveau devis à partir d'un panier et l'associer à un commercial
+   * Créer un nouveau devis à partir d'un panier
+   * Note: Le commercialId est optionnel - si non fourni, un commercial sera assigné automatiquement
    */
   async createQuote(data: CreateQuoteRequest): Promise<CreateQuoteResponse> {
     try {
@@ -81,7 +108,7 @@ export const quoteService = {
       if (error.response?.status === 403) {
         throw new Error('Vous ne pouvez pas créer un devis pour un autre commercial');
       } else if (error.response?.status === 404) {
-        throw new Error('Commercial non trouvé');
+        throw new Error('Commercial avec l\'ID ' + data.commercialId + ' non trouvé');
       } else if (error.response?.status === 400) {
         throw new Error(error.response?.data?.error || 'Données invalides');
       }
@@ -91,9 +118,9 @@ export const quoteService = {
   },
 
   /**
-   * Récupérer tous les devis avec pagination
+   * Récupérer tous les devis avec pagination et filtres
    */
-  async getAllQuotes(params?: GetQuotesParams): Promise<any> {
+  async getAllQuotes(params?: GetQuotesParams): Promise<GetQuotesResponse> {
     try {
       const queryParams = new URLSearchParams();
       
@@ -102,11 +129,31 @@ export const quoteService = {
       if (params?.status) queryParams.append('status', params.status);
       
       const url = `/devis${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      const response = await axiosInstance.get(url);
+      const response = await axiosInstance.get<GetQuotesResponse>(url);
       return response.data;
     } catch (error: any) {
       console.error('Erreur lors de la récupération des devis:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
+    }
+  },
+
+  /**
+   * Récupérer les devis de l'utilisateur connecté
+   */
+  async getMyQuotes(params?: GetQuotesParams): Promise<GetQuotesResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.status) queryParams.append('status', params.status);
+      
+      const url = `/devis/mes-devis${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await axiosInstance.get<GetQuotesResponse>(url);
+      return response.data;
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération de vos devis:', error);
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de vos devis');
     }
   },
 
@@ -170,7 +217,7 @@ export const quoteService = {
   /**
    * Récupérer les devis d'un utilisateur spécifique
    */
-  async getUserQuotes(userId: number, params?: GetQuotesParams): Promise<any> {
+  async getUserQuotes(userId: number, params?: GetQuotesParams): Promise<GetQuotesResponse> {
     try {
       const queryParams = new URLSearchParams();
       
@@ -179,10 +226,68 @@ export const quoteService = {
       if (params?.status) queryParams.append('status', params.status);
       
       const url = `/users/${userId}/devis${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      const response = await axiosInstance.get(url);
+      const response = await axiosInstance.get<GetQuotesResponse>(url);
       return response.data;
     } catch (error: any) {
       console.error('Erreur lors de la récupération des devis de l\'utilisateur:', error);
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
+    }
+  },
+
+  /**
+   * Récupérer la liste des commerciaux disponibles
+   */
+  async getCommercials(): Promise<Commercial[]> {
+    try {
+      const response = await axiosInstance.get<Commercial[]>('/users/commercials');
+      return response.data;
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des commerciaux:', error);
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des commerciaux');
+    }
+  },
+
+  /**
+   * Télécharger un devis PDF
+   */
+  async downloadQuotePDF(quoteId: number): Promise<Blob> {
+    try {
+      const response = await axiosInstance.get(`/devis/${quoteId}/download`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Erreur lors du téléchargement du devis:', error);
+      throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement du devis');
+    }
+  },
+
+  /**
+   * Récupérer les devis d'un client spécifique
+   */
+  async getQuotesByClient(clientId: number, params?: GetQuotesByClientParams): Promise<GetQuotesByClientResponse> {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.s) queryParams.append('s', params.s);
+      
+      const url = `/devis/by-client/${clientId}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const response = await axiosInstance.get<GetQuotesByClientResponse>(url);
+      return response.data;
+    } catch (error: any) {
+      console.error('Erreur lors de la récupération des devis du client:', error);
+      
+      if (error.response?.status === 401) {
+        throw new Error('Utilisateur non authentifié');
+      } else if (error.response?.status === 403) {
+        throw new Error('Vous n\'êtes pas autorisé à accéder aux devis de ce client');
+      } else if (error.response?.status === 404) {
+        throw new Error('Client non trouvé');
+      }
+      
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
     }
   }

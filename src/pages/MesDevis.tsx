@@ -2,22 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { useAuth } from '../contexts/AuthContext';
-import { FaFileInvoice, FaRegCalendarAlt, FaEuroSign, FaEye, FaFileDownload, FaSearch, FaChevronDown, FaFileAlt } from 'react-icons/fa';
+import { FaFileInvoice, FaRegCalendarAlt, FaEuroSign, FaEye, FaFileDownload, FaSearch, FaChevronDown, FaFileAlt, FaTrash } from 'react-icons/fa';
 import { motion } from 'framer-motion';
+import { quoteService, Quote as APIQuote } from '../services/quoteService';
+import { useToast } from '../hooks/useToast';
 
-// Interface pour les devis
+// Interface pour les devis adaptée de l'API
 interface Quote {
-  id: string;
+  id: number;
   quoteNumber: string;
   date: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'expired';
+  status: 'SENDED' | 'PENDING' | 'ACCEPTED' | 'REJECTED';
   totalAmount: number;
   items: QuoteItem[];
+  fileUrl?: string;
+  commercial?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 interface QuoteItem {
-  id: string;
-  productId: string;
+  id: number;
+  productId: number;
   productName: string;
   quantity: number;
   unitPrice: number;
@@ -25,208 +33,110 @@ interface QuoteItem {
 }
 
 const MesDevis: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalQuotes, setTotalQuotes] = useState(0);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ show: boolean; quoteId: number | null }>({ 
+    show: false, 
+    quoteId: null 
+  });
+  
   // Rediriger si non authentifié
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/connexion');
     }
   }, [isAuthenticated, navigate]);
-
-  // Charger les données fictives
+  
+  // Charger les devis depuis l'API
   useEffect(() => {
-    setTimeout(() => {
-      const mockQuotes: Quote[] = [
-        {
-          id: '1',
-          quoteNumber: 'DEV-2024-001',
-          date: '2024-03-15T10:30:00Z',
-          status: 'pending',
-          totalAmount: 2500.99,
-          items: [
-            {
-              id: 'item1',
-              productId: 'prod1',
-              productName: 'Pompe à chaleur AIRWELL',
-              quantity: 1,
-              unitPrice: 2000.99,
-              imageUrl: '/climatisation.jpeg'
-            },
-            {
-              id: 'item2',
-              productId: 'prod2',
-              productName: 'Installation standard',
-              quantity: 1,
-              unitPrice: 500.00,
-              imageUrl: '/installation.jpeg'
-            }
-          ]
-        },
-        {
-          id: '2',
-          quoteNumber: 'DEV-2024-002',
-          date: '2024-03-18T14:45:00Z',
-          status: 'accepted',
-          totalAmount: 1899.99,
-          items: [
-            {
-              id: 'item3',
-              productId: 'prod3',
-              productName: 'Climatiseur réversible DAIKIN',
-              quantity: 1,
-              unitPrice: 1599.99,
-              imageUrl: '/climatisation.jpeg'
-            },
-            {
-              id: 'item4',
-              productId: 'prod4',
-              productName: 'Kit installation premium',
-              quantity: 1,
-              unitPrice: 300.00,
-              imageUrl: '/installation.jpeg'
-            }
-          ]
-        },
-        {
-          id: '3',
-          quoteNumber: 'DEV-2024-003',
-          date: '2024-03-20T09:15:00Z',
-          status: 'rejected',
-          totalAmount: 799.99,
-          items: [
-            {
-              id: 'item5',
-              productId: 'prod5',
-              productName: 'Radiateur connecté ACOVA',
-              quantity: 1,
-              unitPrice: 799.99,
-              imageUrl: '/chauffage.jpeg'
-            }
-          ]
-        },
-        {
-          id: '4',
-          quoteNumber: 'DEV-2024-004',
-          date: '2024-03-22T11:30:00Z',
-          status: 'pending',
-          totalAmount: 3299.99,
-          items: [
-            {
-              id: 'item6',
-              productId: 'prod6',
-              productName: 'Système de climatisation complet',
-              quantity: 1,
-              unitPrice: 2799.99,
-              imageUrl: '/climatisation.jpeg'
-            },
-            {
-              id: 'item7',
-              productId: 'prod7',
-              productName: 'Installation et mise en service',
-              quantity: 1,
-              unitPrice: 500.00,
-              imageUrl: '/installation.jpeg'
-            }
-          ]
-        },
-        {
-          id: '5',
-          quoteNumber: 'DEV-2024-005',
-          date: '2024-03-25T16:20:00Z',
-          status: 'expired',
-          totalAmount: 1499.99,
-          items: [
-            {
-              id: 'item8',
-              productId: 'prod8',
-              productName: 'Chauffe-eau thermodynamique',
-              quantity: 1,
-              unitPrice: 1499.99,
-              imageUrl: '/chauffage.jpeg'
-            }
-          ]
-        },
-        {
-          id: '6',
-          quoteNumber: 'DEV-2024-006',
-          date: '2024-03-27T13:45:00Z',
-          status: 'accepted',
-          totalAmount: 2199.99,
-          items: [
-            {
-              id: 'item9',
-              productId: 'prod9',
-              productName: 'Pompe à chaleur Air/Eau',
-              quantity: 1,
-              unitPrice: 1899.99,
-              imageUrl: '/chauffage.jpeg'
-            },
-            {
-              id: 'item10',
-              productId: 'prod10',
-              productName: 'Kit de raccordement premium',
-              quantity: 1,
-              unitPrice: 300.00,
-              imageUrl: '/installation.jpeg'
-            }
-          ]
-        },
-        {
-          id: '7',
-          quoteNumber: 'DEV-2024-007',
-          date: '2024-03-29T10:00:00Z',
-          status: 'pending',
-          totalAmount: 999.99,
-          items: [
-            {
-              id: 'item11',
-              productId: 'prod11',
-              productName: 'Radiateur électrique intelligent',
-              quantity: 2,
-              unitPrice: 499.99,
-              imageUrl: '/chauffage.jpeg'
-            }
-          ]
-        },
-        {
-          id: '8',
-          quoteNumber: 'DEV-2024-008',
-          date: '2024-03-30T15:30:00Z',
-          status: 'pending',
-          totalAmount: 4499.99,
-          items: [
-            {
-              id: 'item12',
-              productId: 'prod12',
-              productName: 'Climatisation multi-split MITSUBISHI',
-              quantity: 1,
-              unitPrice: 3999.99,
-              imageUrl: '/climatisation.jpeg'
-            },
-            {
-              id: 'item13',
-              productId: 'prod13',
-              productName: 'Installation complète multi-split',
-              quantity: 1,
-              unitPrice: 500.00,
-              imageUrl: '/installation.jpeg'
-            }
-          ]
-        }
-      ];
-
-      setQuotes(mockQuotes);
-      setLoading(false);
-    }, 1000);
-  }, []);
+    const loadQuotes = async () => {
+      if (!user?.id) return;
+      
+      setLoading(true);
+      setError('');
+      
+      try {
+        const params = {
+          page: currentPage,
+          limit: 10,
+          ...(selectedStatus !== 'all' && { status: selectedStatus as any }),
+          ...(searchQuery && { s: searchQuery })
+        };
+        
+        const response = await quoteService.getQuotesByClient(Number(user.id), params);
+        
+        // Transformer les données de l'API au format attendu par le composant
+        const transformedQuotes: Quote[] = response.devis.map(apiQuote => ({
+          id: apiQuote.id,
+          quoteNumber: `DEV-${apiQuote.id.toString().padStart(6, '0')}`,
+          date: apiQuote.createdAt,
+          status: mapApiStatus(apiQuote.status),
+          totalAmount: calculateTotalAmount(apiQuote.cart),
+          fileUrl: apiQuote.fileUrl,
+          commercial: apiQuote.commercial?.user ? {
+            firstName: apiQuote.commercial.user.firstName,
+            lastName: apiQuote.commercial.user.lastName,
+            email: apiQuote.commercial.user.email
+          } : undefined,
+          items: apiQuote.cart.cartItems.map(item => ({
+            id: item.id,
+            productId: item.product.id,
+            productName: item.product.name,
+            quantity: item.quantity,
+            unitPrice: item.product.isInPromotion && item.product.promotionPrice 
+              ? item.product.promotionPrice 
+              : item.product.price,
+            imageUrl: '/image-produit-defaut.jpeg' // Utiliser une image par défaut
+          }))
+        }));
+        
+        setQuotes(transformedQuotes);
+        setTotalPages(response.meta.lastPage);
+        setTotalQuotes(response.meta.total);
+      } catch (err: any) {
+        console.error('Erreur lors du chargement des devis:', err);
+        setError(err.message || 'Impossible de charger vos devis');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadQuotes();
+  }, [user?.id, currentPage, selectedStatus, searchQuery]);
+  
+  // Fonction pour mapper les statuts de l'API vers ceux de l'interface
+  const mapApiStatus = (apiStatus: string): Quote['status'] => {
+    const statusMap: Record<string, Quote['status']> = {
+      'SENDED': 'SENDED',
+      'CONSULTED': 'SENDED', // Map CONSULTED to SENDED
+      'PROGRESS': 'PENDING', // Map PROGRESS to PENDING
+      'EXPIRED': 'REJECTED', // Map EXPIRED to REJECTED
+      'PENDING': 'PENDING',
+      'ACCEPTED': 'ACCEPTED',
+      'REJECTED': 'REJECTED'
+    };
+    return statusMap[apiStatus] || 'SENDED';
+  };
+  
+  // Calculer le montant total du panier
+  const calculateTotalAmount = (cart: any): number => {
+    return cart.cartItems.reduce((total: number, item: any) => {
+      const price = item.product.isInPromotion && item.product.promotionPrice 
+        ? item.product.promotionPrice 
+        : item.product.price;
+      return total + (price * item.quantity);
+    }, 0);
+  };
 
   // Formatage de la date
   const formatDate = (dateString: string) => {
@@ -243,24 +153,137 @@ const MesDevis: React.FC = () => {
   // Traduction et couleur du statut
   const getStatusInfo = (status: Quote['status']) => {
     switch (status) {
-      case 'pending':
-        return { label: 'En attente', color: 'bg-yellow-100 text-yellow-700' };
-      case 'accepted':
+      case 'SENDED':
+        return { label: 'Envoyé', color: 'bg-blue-100 text-blue-700' };
+      case 'PENDING':
+        return { label: 'En cours', color: 'bg-yellow-100 text-yellow-700' };
+      case 'ACCEPTED':
         return { label: 'Accepté', color: 'bg-green-100 text-green-700' };
-      case 'rejected':
+      case 'REJECTED':
         return { label: 'Refusé', color: 'bg-red-100 text-red-700' };
-      case 'expired':
-        return { label: 'Expiré', color: 'bg-gray-100 text-gray-700' };
       default:
         return { label: 'Inconnu', color: 'bg-gray-100 text-gray-700' };
     }
   };
 
+  // Gérer l'acceptation d'un devis
+  const handleAcceptQuote = async (quoteId: number) => {
+    try {
+      await quoteService.updateQuoteStatus(quoteId, 'ACCEPTED');
+      showToast('Devis accepté avec succès', 'success');
+      // Recharger les devis
+      setSelectedQuote(null);
+      setCurrentPage(1);
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors de l\'acceptation du devis', 'error');
+    }
+  };
+
+  // Gérer le refus d'un devis
+  const handleRejectQuote = async (quoteId: number) => {
+    try {
+      await quoteService.updateQuoteStatus(quoteId, 'REJECTED');
+      showToast('Devis refusé', 'success');
+      // Recharger les devis
+      setSelectedQuote(null);
+      setCurrentPage(1);
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors du refus du devis', 'error');
+    }
+  };
+
+  // Gérer la suppression d'un devis
+  const handleDeleteQuote = async (quoteId: number) => {
+    try {
+      await quoteService.deleteQuote(quoteId);
+      showToast('Devis supprimé avec succès', 'success');
+      
+      // Fermer la modal de confirmation
+      setDeleteConfirmation({ show: false, quoteId: null });
+      
+      // Si on était en train de voir le détail du devis supprimé, revenir à la liste
+      if (selectedQuote?.id === quoteId) {
+        setSelectedQuote(null);
+      }
+      
+      // Recharger les devis
+      const loadQuotes = async () => {
+        if (!user?.id) return;
+        
+        try {
+          const params = {
+            page: currentPage,
+            limit: 10,
+            ...(selectedStatus !== 'all' && { status: selectedStatus as any }),
+            ...(searchQuery && { s: searchQuery })
+          };
+          
+          const response = await quoteService.getQuotesByClient(Number(user.id), params);
+          
+          // Transformer les données
+          const transformedQuotes: Quote[] = response.devis.map(apiQuote => ({
+            id: apiQuote.id,
+            quoteNumber: `DEV-${apiQuote.id.toString().padStart(6, '0')}`,
+            date: apiQuote.createdAt,
+            status: mapApiStatus(apiQuote.status),
+            totalAmount: calculateTotalAmount(apiQuote.cart),
+            fileUrl: apiQuote.fileUrl,
+            commercial: apiQuote.commercial?.user ? {
+              firstName: apiQuote.commercial.user.firstName,
+              lastName: apiQuote.commercial.user.lastName,
+              email: apiQuote.commercial.user.email
+            } : undefined,
+            items: apiQuote.cart.cartItems.map(item => ({
+              id: item.id,
+              productId: item.product.id,
+              productName: item.product.name,
+              quantity: item.quantity,
+              unitPrice: item.product.isInPromotion && item.product.promotionPrice 
+                ? item.product.promotionPrice 
+                : item.product.price,
+              imageUrl: '/image-produit-defaut.jpeg'
+            }))
+          }));
+          
+          setQuotes(transformedQuotes);
+          setTotalPages(response.meta.lastPage);
+          setTotalQuotes(response.meta.total);
+        } catch (err: any) {
+          console.error('Erreur lors du rechargement des devis:', err);
+        }
+      };
+      
+      loadQuotes();
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors de la suppression du devis', 'error');
+    }
+  };
+
+  // Télécharger un devis
+  const handleDownloadQuote = async (quote: Quote) => {
+    try {
+      if (quote.fileUrl) {
+        // Si on a une URL directe, l'ouvrir
+        window.open(quote.fileUrl, '_blank');
+      } else {
+        // Sinon, utiliser l'endpoint de téléchargement
+        const blob = await quoteService.downloadQuotePDF(quote.id);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `devis-${quote.quoteNumber}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error: any) {
+      showToast(error.message || 'Erreur lors du téléchargement du devis', 'error');
+    }
+  };
+
   // Filtrer les devis
   const filteredQuotes = quotes.filter(quote => {
-    const matchesSearch = quote.quoteNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || quote.status === selectedStatus;
-    return matchesSearch && matchesStatus;
+    return matchesStatus;
   });
 
   return (
@@ -296,10 +319,10 @@ const MesDevis: React.FC = () => {
                   className="block w-full pl-4 pr-10 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#007FFF] focus:border-transparent appearance-none transition-colors bg-white/80 backdrop-blur-sm"
                 >
                   <option value="all">Tous les statuts</option>
-                  <option value="pending">En attente</option>
-                  <option value="accepted">Accepté</option>
-                  <option value="rejected">Refusé</option>
-                  <option value="expired">Expiré</option>
+                  <option value="SENDED">Envoyé</option>
+                  <option value="PENDING">En cours</option>
+                  <option value="ACCEPTED">Accepté</option>
+                  <option value="REJECTED">Refusé</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                   <FaChevronDown className="h-4 w-4 text-gray-400" />
@@ -429,35 +452,53 @@ const MesDevis: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col md:flex-row md:justify-end space-y-3 md:space-y-0 md:space-x-4">
-                    {selectedQuote.status === 'pending' && (
+                    {(selectedQuote.status === 'SENDED' || selectedQuote.status === 'PENDING') && (
                       <>
-                        <button className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center justify-center">
+                        <button 
+                          onClick={() => handleAcceptQuote(selectedQuote.id)}
+                          className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center justify-center"
+                        >
                           Accepter le devis
                         </button>
-                        <button className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center">
+                        <button 
+                          onClick={() => handleRejectQuote(selectedQuote.id)}
+                          className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center"
+                        >
                           Refuser le devis
                         </button>
                       </>
                     )}
-                    <button className="px-4 py-2 bg-[#007FFF] text-white rounded-xl hover:bg-[#7CB9E8] transition-colors flex items-center justify-center">
+                    <button 
+                      onClick={() => handleDownloadQuote(selectedQuote)}
+                      className="px-4 py-2 bg-[#007FFF] text-white rounded-xl hover:bg-[#7CB9E8] transition-colors flex items-center justify-center"
+                    >
                       <FaFileDownload className="mr-2" />
                       Télécharger le devis
+                    </button>
+                    <button 
+                      onClick={() => setDeleteConfirmation({ show: true, quoteId: selectedQuote.id })}
+                      className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors flex items-center justify-center"
+                    >
+                      <FaTrash className="mr-2" />
+                      Supprimer
                     </button>
                   </div>
                 </div>
               ) : (
-                // Liste des devis en cartes
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 px-4 sm:px-6 lg:px-8">
-                  {filteredQuotes.map(quote => (
+                <>
+                  {/* Liste des devis en cartes */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8 px-4 sm:px-6 lg:px-8">
+                    {filteredQuotes.map(quote => (
                     <div 
                       key={quote.id} 
                       className="relative overflow-hidden border border-gray-100 rounded-xl hover:shadow-lg transition-all duration-300 bg-gradient-to-br from-white to-gray-50 hover:scale-[1.02] group"
                     >
                       {/* Bande de statut colorée en haut */}
                       <div className={`absolute top-0 left-0 right-0 h-1 ${
-                        quote.status === 'accepted' ? 'bg-gradient-to-r from-green-400 to-green-500' :
-                        quote.status === 'pending' ? 'bg-gradient-to-r from-yellow-300 to-yellow-400' :
-                        quote.status === 'rejected' ? 'bg-gradient-to-r from-red-400 to-red-500' :
+                        quote.status === 'ACCEPTED' ? 'bg-gradient-to-r from-green-400 to-green-500' :
+                        quote.status === 'SENDED' ? 'bg-gradient-to-r from-blue-300 to-blue-400' :
+                        quote.status === 'PENDING' ? 'bg-gradient-to-r from-yellow-300 to-yellow-400' :
+                        quote.status === 'REJECTED' ? 'bg-gradient-to-r from-red-400 to-red-500' :
                         'bg-gradient-to-r from-gray-300 to-gray-400'
                       }`}></div>
                       
@@ -474,15 +515,17 @@ const MesDevis: React.FC = () => {
                             </div>
                           </div>
                           <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center ${
-                            quote.status === 'accepted' ? 'bg-green-50 text-green-700 border border-green-200' :
-                            quote.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                            quote.status === 'rejected' ? 'bg-red-50 text-red-700 border border-red-200' :
+                            quote.status === 'ACCEPTED' ? 'bg-green-50 text-green-700 border border-green-200' :
+                            quote.status === 'SENDED' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                            quote.status === 'PENDING' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                            quote.status === 'REJECTED' ? 'bg-red-50 text-red-700 border border-red-200' :
                             'bg-gray-50 text-gray-700 border border-gray-200'
                           }`}>
                             <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                              quote.status === 'accepted' ? 'bg-green-500' :
-                              quote.status === 'pending' ? 'bg-yellow-500' :
-                              quote.status === 'rejected' ? 'bg-red-500' :
+                              quote.status === 'ACCEPTED' ? 'bg-green-500' :
+                              quote.status === 'SENDED' ? 'bg-blue-500' :
+                              quote.status === 'PENDING' ? 'bg-yellow-500' :
+                              quote.status === 'REJECTED' ? 'bg-red-500' :
                               'bg-gray-500'
                             }`}></span>
                             {getStatusInfo(quote.status).label}
@@ -524,10 +567,11 @@ const MesDevis: React.FC = () => {
                             Voir détail
                           </button>
                           
-                          <div className={`grid ${quote.status === 'pending' ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
-                            {quote.status === 'pending' ? (
+                          <div className={`grid ${(quote.status === 'SENDED' || quote.status === 'PENDING') ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
+                            {(quote.status === 'SENDED' || quote.status === 'PENDING') ? (
                               <>
                                 <button
+                                  onClick={() => handleAcceptQuote(quote.id)}
                                   className="group/btn relative w-full text-green-600 border border-green-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-green-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                                 >
                                   <div className="relative z-10 flex items-center justify-center">
@@ -539,6 +583,7 @@ const MesDevis: React.FC = () => {
                                   <div className="absolute inset-0 bg-green-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
                                 </button>
                                 <button
+                                  onClick={() => handleRejectQuote(quote.id)}
                                   className="group/btn relative w-full text-red-600 border border-red-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-red-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                                 >
                                   <div className="relative z-10 flex items-center justify-center">
@@ -552,6 +597,7 @@ const MesDevis: React.FC = () => {
                               </>
                             ) : (
                               <button
+                                onClick={() => handleDownloadQuote(quote)}
                                 className="group/btn relative w-full text-[#007FFF] border border-[#007FFF] rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                               >
                                 <div className="relative z-10 flex items-center justify-center">
@@ -563,8 +609,9 @@ const MesDevis: React.FC = () => {
                             )}
                           </div>
                           
-                          {quote.status === 'pending' && (
+                          {(quote.status === 'SENDED' || quote.status === 'PENDING') && (
                             <button
+                              onClick={() => handleDownloadQuote(quote)}
                               className="group/btn relative w-full text-[#007FFF] border border-[#007FFF] rounded-lg py-2 px-4 text-sm font-medium hover:bg-[#007FFF] hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
                             >
                               <div className="relative z-10 flex items-center justify-center">
@@ -574,16 +621,129 @@ const MesDevis: React.FC = () => {
                               <div className="absolute inset-0 bg-[#007FFF] transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
                             </button>
                           )}
+                          
+                          {/* Bouton de suppression */}
+                          <button
+                            onClick={() => setDeleteConfirmation({ show: true, quoteId: quote.id })}
+                            className="group/btn relative w-full text-gray-600 border border-gray-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-gray-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                          >
+                            <div className="relative z-10 flex items-center justify-center">
+                              <FaTrash className="mr-2 text-xs" />
+                              Supprimer
+                            </div>
+                            <div className="absolute inset-0 bg-gray-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                          </button>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className={`px-3 py-1 rounded-lg ${
+                          currentPage === 1
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                        }`}
+                      >
+                        Précédent
+                      </button>
+                      
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNumber;
+                          if (totalPages <= 5) {
+                            pageNumber = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNumber = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNumber = totalPages - 4 + i;
+                          } else {
+                            pageNumber = currentPage - 2 + i;
+                          }
+                          
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => setCurrentPage(pageNumber)}
+                              className={`px-3 py-1 rounded-lg ${
+                                currentPage === pageNumber
+                                  ? 'bg-[#007FFF] text-white'
+                                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      
+                      <button
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className={`px-3 py-1 rounded-lg ${
+                          currentPage === totalPages
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                        }`}
+                      >
+                        Suivant
+                      </button>
+                    </div>
+                  </div>
+                  )}
+                </>
               )}
             </div>
           )}
         </div>
       </div>
+      
+      {/* Modal de confirmation de suppression */}
+      {deleteConfirmation.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
+            <div className="flex items-center mb-4">
+              <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <FaTrash className="text-red-600 text-lg" />
+              </div>
+              <h3 className="ml-4 text-lg font-semibold text-gray-900">
+                Confirmer la suppression
+              </h3>
+            </div>
+            
+            <p className="text-gray-600 mb-6">
+              Êtes-vous sûr de vouloir supprimer ce devis ? Cette action est irréversible.
+            </p>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirmation({ show: false, quoteId: null })}
+                className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteConfirmation.quoteId) {
+                    handleDeleteQuote(deleteConfirmation.quoteId);
+                  }
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
+              >
+                <FaTrash className="mr-2" />
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };

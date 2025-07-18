@@ -187,10 +187,11 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
     </section>
   );
 
-  // Si on est dans le panier, ne pas utiliser le Layout pour éviter le breadcrumb
+  // Si on est dans le panier, ne pas inclure le Layout
   if (inCart) {
     return (
       <>
+        {/* Affichage du formulaire d'informations supplémentaires */}
         {showAdditionalInfoForm && googleCredential && (
           <AdditionalInfoForm
             googleCredential={googleCredential}
@@ -199,13 +200,15 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
           />
         )}
         
+        {/* Formulaire de mot de passe oublié */}
         {showForgotPasswordForm && (
-          <ForgotPasswordForm
+          <ForgotPasswordForm 
             onCancel={hideForgotPassword}
           />
         )}
         
-        {showResetPasswordForm && (
+        {/* Formulaire de réinitialisation du mot de passe */}
+        {showResetPasswordForm && resetToken && (
           <ResetPasswordForm
             token={resetToken}
             onCancel={cancelResetPassword}
@@ -218,9 +221,10 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
     );
   }
 
-  // Sinon, utiliser le Layout normal
+  // Sinon, inclure le Layout normalement
   return (
     <Layout>
+      {/* Affichage du formulaire d'informations supplémentaires */}
       {showAdditionalInfoForm && googleCredential && (
         <AdditionalInfoForm
           googleCredential={googleCredential}
@@ -229,13 +233,15 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
         />
       )}
       
+      {/* Formulaire de mot de passe oublié */}
       {showForgotPasswordForm && (
-        <ForgotPasswordForm
+        <ForgotPasswordForm 
           onCancel={hideForgotPassword}
         />
       )}
       
-      {showResetPasswordForm && (
+      {/* Formulaire de réinitialisation du mot de passe */}
+      {showResetPasswordForm && resetToken && (
         <ResetPasswordForm
           token={resetToken}
           onCancel={cancelResetPassword}
