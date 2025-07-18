@@ -13,6 +13,8 @@ import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import ValidateEmail from './pages/ValidateEmail';
 import CategoryProducts from './pages/CategoryProducts';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import { Toaster } from 'react-hot-toast';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Composant de chargement simple en attendant de créer le composant LoadingSpinner
 const LoadingSpinner = () => (
@@ -38,19 +40,16 @@ const LoginPage = () => {
 const Home = lazy(() => import('./pages/Home'));
 const NosProducts = lazy(() => import('./pages/NosProducts'));
 const Promotions = lazy(() => import('./pages/Promotions'));
-const CategoryPage = lazy(() => import('./pages/CategoryPage'));
-const EspaceRecrutement = lazy(() => import('./pages/EspaceRecrutement'));
 const Contact = lazy(() => import('./pages/Contact'));
 const ConditionsVente = lazy(() => import('./pages/ConditionsVente'));
 const ConditionsUtilisation = lazy(() => import('./pages/ConditionsUtilisation'));
 const SAV = lazy(() => import('./pages/SAV'));
-const APropos = lazy(() => import('./pages/APropos'));
 const Connexion = lazy(() => import('./pages/Connexion'));
 const Favoris = lazy(() => import('./pages/Favoris'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
 const Cart = lazy(() => import('./pages/Cart/index'));
 const MonProfil = lazy(() => import('./pages/MonProfil'));
-const MesCommandes = lazy(() => import('./pages/MesCommandes'));
+
 const MesDevis = lazy(() => import('./pages/MesDevis'));
 const RegisterSuccess = lazy(() => import('./pages/RegisterSuccess'));
 
@@ -76,12 +75,12 @@ const AppRoutes = () => {
       <Route path="/categorie/:category/:subCategory?/:level3?/:level4?" element={<CategoryProducts />} />
       <Route path="/produit/:id" element={<ProductDetail />} />
       <Route path="/promotions" element={<Promotions />} />
-      <Route path="/espace-recrutement" element={<EspaceRecrutement />} />
+      {/* <Route path="/espace-recrutement" element={<EspaceRecrutement />} /> */}
       <Route path="/nous-contact" element={<Contact />} />
       <Route path="/conditions-vente" element={<ConditionsVente />} />
       <Route path="/conditions-utilisation" element={<ConditionsUtilisation />} />
       <Route path="/sav" element={<SAV />} /> 
-      <Route path="/a-propos" element={<APropos />} />
+      {/* <Route path="/a-propos" element={<APropos />} /> */}
       <Route path="/panier" element={<Cart />} />
       
       {/* Routes protégées nécessitant une authentification */}
@@ -93,10 +92,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
-      <Route path="/Mon-profil" element={<MonProfil />} />
-      <Route path="/Mes-commandes" element={<MesCommandes />} />
-      <Route path="/Mes-devis" element={<MesDevis />} />
-      <Route path="/panier/delivery" element={<div>Page de livraison</div>} />
+      <Route path="/mon-profil" element={<MonProfil />} />
+      <Route path="/mes-devis" element={<MesDevis />} />
       <Route path="/panier/payment" element={<div>Page de paiement</div>} />
       <Route 
         path="/inscription-reussie" 
@@ -121,28 +118,48 @@ const AppRoutes = () => {
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId="592794634648-38n0hj2dhk0frc5tm2o7c3gol5d06clc.apps.googleusercontent.com">
-      <AuthProvider>
-        <CartProvider>
-          <Router>
-            <SearchProvider>
-              <FavoritesProvider>
-                <div className="min-h-screen bg-gray-50">
-                  <Navbar />
-                  <div className="navbar-spacer"></div>
-                  <ScrollToTop />
-                  <main>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <AppRoutes />
-                    </Suspense>
-                  </main>
-                </div>
-              </FavoritesProvider>
-            </SearchProvider>
-          </Router>
-        </CartProvider>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    <ErrorBoundary>
+      <GoogleOAuthProvider clientId="592794634648-38n0hj2dhk0frc5tm2o7c3gol5d06clc.apps.googleusercontent.com">
+        <AuthProvider>
+          <CartProvider>
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <SearchProvider>
+                <FavoritesProvider>
+                  <div className="min-h-screen bg-gray-50">
+                    <Navbar />
+                    <div className="navbar-spacer"></div>
+                    <ScrollToTop />
+                    <Toaster position="top-right" toastOptions={{
+                      duration: 4000,
+                      style: {
+                        borderRadius: '8px',
+                        background: '#333',
+                        color: '#fff',
+                      },
+                      success: {
+                        style: {
+                          background: '#10B981',
+                        },
+                      },
+                      error: {
+                        style: {
+                          background: '#EF4444',
+                        },
+                      }
+                    }} />
+                    <main>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <AppRoutes />
+                      </Suspense>
+                    </main>
+                  </div>
+                </FavoritesProvider>
+              </SearchProvider>
+            </Router>
+          </CartProvider>
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </ErrorBoundary>
   );
 };
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Product, products } from '../data/products';
+import { Product } from '../types/product';
+import { getProducts } from '../services/productService';
 
 interface SearchContextType {
   searchQuery: string;
@@ -12,7 +13,25 @@ interface SearchContextType {
   clearSearch: () => void;
 }
 
-const SearchContext = createContext<SearchContextType | undefined>(undefined);
+// Création du contexte avec une valeur par défaut
+const SearchContext = createContext<SearchContextType>({
+  searchQuery: '',
+  searchResults: [],
+  isSearchOpen: false,
+  isSearching: false,
+  openSearch: () => {
+    throw new Error('SearchContext not initialized');
+  },
+  closeSearch: () => {
+    throw new Error('SearchContext not initialized');
+  },
+  setSearchQuery: () => {
+    throw new Error('SearchContext not initialized');
+  },
+  clearSearch: () => {
+    throw new Error('SearchContext not initialized');
+  },
+});
 
 export const useSearch = (): SearchContextType => {
   const context = useContext(SearchContext);
@@ -32,7 +51,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
-  const performSearch = (query: string) => {
+  const performSearch = async (query: string) => {
     setIsSearching(true);
     setSearchQuery(query);
 
@@ -43,21 +62,20 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
       return;
     }
 
-    // Recherche dans les produits (titre, description, catégorie, marque)
-    const lowercaseQuery = query.toLowerCase().trim();
-    const results = products.filter(product => 
-      product.title.toLowerCase().includes(lowercaseQuery) ||
-      product.description.toLowerCase().includes(lowercaseQuery) ||
-      product.category.toLowerCase().includes(lowercaseQuery) ||
-      product.brand.toLowerCase().includes(lowercaseQuery) ||
-      product.subcategory.toLowerCase().includes(lowercaseQuery)
-    );
-
-    // Simuler un temps de chargement pour l'expérience utilisateur
-    setTimeout(() => {
-      setSearchResults(results);
+    try {
+      // Recherche de produits via l'API
+      const response = await getProducts({ searchQuery: query.toLowerCase().trim() });
+      
+      // Simuler un temps de chargement pour l'expérience utilisateur
+      setTimeout(() => {
+        setSearchResults(response.products || []);
+        setIsSearching(false);
+      }, 300);
+    } catch (error) {
+      console.error('Erreur lors de la recherche:', error);
+      setSearchResults([]);
       setIsSearching(false);
-    }, 300);
+    }
   };
 
   const openSearch = () => setIsSearchOpen(true);
@@ -72,21 +90,21 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     setSearchResults([]);
   };
 
+  const contextValue: SearchContextType = {
+    searchQuery,
+    searchResults,
+    isSearchOpen,
+    isSearching,
+    openSearch,
+    closeSearch,
+    setSearchQuery: (query) => {
+      performSearch(query);
+    },
+    clearSearch
+  };
+
   return (
-    <SearchContext.Provider
-      value={{
-        searchQuery,
-        searchResults,
-        isSearchOpen,
-        isSearching,
-        openSearch,
-        closeSearch,
-        setSearchQuery: (query) => {
-          performSearch(query);
-        },
-        clearSearch
-      }}
-    >
+    <SearchContext.Provider value={contextValue}>
       {children}
     </SearchContext.Provider>
   );

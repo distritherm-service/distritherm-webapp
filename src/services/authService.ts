@@ -318,52 +318,18 @@ export const authService = {
     return getUserData();
   },
 
-  // Récupérer les données utilisateur depuis l'API
-  async getCurrentUserFromApi() {
+  // Récupérer les données de l'utilisateur actuel depuis l'API
+  async getCurrentUserFromApi(): Promise<any> {
     try {
-      // console.log("Récupération des données utilisateur depuis l'API");
-      const response = await axiosInstance.get('/users/me', {
-        headers: {
-          'x-platform': 'web',
-        },
-      });
-
-      // Si la réponse contient des données utilisateur
-      if (response.data && response.data.user) {
-        // Récupérer les données actuelles du localStorage
-        const currentUserData = getUserData();
-
-        // Fusionner les données actuelles avec les nouvelles données
-        // tout en préservant companyName et siretNumber s'ils existent localement mais pas dans la réponse
-        if (currentUserData) {
-          if (!response.data.user.companyName && currentUserData.companyName) {
-            response.data.user.companyName = currentUserData.companyName;
-          }
-
-          if (!response.data.user.siretNumber && currentUserData.siretNumber) {
-            response.data.user.siretNumber = currentUserData.siretNumber;
-          }
-        }
-
-        // Mettre à jour le localStorage avec les données complètes
-        localStorage.setItem(
-          STORAGE_KEYS.USER_DATA,
-          JSON.stringify(response.data.user)
-        );
-        // console.log(
-        //   "Données utilisateur mises à jour depuis l'API:",
-        //   response.data.user
-        // );
-
-        return response.data.user;
+      // Vérifier d'abord si nous avons un token
+      const token = getAccessToken();
+      if (!token) {
+        throw new Error('Aucun token d\'authentification disponible');
       }
-
-      return null;
+      
+      const response = await axiosInstance.get('/users/me');
+      return response.data;
     } catch (error) {
-      // console.error(
-      //   'Erreur lors de la récupération des données utilisateur:',
-      //   error
-      // );
       throw error;
     }
   },

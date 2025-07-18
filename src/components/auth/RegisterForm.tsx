@@ -68,11 +68,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       login(responseData);
       
       // Redirection après inscription réussie
-      if (inCart) {
-        setTimeout(() => {
-          navigate('/panier/delivery');
-        }, 2000);
-      } else {
+      if (!inCart) {
         setTimeout(() => {
           navigate('/inscription-reussie');
         }, 1000);

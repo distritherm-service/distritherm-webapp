@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaTrash, FaArrowLeft, FaPlus, FaMinus, FaShoppingCart, FaInfoCircle, FaTimes, FaEye } from 'react-icons/fa';
 import { useCart } from '../../contexts/CartContext';
-import { products } from '../../data/products';
+import { getProductById } from '../../services/productService';
 import { motion, AnimatePresence } from 'framer-motion';
+
+// Interface pour les produits temporaire
+interface TempProduct {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  subcategory: string;
+  brand: string;
+  inStock: boolean;
+}
 
 interface ProductDetailModalProps {
   productId: string;
@@ -12,11 +25,41 @@ interface ProductDetailModalProps {
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOpen, onClose }) => {
-  if (!isOpen) return null;
+  const [product, setProduct] = useState<TempProduct | null>(null);
+  const [loading, setLoading] = useState(false);
   
-  const productDetails = products.find(p => p.id === productId);
+  useEffect(() => {
+    if (isOpen && productId) {
+      setLoading(true);
+      // Simuler l'obtention du produit depuis un service
+      const fetchProduct = async () => {
+        try {
+          // Ici, vous devriez utiliser votre service API pour obtenir les détails du produit
+          // const data = await getProductById(productId);
+          // En attendant, utilisez un produit factice
+          setProduct({
+            id: productId,
+            title: "Produit temporaire",
+            description: "Description temporaire du produit",
+            price: 0,
+            image: "/placeholder-image.jpg",
+            category: "Catégorie",
+            subcategory: "Sous-catégorie",
+            brand: "Marque",
+            inStock: true
+          });
+        } catch (error) {
+          console.error("Erreur lors du chargement du produit:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      fetchProduct();
+    }
+  }, [isOpen, productId]);
   
-  if (!productDetails) return null;
+  if (!isOpen || !product) return null;
 
   // Gestionnaire pour fermer la modal lors d'un clic en dehors
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -58,7 +101,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
             onClick={e => e.stopPropagation()}
           >
             <div className="p-3 sm:p-5 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-blue-50 to-teal-50">
-              <h3 className="text-lg sm:text-2xl font-bold text-gray-800 line-clamp-2">{productDetails.title}</h3>
+              <h3 className="text-lg sm:text-2xl font-bold text-gray-800 line-clamp-2">{product.title}</h3>
               <button 
                 onClick={onClose}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors focus:outline-none flex-shrink-0 ml-2"
@@ -72,26 +115,26 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
                 <div className="md:w-1/2">
                   <div className="bg-gray-50 p-3 sm:p-6 rounded-xl flex items-center justify-center">
                     <img 
-                      src={productDetails.image} 
-                      alt={productDetails.title} 
+                      src={product.image} 
+                      alt={product.title} 
                       className="w-full h-auto object-contain rounded-lg shadow-md transform transition-transform hover:scale-105 duration-300"
                     />
                   </div>
                   
                   <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
                     <span className={`inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${
-                      productDetails.inStock
+                      product.inStock
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
                       <span className={`w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full mr-1.5 sm:mr-2 ${
-                        productDetails.inStock ? 'bg-green-500' : 'bg-red-500'
+                        product.inStock ? 'bg-green-500' : 'bg-red-500'
                       }`}></span>
-                      {productDetails.inStock ? 'En stock' : 'Rupture de stock'}
+                      {product.inStock ? 'En stock' : 'Rupture de stock'}
                     </span>
                     
                     <div className="text-xs sm:text-sm text-gray-500">
-                      Réf: {productDetails.id}
+                      Réf: {product.id}
                     </div>
                   </div>
                 </div>
@@ -101,7 +144,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
                     <h4 className="text-xs sm:text-sm font-medium text-gray-500 uppercase mb-2">Prix</h4>
                     <div className="flex items-end gap-2">
                       <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-                        {productDetails.price.toLocaleString('fr-FR', {
+                        {product.price.toLocaleString('fr-FR', {
                           style: 'currency',
                           currency: 'EUR'
                         })}
@@ -109,7 +152,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
                       <p className="text-xs sm:text-sm text-gray-500 mb-1">TTC</p>
                     </div>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                      Prix HT: {(productDetails.price / 1.2).toLocaleString('fr-FR', {
+                      Prix HT: {(product.price / 1.2).toLocaleString('fr-FR', {
                         style: 'currency',
                         currency: 'EUR'
                       })}
@@ -122,7 +165,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
                         <span className="w-1 h-4 sm:h-5 bg-blue-500 rounded-full mr-2"></span>
                         Catégorie
                       </h4>
-                      <p className="text-sm sm:text-base text-gray-800 pl-3 border-l-2 border-gray-200">{productDetails.category} &gt; {productDetails.subcategory}</p>
+                      <p className="text-sm sm:text-base text-gray-800 pl-3 border-l-2 border-gray-200">{product.category} &gt; {product.subcategory}</p>
                     </div>
                     
                     <div>
@@ -130,7 +173,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
                         <span className="w-1 h-4 sm:h-5 bg-blue-500 rounded-full mr-2"></span>
                         Marque
                       </h4>
-                      <p className="text-sm sm:text-base text-gray-800 pl-3 border-l-2 border-gray-200">{productDetails.brand}</p>
+                      <p className="text-sm sm:text-base text-gray-800 pl-3 border-l-2 border-gray-200">{product.brand}</p>
                     </div>
                     
                     <div>
@@ -139,7 +182,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
                         Description
                       </h4>
                       <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-100 shadow-sm">
-                        <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{productDetails.description}</p>
+                        <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{product.description}</p>
                       </div>
                     </div>
                   </div>
@@ -149,7 +192,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ productId, isOp
             
             <div className="p-3 sm:p-5 border-t border-gray-100 flex flex-col sm:flex-row gap-2 sm:gap-0 justify-end bg-gradient-to-r from-teal-50 to-blue-50">
               <Link 
-                to={`/nos-produits/${productDetails.id}`}
+                to={`/nos-produits/${product.id}`}
                 className="w-full sm:w-auto px-4 py-2 mr-0 sm:mr-3 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium text-center"
               >
                 Voir page complète
@@ -367,10 +410,6 @@ const CartSummary: React.FC = () => {
                 <span>Total TTC:</span>
                 <span>{formattedTotalTTC}</span>
               </div>
-            </div>
-            
-            <div className="mt-4 text-xs sm:text-sm text-gray-500">
-              Frais de livraison calculés à l'étape suivante
             </div>
           </div>
         </>

@@ -16,14 +16,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isHomePage = location.pathname === '/';
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       {showSlider && <Slider />}
-      {!isHomePage && <Breadcrumb />}
-      <main className="flex-grow">
-        {children}
-      </main>
-      <Footer />
-    </div>
+      <div className="min-h-screen flex flex-col p-8">
+        {!isHomePage && <Breadcrumb />}
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 };
 

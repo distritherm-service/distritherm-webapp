@@ -1,83 +1,134 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getAllPromotionCategories, 
-  getPromotionSubcategoriesByCategory, 
-  getAllPromotionBrands, 
-  getPromotionPriceRange 
-} from '../../data/promotions';
+import { categoryService } from '../../services/categoryService';
+import { getAllMarks } from '../../services/markService';
+import { Category } from '../../types/category';
 
 interface FilterState {
   category: string;
-  subcategory: string;
-  brand: string;
+  subcategory?: string;
+  mark?: string;
   priceRange: [number, number];
   sortBy: string;
   inStockOnly: boolean;
   priceRangeTouched: boolean;
+  searchQuery?: string;
+  discountLevel: string;
 }
 
 interface PromotionFiltersProps {
   filters: FilterState;
   onFilterChange: (newFilters: Partial<FilterState>) => void;
-  onSaveFilters?: () => void;
 }
 
-const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterChange, onSaveFilters }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [categories] = useState<string[]>(['Toutes les catégories', ...getAllPromotionCategories()]);
-  const [subcategories, setSubcategories] = useState<string[]>(['Toutes les sous-catégories']);
-  const [brands] = useState<string[]>(['Toutes les marques', ...getAllPromotionBrands()]);
-  const [priceRange] = useState(getPromotionPriceRange());
-  const [localPriceRange, setLocalPriceRange] = useState<[number, number]>(filters.priceRange);
+const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterChange }) => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [marks, setMarks] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isApplying, setIsApplying] = useState(false);
+  const [notification, setNotification] = useState<{type: 'success' | 'info', message: string} | null>(null);
+  
+  // Définir les plages de prix directement dans le frontend
+  const [priceRange] = useState({ min: 0, max: 10000 });
+  
+  // État local pour stocker les valeurs des filtres avant de les appliquer
+  const [localFilters, setLocalFilters] = useState<FilterState>({...filters});
+  const [searchQuery, setSearchQuery] = useState(filters.searchQuery || '');
 
-  // S'assurer que les sous-catégories sont mises à jour quand la catégorie change
+  // Charger les catégories et les marques depuis l'API
   useEffect(() => {
-    if (filters.category !== 'Toutes les catégories') {
-      const subcats = getPromotionSubcategoriesByCategory(filters.category);
-      setSubcategories(['Toutes les sous-catégories', ...subcats]);
-    } else {
-      setSubcategories(['Toutes les sous-catégories']);
-    }
-  }, [filters.category]);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Récupération des données en parallèle
+        const [fetchedCategories, fetchedMarks] = await Promise.all([
+          categoryService.getAllCategories(),
+          getAllMarks()
+        ]);
+        
+        setCategories(fetchedCategories);
+        setMarks(fetchedMarks);
+        setError(null);
+      } catch (err) {
+        setError('Erreur lors du chargement des données de filtrage');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
-  // Mettre à jour localPriceRange quand filters.priceRange change
+  // Mettre à jour localFilters quand filters change
   useEffect(() => {
-    setLocalPriceRange(filters.priceRange);
-  }, [filters.priceRange]);
+    setLocalFilters({...filters});
+    setSearchQuery(filters.searchQuery || '');
+  }, [filters]);
 
-  const handleFilterChange = (filterName: keyof FilterState, value: any) => {
-    if (filterName === 'category') {
-      // Si on change de catégorie, on réinitialise la sous-catégorie
-      onFilterChange({
-        [filterName]: value,
-        subcategory: 'Toutes les sous-catégories'
-      });
-    } else {
-      onFilterChange({ [filterName]: value });
-    }
+  // Vérifier si des changements locaux ont été faits
+  const hasUnappliedChanges = () => {
+    return JSON.stringify(localFilters) !== JSON.stringify({...filters, searchQuery: filters.searchQuery || ''});
   };
 
-  const handlePriceRangeApply = () => {
-    onFilterChange({ 
-      priceRange: localPriceRange,
-      priceRangeTouched: true 
+  const handleLocalFilterChange = (filterName: keyof FilterState, value: any) => {
+    setLocalFilters(prev => ({ 
+      ...prev, 
+      [filterName]: value 
+    }));
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setLocalFilters(prev => ({ 
+      ...prev, 
+      searchQuery: e.target.value 
+    }));
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    applyFilters();
+  };
+
+  // Appliquer tous les filtres en une seule fois avec animation
+  const applyFilters = async () => {
+    setIsApplying(true);
+    
+    // Petite animation de chargement
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    onFilterChange({
+      ...localFilters,
+      priceRangeTouched: true
     });
+    
+    setIsApplying(false);
+    showNotification('success', 'Filtres appliqués avec succès !');
   };
 
-  const handleSaveFilters = () => {
-    if (onSaveFilters) {
-      onSaveFilters();
-    }
+  // Réinitialiser tous les filtres
+  const resetFilters = () => {
+    const defaultFilters: FilterState = {
+      category: 'Toutes les catégories',
+      mark: '',
+      priceRange: [priceRange.min, priceRange.max],
+      sortBy: 'featured',
+      inStockOnly: false,
+      priceRangeTouched: false,
+      searchQuery: '',
+      discountLevel: 'all'
+    };
     
-    const notification = document.createElement('div');
-    notification.classList.add('fixed', 'bottom-4', 'right-4', 'bg-purple-600', 'text-white', 'p-4', 'rounded-lg', 'shadow-lg', 'z-50', 'animate-fade-in');
-    notification.textContent = 'Filtres sauvegardés avec succès';
-    document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.classList.add('animate-fade-out');
-      setTimeout(() => notification.remove(), 500);
-    }, 3000);
+    setLocalFilters(defaultFilters);
+    setSearchQuery('');
+    onFilterChange(defaultFilters);
+    showNotification('info', 'Filtres réinitialisés');
+  };
+
+  const showNotification = (type: 'success' | 'info', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
   };
 
   const sortOptions = [
@@ -89,317 +140,333 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({ filters, onFilterCh
     { value: 'ending_soon', label: 'Se termine bientôt' }
   ];
 
-  return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-      {/* Mobile toggle */}
-      <button
-        className="md:hidden w-full p-4 flex items-center justify-between text-gray-800 font-medium bg-gradient-to-r from-purple-50 to-pink-50 border-b border-gray-100 sticky top-0 z-30"
-        onClick={() => setIsOpen(!isOpen)}
-        style={{ minHeight: 56 }}
-      >
-        <span className="flex items-center">
-          <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          Filtres et Tri
-        </span>
-        <svg
-          className={`w-5 h-5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+  // Helper pour vérifier si les filtres sont actifs
+  const isPriceFilterActive = () => {
+    return localFilters.priceRange[0] > priceRange.min || localFilters.priceRange[1] < priceRange.max;
+  };
 
-      <div className={`${isOpen ? 'block' : 'hidden'} md:block p-4 md:p-6`}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5 md:gap-6">
-          {/* Catégorie */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-purple-600 transition-colors">
-              Catégorie
-            </label>
-            <div className="relative">
-              <select
-                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none bg-white pr-8 hover:border-purple-300 transition-colors"
-                value={filters.category}
-                onChange={(e) => handleFilterChange('category', e.target.value)}
-              >
-                {categories.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
+  const hasActiveFilters = () => {
+    return localFilters.category !== 'Toutes les catégories' ||
+           localFilters.mark !== '' ||
+           isPriceFilterActive() ||
+           localFilters.inStockOnly ||
+           localFilters.discountLevel !== 'all' ||
+           searchQuery !== '';
+  };
 
-          {/* Sous-catégorie */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-purple-600 transition-colors">
-              Sous-catégorie
-            </label>
-            <div className="relative">
-              <select
-                className={`w-full border rounded-lg p-2.5 text-sm appearance-none bg-white pr-8 transition-colors ${
-                  filters.category === 'Toutes les catégories'
-                    ? 'border-gray-200 text-gray-400 cursor-not-allowed'
-                    : 'border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-300'
-                }`}
-                value={filters.subcategory}
-                onChange={(e) => handleFilterChange('subcategory', e.target.value)}
-                disabled={filters.category === 'Toutes les catégories'}
-              >
-                {subcategories.map((subcategory) => (
-                  <option key={subcategory} value={subcategory}>
-                    {subcategory}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Marque */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-purple-600 transition-colors">
-              Marque
-            </label>
-            <div className="relative">
-              <select
-                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none bg-white pr-8 hover:border-purple-300 transition-colors"
-                value={filters.brand}
-                onChange={(e) => handleFilterChange('brand', e.target.value)}
-              >
-                {brands.map((brand) => (
-                  <option key={brand} value={brand}>
-                    {brand}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          {/* Fourchette de prix */}
-          <div className="group">
-            <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-purple-600 transition-colors">
-              Prix après réduction (€)
-            </label>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min={priceRange.min}
-                  max={priceRange.max}
-                  value={localPriceRange[0]}
-                  onChange={(e) => setLocalPriceRange([parseInt(e.target.value) || priceRange.min, localPriceRange[1]])}
-                  className="flex-1 border border-gray-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-300 transition-colors"
-                  placeholder="Min"
-                />
-                <span className="text-gray-500">à</span>
-                <input
-                  type="number"
-                  min={priceRange.min}
-                  max={priceRange.max}
-                  value={localPriceRange[1]}
-                  onChange={(e) => setLocalPriceRange([localPriceRange[0], parseInt(e.target.value) || priceRange.max])}
-                  className="flex-1 border border-gray-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 hover:border-purple-300 transition-colors"
-                  placeholder="Max"
-                />
-              </div>
-              <button
-                onClick={handlePriceRangeApply}
-                className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-1.5 px-3 rounded-lg text-sm transition-colors shadow-sm hover:shadow"
-              >
-                Appliquer
-              </button>
-            </div>
-          </div>
-
-          {/* Tri et options supplémentaires */}
-          <div className="space-y-4">
-            <div className="group">
-              <label className="block text-sm font-medium text-gray-700 mb-2 group-hover:text-purple-600 transition-colors">
-                Trier par
-              </label>
-              <div className="relative">
-                <select
-                  className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 appearance-none bg-white pr-8 hover:border-purple-300 transition-colors"
-                  value={filters.sortBy}
-                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                >
-                  {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center pb-1">
-              <input
-                type="checkbox"
-                id="inStockOnly"
-                checked={filters.inStockOnly}
-                onChange={(e) => handleFilterChange('inStockOnly', e.target.checked)}
-                className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-              />
-              <label htmlFor="inStockOnly" className="ml-2 block text-sm text-gray-700 hover:text-purple-600 cursor-pointer transition-colors">
-                Offres disponibles uniquement
-              </label>
-            </div>
-            
-            <button
-              onClick={handleSaveFilters}
-              className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-              </svg>
-              Sauvegarder ce filtre
-            </button>
+  if (loading) {
+    return (
+      <div className="w-full max-w-xs bg-white rounded-xl shadow-md border border-gray-100 p-4">
+        <div className="animate-pulse space-y-4">
+          <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+          <div className="space-y-3">
+            <div className="h-4 bg-gray-200 rounded"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-4 bg-gray-200 rounded w-4/6"></div>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Filtres actifs et bouton réinitialiser */}
-        <div className="mt-6 flex flex-wrap items-center gap-2">
-          {filters.category !== 'Toutes les catégories' && (
-            <span className="inline-flex items-center bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm px-3 py-1.5 rounded-full border border-purple-100 shadow-sm">
-              <svg className="w-3.5 h-3.5 mr-1 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7l3-3 3 3M7 7h10v10l-3 3-3-3H7V7z" />
-              </svg>
-              {filters.category}
-              <button
-                onClick={() => handleFilterChange('category', 'Toutes les catégories')}
-                className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                aria-label="Supprimer le filtre de catégorie"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </span>
-          )}
+  if (error) {
+    return (
+      <div className="w-full max-w-xs bg-white rounded-xl shadow-md border border-gray-100 p-4">
+        <div className="text-red-500 text-center text-sm">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
-          {filters.subcategory !== 'Toutes les sous-catégories' && (
-            <span className="inline-flex items-center bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm px-3 py-1.5 rounded-full border border-purple-100 shadow-sm">
-              <svg className="w-3.5 h-3.5 mr-1 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-              </svg>
-              {filters.subcategory}
-              <button
-                onClick={() => handleFilterChange('subcategory', 'Toutes les sous-catégories')}
-                className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                aria-label="Supprimer le filtre de sous-catégorie"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </span>
-          )}
-
-          {filters.brand !== 'Toutes les marques' && (
-            <span className="inline-flex items-center bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm px-3 py-1.5 rounded-full border border-purple-100 shadow-sm">
-              <svg className="w-3.5 h-3.5 mr-1 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              {filters.brand}
-              <button
-                onClick={() => handleFilterChange('brand', 'Toutes les marques')}
-                className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                aria-label="Supprimer le filtre de marque"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </span>
-          )}
-
-          {(filters.priceRange[0] > priceRange.min || filters.priceRange[1] < priceRange.max) && filters.priceRangeTouched && (
-            <span className="inline-flex items-center bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm px-3 py-1.5 rounded-full border border-purple-100 shadow-sm">
-              <svg className="w-3.5 h-3.5 mr-1 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {filters.priceRange[0].toLocaleString('fr-FR')}€ - {filters.priceRange[1].toLocaleString('fr-FR')}€
-              <button
-                onClick={() => {
-                  handleFilterChange('priceRange', [priceRange.min, priceRange.max]);
-                  handleFilterChange('priceRangeTouched', false);
-                }}
-                className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                aria-label="Supprimer le filtre de prix"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </span>
-          )}
-
-          {filters.inStockOnly && (
-            <span className="inline-flex items-center bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 text-sm px-3 py-1.5 rounded-full border border-purple-100 shadow-sm">
-              <svg className="w-3.5 h-3.5 mr-1 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  return (
+    <div className="w-full max-w-xs bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden relative">
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`absolute top-4 left-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg animate-bounce-in ${
+          notification.type === 'success' 
+            ? 'bg-green-500 text-white' 
+            : 'bg-blue-500 text-white'
+        }`}>
+          <div className="flex items-center">
+            {notification.type === 'success' ? (
+              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
-              Offres disponibles uniquement
-              <button
-                onClick={() => handleFilterChange('inStockOnly', false)}
-                className="ml-1.5 text-gray-500 hover:text-red-500 transition-colors"
-                aria-label="Supprimer le filtre en stock uniquement"
-              >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </span>
-          )}
+            ) : (
+              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            <span className="text-sm font-medium">{notification.message}</span>
+          </div>
+        </div>
+      )}
 
-          {(filters.category !== 'Toutes les catégories' ||
-            filters.subcategory !== 'Toutes les sous-catégories' ||
-            filters.brand !== 'Toutes les marques' ||
-            (filters.priceRange[0] > priceRange.min || filters.priceRange[1] < priceRange.max) && filters.priceRangeTouched ||
-            filters.inStockOnly) && (
-            <button
-              onClick={() => onFilterChange({
-                category: 'Toutes les catégories',
-                subcategory: 'Toutes les sous-catégories',
-                brand: 'Toutes les marques',
-                priceRange: [priceRange.min, priceRange.max],
-                inStockOnly: false,
-                priceRangeTouched: false
-              })}
-              className="ml-auto text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 px-4 py-1.5 rounded-lg text-sm font-medium shadow-sm hover:shadow transition-all flex items-center gap-1"
+      {/* En-tête avec titre et indicateur de changements */}
+      <div className="bg-gradient-to-r from-[#EBF4FF] to-[#E6F7FF] border-b border-gray-100 p-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+            <svg className="w-5 h-5 mr-2 text-[#007FFF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+            </svg>
+            Filtres Promotions
+          </h3>
+          {hasUnappliedChanges() && (
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse"></div>
+              <span className="text-xs text-orange-600 ml-1 font-medium">Non appliqués</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="p-4 space-y-6">
+        {/* Barre de recherche */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Recherche
+          </label>
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="Rechercher une promotion..."
+              className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#007FFF] focus:border-[#007FFF] pr-10 hover:border-[#007FFF] transition-colors"
+            />
+            <button 
+              type="submit"
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 hover:text-[#007FFF] transition-colors"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
-              Réinitialiser
+            </button>
+          </form>
+        </div>
+
+        {/* Catégorie */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Catégorie
+          </label>
+          <div className="relative">
+            <select
+              className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#007FFF] focus:border-[#007FFF] appearance-none bg-white pr-8 hover:border-[#007FFF] transition-colors"
+              value={localFilters.category}
+              onChange={(e) => handleLocalFilterChange('category', e.target.value)}
+            >
+              <option value="Toutes les catégories">Toutes les catégories</option>
+              {categories.filter(cat => cat.level === 1).map((category) => (
+                <option key={category.id} value={category.id.toString()}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Marque */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Marque
+          </label>
+          <div className="relative">
+            <select
+              className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#007FFF] focus:border-[#007FFF] appearance-none bg-white pr-8 hover:border-[#007FFF] transition-colors"
+              value={localFilters.mark || ''}
+              onChange={(e) => handleLocalFilterChange('mark', e.target.value)}
+            >
+              <option value="">Toutes les marques</option>
+              {marks.map((mark) => (
+                <option key={mark} value={mark}>
+                  {mark}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Prix après réduction */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Prix après réduction (€)
+          </label>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={priceRange.min}
+                max={priceRange.max}
+                value={localFilters.priceRange[0]}
+                onChange={(e) => handleLocalFilterChange('priceRange', [Number(e.target.value), localFilters.priceRange[1]])}
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#007FFF] focus:border-[#007FFF] hover:border-[#007FFF] transition-colors"
+                placeholder="Min"
+              />
+              <span className="text-gray-500 text-sm">à</span>
+              <input
+                type="number"
+                min={priceRange.min}
+                max={priceRange.max}
+                value={localFilters.priceRange[1]}
+                onChange={(e) => handleLocalFilterChange('priceRange', [localFilters.priceRange[0], Number(e.target.value)])}
+                className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#007FFF] focus:border-[#007FFF] hover:border-[#007FFF] transition-colors"
+                placeholder="Max"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Niveau de remise */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Niveau de remise
+          </label>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                id="discount-all"
+                type="radio"
+                checked={localFilters.discountLevel === 'all'}
+                onChange={() => handleLocalFilterChange('discountLevel', 'all')}
+                className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
+              />
+              <label htmlFor="discount-all" className="ml-2 text-sm text-gray-700">
+                Toutes les remises
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                id="discount-low"
+                type="radio"
+                checked={localFilters.discountLevel === 'low'}
+                onChange={() => handleLocalFilterChange('discountLevel', 'low')}
+                className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
+              />
+              <label htmlFor="discount-low" className="ml-2 text-sm text-gray-700">
+                Moins de 10%
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                id="discount-medium"
+                type="radio"
+                checked={localFilters.discountLevel === 'medium'}
+                onChange={() => handleLocalFilterChange('discountLevel', 'medium')}
+                className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
+              />
+              <label htmlFor="discount-medium" className="ml-2 text-sm text-gray-700">
+                10% à 25%
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                id="discount-high"
+                type="radio"
+                checked={localFilters.discountLevel === 'high'}
+                onChange={() => handleLocalFilterChange('discountLevel', 'high')}
+                className="w-4 h-4 text-[#007FFF] border-gray-300 focus:ring-[#007FFF]"
+              />
+              <label htmlFor="discount-high" className="ml-2 text-sm text-gray-700">
+                Plus de 25%
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Tri */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Trier par
+          </label>
+          <div className="relative">
+            <select
+              className="w-full border border-gray-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-[#007FFF] focus:border-[#007FFF] appearance-none bg-white pr-8 hover:border-[#007FFF] transition-colors"
+              value={localFilters.sortBy}
+              onChange={(e) => handleLocalFilterChange('sortBy', e.target.value)}
+            >
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+              <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Checkbox En stock uniquement */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="inStockOnly"
+            checked={localFilters.inStockOnly}
+            onChange={(e) => handleLocalFilterChange('inStockOnly', e.target.checked)}
+            className="h-4 w-4 text-[#007FFF] focus:ring-[#007FFF] border-gray-300 rounded"
+          />
+          <label htmlFor="inStockOnly" className="ml-2 block text-sm text-gray-700">
+            En stock uniquement
+          </label>
+        </div>
+
+        {/* Boutons d'action */}
+        <div className="space-y-3">
+          {/* Bouton Appliquer avec animation */}
+          <button
+            onClick={applyFilters}
+            disabled={isApplying || !hasUnappliedChanges()}
+            className={`w-full px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 transform flex items-center justify-center gap-2 ${
+              isApplying 
+                ? 'bg-green-500 text-white cursor-not-allowed scale-105' 
+                : hasUnappliedChanges()
+                  ? 'bg-gradient-to-r from-[#007FFF] to-[#00BFFF] hover:from-[#007FFF]/90 hover:to-[#00BFFF]/90 text-white hover:scale-105 hover:shadow-lg'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {isApplying ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Application en cours...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+                {hasUnappliedChanges() ? 'Appliquer les filtres' : 'Filtres appliqués'}
+              </>
+            )}
+          </button>
+
+          {/* Bouton Réinitialiser */}
+          {hasActiveFilters() && (
+            <button
+              onClick={resetFilters}
+              className="w-full border border-red-300 text-red-600 bg-white hover:bg-red-50 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 flex items-center justify-center gap-2 hover:border-red-400"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Réinitialiser les filtres
             </button>
           )}
         </div>
+
       </div>
     </div>
   );

@@ -2,18 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
-import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt, FaSignOutAlt, FaPhone } from 'react-icons/fa';
+import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt, FaSignOutAlt, FaPhone, FaEnvelope, FaChevronDown } from 'react-icons/fa';
+import { HiOutlineShoppingBag, HiOutlineHeart, HiOutlineUser, HiOutlineMenu, HiOutlineX, HiOutlineSearch, HiOutlineLocationMarker, HiOutlineLogout, HiOutlinePhone, HiOutlineMail } from 'react-icons/hi';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useAuth } from '../../contexts/AuthContext';
-import CartPreview from '../cart/CartPreview';
-import FavoritesPreview from '../favorites/FavoritesPreview';
 import CallbackForm from '../common/CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
 import MobileVerticalMenu from './MobileVerticalMenu';
 import { FaHeart as FaHeartFilled } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
+import FavoritesCounter from '../favorites/FavoritesCounter';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -30,7 +30,7 @@ const Navbar: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navbarHeight = useRef<number>(0);
-  const { favorites, favoritesCount } = useFavorites();
+  const { favorites } = useFavorites();
   const { cart } = useCart();
   const { 
     searchQuery, 
@@ -41,10 +41,7 @@ const Navbar: React.FC = () => {
   } = useSearch();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
-  const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
-  const [isFavoritesPreviewOpen, setIsFavoritesPreviewOpen] = useState(false);
-  const cartPreviewRef = useRef<HTMLDivElement>(null);
-  const favoritesPreviewRef = useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
   const userMenuButtonRef = useRef<HTMLButtonElement>(null);
   const userMenuContentRef = useRef<HTMLDivElement>(null);
@@ -187,9 +184,6 @@ const Navbar: React.FC = () => {
     if (isMobileMenuOpen) {
       setIsMobileMenuOpen(false);
     }
-    
-    // Ajouter un log pour déboguer
-   // console.log("Menu des produits toggled:", !isMenuOpen);
   };
 
   const handleSearchClick = (e: React.MouseEvent) => {
@@ -235,47 +229,11 @@ const Navbar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  const handleCartMouseEnter = () => {
-    setIsCartPreviewOpen(true);
-    setIsFavoritesPreviewOpen(false);
-  };
-
-  const handleFavoritesMouseEnter = () => {
-    setIsFavoritesPreviewOpen(true);
-    setIsCartPreviewOpen(false);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent) => {
-    const cartPreview = cartPreviewRef.current;
-    const favoritesPreview = favoritesPreviewRef.current;
-    const target = e.relatedTarget as Node;
-
-    if (cartPreview && !cartPreview.contains(target) && favoritesPreview && !favoritesPreview.contains(target)) {
-      setIsCartPreviewOpen(false);
-      setIsFavoritesPreviewOpen(false);
-    }
-  };
-
   // Gestion ouverture/fermeture du menu utilisateur
-  const openUserMenu = () => setIsUserMenuOpen(true);
   const closeUserMenu = () => setIsUserMenuOpen(false);
 
   // Ouvre le menu au clic ou au survol
-  const handleUserMenuButtonMouseEnter = () => openUserMenu();
   const handleUserMenuButtonClick = () => setIsUserMenuOpen((open) => !open);
-
-  // Ferme le menu si la souris quitte le bouton ET le menu
-  const handleUserMenuMouseLeave = (e: React.MouseEvent) => {
-    // Vérifie si la souris quitte vers un élément du menu ou du bouton
-    const related = e.relatedTarget as Node;
-    if (
-      userMenuButtonRef.current?.contains(related) ||
-      userMenuContentRef.current?.contains(related)
-    ) {
-      return;
-    }
-    closeUserMenu();
-  };
 
   // Gestionnaire de recherche
   const handleSearchFocus = () => {
@@ -335,150 +293,154 @@ const Navbar: React.FC = () => {
           }
         `}</style>
 
-        {/* Barre supérieure avec informations de contact */}
-        <div className={`bg-gray-900 text-white py-2 transition-all duration-300 ${scrolled ? 'py-1 opacity-90' : 'py-2'}`}>
-          <div className="container mx-auto px-4">
-            <div className="flex justify-between items-center text-sm">
-              <div className="hidden md:flex items-center space-x-6">
-                <a href="tel:+33123456789" className="flex items-center hover:text-blue-400 transition-colors">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  01 48 30 45 70
-                </a>
-                <a href="mailto:contact@distritherm.fr" className="flex items-center hover:text-blue-400 transition-colors">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  info@distritherm.fr 
-                </a>
-              </div>
-              
-              {/* Version mobile du téléphone et email */}
-              <div className="flex md:hidden items-center space-x-3">
-                <a href="tel:+330148304570" className="flex items-center hover:text-blue-400 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                </a>
-                <a href="mailto:contact@distritherm.fr" className="flex items-center hover:text-blue-400 transition-colors">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </a>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <Link 
-                  to={isAuthenticated ? "/mon-profil" : "/connexion"}
-                  className="flex items-center hover:text-blue-400 transition-colors"
+        {/* Barre supérieure avec informations de contact - Design moderne et agrandi */}
+        <div className={`bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-gray-300 transition-all duration-500 ${scrolled ? 'py-1 lg:py-2' : 'py-2 lg:py-3'}`}>
+          <div className="container mx-auto px-2 sm:px-4 lg:px-6">
+            <div className="flex justify-between items-center">
+              {/* Partie gauche - Contact agrandi */}
+              <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
+                <a 
+                  href="tel:0171687212" 
+                  className="hidden md:flex items-center space-x-2 hover:text-white transition-all duration-300 group px-2 py-1 rounded-lg hover:bg-white/10 hover:shadow-md"
                 >
-                  <FaUser className="h-4 w-4 mr-1 text-blue-400" />
-                  <span></span>
-                </Link>
-                <span className="text-gray-500">|</span>
-                <div className="border-r pr-4 mr-4">
-                  <Link 
-                    to="/nous-contact" 
-                    className="hover:text-blue-400 transition-colors"
-                  >
-                    Contact
-                  </Link>
+                  <div className="relative">
+                    <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <div className="absolute -inset-1 bg-emerald-400/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-xs lg:text-sm xl:text-base text-white hover:text-emerald-400 transition-colors duration-300">01 71 68 72 12</span>
+                  </div>
+                </a>
+                
+                <div className="hidden xl:block w-px h-6 bg-gray-600"></div>
+                
+                <a 
+                  href="mailto:info@distritherm-services.fr" 
+                  className="hidden lg:flex items-center space-x-2 hover:text-white transition-all duration-300 group px-2 py-1 rounded-lg hover:bg-white/10 hover:shadow-md"
+                >
+                  <div className="relative">
+                    <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <div className="absolute -inset-1 bg-blue-400/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-xs lg:text-sm xl:text-base text-white">info@distritherm-services.fr</span>
+                  </div>
+                </a>
+                
+                {/* Version mobile - icônes agrandies */}
+                <div className="flex md:hidden items-center space-x-1">
+                  <a href="tel:0171687212" className="p-1.5 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                  </a>
+                  <a href="mailto:info@distritherm-services.fr" className="p-1.5 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg">
+                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </a>
                 </div>
-                <div>
-                  <button 
-                    onClick={() => setIsCallbackFormOpen(true)}
-                    className="flex items-center text-teal-600 hover:text-teal-700 transition-colors font-medium"
-                  >
-                    <FaPhone className="mr-1 text-xs" />
-                    Rappel-moi
-                  </button>
-                </div>
+              </div>
+              
+              {/* Partie droite - Actions agrandie */}
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                {/* Bouton Rappel agrandi avec animation Tailwind - Responsive */}
+                <button 
+                  onClick={() => setIsCallbackFormOpen(true)}
+                  className="group relative flex items-center space-x-1 sm:space-x-2 px-3 py-1.5 sm:px-4 sm:py-2 lg:px-5 lg:py-1.5
+                           border-2 border-emerald-400 text-emerald-400 bg-transparent 
+                           rounded-full transition-all duration-300 text-xs sm:text-sm lg:text-base xl:text-lg font-bold 
+                           shadow-lg sm:shadow-xl shadow-emerald-400/30 
+                           hover:border-emerald-300 hover:text-emerald-300 hover:bg-emerald-50/10 
+                           hover:shadow-emerald-400/50 hover:scale-105
+                           animate-pulse
+                           ring-1 ring-emerald-400/40 ring-offset-1 ring-offset-slate-900
+                           hover:ring-emerald-300/60 hover:ring-offset-emerald-400/20
+                           focus:outline-none focus:ring-2 focus:ring-emerald-300/50
+                           backdrop-blur-sm"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/15 via-emerald-300/10 to-emerald-400/15 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  <div className="relative flex items-center justify-center">
+                    <svg className="relative z-10 w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <div className="absolute -inset-1.5 bg-emerald-400/30 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+                  </div>
+                  
+                  <div className="relative z-10 flex flex-col items-start">
+                    <span className="tracking-wide">Rappelez-moi</span>
+                  </div>
+                  
+                  <div className="absolute -inset-2 bg-emerald-400/20 rounded-full blur-lg opacity-40 group-hover:opacity-60 transition-opacity duration-300 animate-pulse"></div>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Barre principale avec logo et navigation */}
-        <div className={`bg-white border-b transition-all duration-300 ${scrolled ? 'shadow-md' : 'shadow-sm'}`}>
-          <div className="container mx-auto px-4">
-            <div className={`flex items-center justify-between transition-all duration-300 ${scrolled ? 'h-16' : 'h-20'}`}>
-              {/* Logo */}
+        {/* Barre principale avec logo et navigation - Design moderne */}
+        <div className={`${scrolled ? 'backdrop-blur-sm bg-white shadow-lg' : 'bg-white shadow-sm'} transition-all duration-500`}>
+          <div className="container mx-auto px-3 sm:px-4">
+            <div className={`flex items-center justify-between transition-all duration-500 ${scrolled ? 'h-16 sm:h-20' : 'h-20 sm:h-24'}`}>
+              {/* Logo - Section améliorée */}
               <div className="flex-shrink-0">
-                <Link to="/" className="block">
+                <Link to="/" className="block group relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-teal-400/20 to-blue-400/20 blur-xl group-hover:blur-2xl transition-all duration-500 rounded-full scale-150 opacity-0 group-hover:opacity-100"></div>
                   <img 
                     src={logo} 
                     alt="DistriTherm Services" 
-                    className={`transition-all duration-300 ${scrolled ? 'h-10' : 'h-12'} w-auto`} 
+                    className={`relative transition-all duration-500 group-hover:scale-110 ${scrolled ? 'h-10 sm:h-14' : 'h-12 sm:h-16'} w-auto drop-shadow-md`} 
                   />
                 </Link>
               </div>
 
-              {/* Boutons mobiles */}
-              <div className="flex items-center space-x-3 sm:hidden">
+              {/* Boutons mobiles - Design amélioré */}
+              <div className="flex items-center space-x-1 sm:space-x-2 sm:hidden">
                 <button
                   onClick={handleSearchClick}
-                  className="p-2 text-gray-600 hover:text-teal-600"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-gray-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
                   aria-label="Rechercher"
                 >
-                  <FaSearch className="w-5 h-5" />
+                  <HiOutlineSearch className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
-                <div className="relative">
-                  <Link
-                    to="/favoris"
-                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
-                    onMouseEnter={handleFavoritesMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <FaHeart className="h-6 w-6" />
-                    {favoritesCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {favoritesCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <FavoritesPreview 
-                      isOpen={isFavoritesPreviewOpen} 
-                      onClose={() => setIsFavoritesPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
-                <div className="relative">
-                  <Link
-                    to="/panier"
-                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
-                    onMouseEnter={handleCartMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <FaShoppingCart className="h-6 w-6" />
-                    {cartItemsCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {cartItemsCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <CartPreview 
-                      isOpen={isCartPreviewOpen} 
-                      onClose={() => setIsCartPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                <Link
+                  to="/favoris"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                >
+                  <HiOutlineHeart className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <FavoritesCounter size="sm" />
+                </Link>
+                <Link
+                  to="/panier"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                >
+                  <HiOutlineShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
+                      <span className="text-[10px] sm:text-xs">{cartItemsCount}</span>
+                    </span>
+                  )}
+                </Link>
                 <button
                   onClick={toggleMobileMenu}
-                  className="p-2 text-gray-600 hover:text-teal-600"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-gray-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
                   aria-label="Menu"
                   id="mobile-menu-button"
                 >
-                  {isMobileMenuOpen ? <FaTimes className="w-5 h-5" /> : <FaBars className="w-5 h-5" />}
+                  {isMobileMenuOpen ? <HiOutlineX className="w-4 h-4 sm:w-5 sm:h-5" /> : <HiOutlineMenu className="w-4 h-4 sm:w-5 sm:h-5" />}
                 </button>
               </div>
 
-              {/* Barre de recherche desktop */}
-              <div className="flex-1 max-w-3xl hidden sm:flex items-center justify-center px-4">
-                <div ref={searchRef} className="relative w-full max-w-2xl">
-                  <form onSubmit={handleSearchSubmit} className="relative">
+              {/* Barre de recherche desktop - Design moderne et amélioré */}
+              <div className="flex-1 max-w-2xl hidden sm:flex items-center justify-center px-4 lg:px-8">
+                <div ref={searchRef} className="relative w-full">
+                  <form onSubmit={handleSearchSubmit} className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-teal-400/20 to-blue-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -486,9 +448,21 @@ const Navbar: React.FC = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={handleSearchFocus}
                       placeholder="Rechercher des produits..."
-                      className="w-full pl-10 pr-4 py-2 rounded-full bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="relative w-full pl-12 sm:pl-14 pr-4 sm:pr-6 py-2.5 sm:py-3.5 rounded-full bg-gray-50/80 backdrop-blur-sm border border-gray-200/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-transparent focus:bg-white/90 transition-all duration-300 placeholder:text-gray-400 text-gray-700 shadow-sm hover:shadow-md text-sm sm:text-base"
                     />
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <HiOutlineSearch className="absolute left-3 sm:left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 group-hover:text-teal-600 transition-colors duration-300" />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSearchQuery('');
+                          clearSearch();
+                        }}
+                        className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                      >
+                        <HiOutlineX className="w-3 h-3 sm:w-4 sm:h-4" />
+                      </button>
+                    )}
                   </form>
 
                   <AnimatePresence>
@@ -498,49 +472,50 @@ const Navbar: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-100 max-h-[80vh] overflow-y-auto z-50"
+                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 max-h-[80vh] overflow-y-auto z-50"
                       >
                         {isSearching ? (
                           <div className="flex justify-center items-center h-20">
-                            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-600"></div>
+                            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-teal-600"></div>
                           </div>
                         ) : searchResults.length === 0 ? (
-                          <div className="p-4 text-center text-gray-500">
-                            Aucun résultat trouvé pour "{searchQuery}"
+                          <div className="p-6 text-center text-gray-500">
+                            <HiOutlineSearch className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                            <p>Aucun résultat trouvé pour "{searchQuery}"</p>
                           </div>
                         ) : (
                           <div className="py-2">
                             {searchResults.slice(0, 6).map((product) => (
                               <button
                                 key={product.id}
-                                onClick={() => handleResultClick(product.id)}
-                                className="w-full px-4 py-2 hover:bg-gray-50 flex items-center text-left"
+                                onClick={() => handleResultClick(product.id.toString())}
+                                className="w-full px-4 py-3 hover:bg-gray-50 flex items-center text-left transition-colors duration-200"
                               >
-                                <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex-shrink-0">
+                                <div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                   <img
-                                    src={product.image}
+                                    src={product.imagesUrl && product.imagesUrl.length > 0 ? product.imagesUrl[0] : '/placeholder-image.png'}
                                     alt={product.name}
                                     className="w-full h-full object-cover"
                                   />
                                 </div>
-                                <div className="ml-3 flex-1 min-w-0">
+                                <div className="ml-4 flex-1 min-w-0">
                                   <p className="text-sm font-medium text-gray-900 truncate">
                                     {product.name}
                                   </p>
-                                  <p className="text-sm text-gray-500">
-                                    {product.price.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+                                  <p className="text-sm text-teal-600 font-semibold">
+                                    {product.priceHt.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} HT
                                   </p>
                                 </div>
                               </button>
                             ))}
                             {searchResults.length > 6 && (
-                              <div className="px-4 py-2 border-t border-gray-100">
+                              <div className="px-4 py-3 border-t border-gray-100">
                                 <button
                                   onClick={() => {
                                     navigate('/nos-produits', { state: { searchQuery } });
                                     setShowSearchResults(false);
                                   }}
-                                  className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium"
+                                  className="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-medium"
                                 >
                                   Voir tous les résultats ({searchResults.length})
                                 </button>
@@ -554,356 +529,313 @@ const Navbar: React.FC = () => {
                 </div>
               </div>
               
-              {/* Actions et panier desktop */}
-              <div className="hidden sm:flex items-center space-x-5">
-                {/* Sélection du magasin */}
+              {/* Actions et panier desktop - Design moderne et amélioré */}
+              <div className="hidden sm:flex items-center space-x-3">
+                {/* Sélection du magasin - Design moderne */}
                 <div className="relative" ref={storeMenuRef}>
                   <button
                     onClick={toggleStoreMenu}
-                    className="flex items-center space-x-2 text-gray-600 hover:text-teal-600 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
                     aria-expanded={isStoreMenuOpen}
                     aria-haspopup="true"
                   >
-                    <FaMapMarkerAlt className="text-teal-600" />
-                    <span className="max-w-[150px] truncate">{selectedStore}</span>
-                    <svg className={`h-4 w-4 transition-transform ${isStoreMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
+                    <HiOutlineLocationMarker className="text-teal-600 w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <span className="max-w-[150px] truncate text-sm font-medium text-gray-700">{selectedStore}</span>
+                    <FaChevronDown className={`h-3 w-3 text-gray-500 transition-transform duration-300 ${isStoreMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {isStoreMenuOpen && (
                     <div 
-                      className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100"
-                      onClick={(e) => e.stopPropagation()} // Empêcher la fermeture lors du clic sur le contenu du menu
+                      className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl py-2 z-50 border border-gray-100 animate-in slide-in-from-top-2 fade-in duration-300"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <button
                         onClick={() => handleStoreSelect('Magasin Taverny')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-6 py-3 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200"
                       >
-                        Magasin Taverny
+                        <div className="font-medium">Magasin Taverny</div>
+                        <div className="text-xs text-gray-500 mt-1">95150 Taverny</div>
                       </button>
                       <button
                         onClick={() => handleStoreSelect('Magasin Drancy')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        className="block w-full text-left px-6 py-3 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200"
                       >
-                        Magasin Drancy
+                        <div className="font-medium">Magasin Drancy</div>
+                        <div className="text-xs text-gray-500 mt-1">93700 Drancy</div>
                       </button>
                     </div>
                   )}
                 </div>
                 
-                <div className="relative">
-                  <Link
-                    to="/favoris"
-                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
-                    onMouseEnter={handleFavoritesMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <FaHeart className="h-6 w-6" />
-                    {favoritesCount > 0 && (
-                      <span className="absolute -top-8 -right-8 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {favoritesCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <FavoritesPreview 
-                      isOpen={isFavoritesPreviewOpen} 
-                      onClose={() => setIsFavoritesPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                {/* Séparateur vertical */}
+                <div className="h-8 w-px bg-gray-200"></div>
                 
-                <div className="relative">
-                  <Link
-                    to="/panier"
-                    className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
-                    onMouseEnter={handleCartMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <FaShoppingCart className="h-6 w-6" />
-                    {cartItemsCount > 0 && (
-                      <span className="absolute -top-8 -right-8 bg-teal-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                        {cartItemsCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <CartPreview 
-                      isOpen={isCartPreviewOpen} 
-                      onClose={() => setIsCartPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                {/* Favoris avec design amélioré */}
+                <Link
+                  to="/favoris"
+                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                >
+                  <HiOutlineHeart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  <FavoritesCounter size="md" />
+                </Link>
+                
+                {/* Panier avec design amélioré */}
+                <Link
+                  to="/panier"
+                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                >
+                  <HiOutlineShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                </Link>
               </div>
             </div>
           </div>
         </div>
         
-        {/* Barre de navigation catégories */}
+        {/* Barre de navigation catégories - Design moderne et agrandi */}
         <div 
-          className={`relative transition-all duration-300 ${
-            scrolled ? 'py-2' : 'py-3'
-          } ${isMobileMenuOpen ? 'block bg-white shadow-lg' : 'hidden sm:block bg-gray-100'}`}
+          className={`relative bg-white border-t border-gray-100 transition-all duration-500 ${
+            scrolled ? 'py-2 sm:py-3' : 'py-3 sm:py-4'
+          } ${isMobileMenuOpen ? 'block shadow-lg' : 'hidden sm:block'}`}
         >
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between">
-              {/* Bouton "Tous nos produits" à gauche - visible uniquement sur desktop */}
+          <div className="container mx-auto px-3 sm:px-4">
+            <div className="flex items-center justify-between gap-4">
+              {/* Bouton "Nos Catégories" à gauche - Agrandi et moderne */}
               <div className="hidden sm:block">
                 <button 
                   onClick={toggleProductsMenu}
-                  className="px-4 py-2 text-gray-700 hover:text-teal-600 transition-colors rounded-lg flex items-center space-x-2 focus:outline-none"
-                  aria-label="Tous nos produits"
+                  className="group flex items-center gap-3 px-6 py-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 hover:shadow-md font-medium"
+                  aria-label="Nos catégories"
                   aria-expanded={isMenuOpen}
                   aria-controls="vertical-menu"
                   data-testid="all-products-button"
                 >
-                  <FaBars className={`transition-transform duration-200 ${isMenuOpen ? 'rotate-90' : ''}`} />
-                  <span className="hidden lg:inline">Nos Catégories</span>
+                  <HiOutlineMenu className={`w-6 h-6 transition-transform duration-300 ${isMenuOpen ? 'rotate-90' : ''}`} />
+                  <span className="hidden lg:inline text-base">Nos Catégories</span>
                 </button>
               </div>
               
-              {/* Liens de navigation au centre - Desktop */}
-              <div className="hidden sm:flex space-x-2 lg:space-x-8 overflow-x-auto whitespace-nowrap scrollbar-hide">
+              {/* Liens de navigation au centre - Agrandis et modernes */}
+              <div className="hidden sm:flex items-center gap-1">
                 <Link
                   to="/"
-                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
+                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                    isActive('/') 
+                      ? 'bg-blue-500 text-white shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
                 >
                   Accueil
                 </Link>
                 <Link
-                  to="/a-propos"
-                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/a-propos') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
-                >
-                  À propos
-                </Link>
-                <Link
                   to="/nos-produits"
-                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/nos-produits') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
+                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                    isActive('/nos-produits') 
+                      ? 'bg-blue-500 text-white shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
                 >
-                Produits
+                  Produits
                 </Link>
                 <Link
                   to="/promotions"
-                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/promotions') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
+                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                    isActive('/promotions') 
+                      ? 'bg-blue-500 text-white shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
                 >
                   Promotions
                 </Link>
                 <Link
-                  to="/espace-recrutement"
-                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/espace-recrutement') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
-                >
-                  Recrutement
-                </Link>
-                <Link
                   to="/nous-contact"
-                  className={`px-2 lg:px-3 py-2 text-sm lg:text-base ${isActive('/nous-contact') ? 'text-teal-600 font-medium' : 'text-gray-700'} hover:text-teal-600 transition-colors whitespace-nowrap`}
+                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                    isActive('/nous-contact') 
+                      ? 'bg-blue-500 text-white shadow-md' 
+                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                  }`}
                 >
                   Contact
                 </Link>
               </div>
               
-              {/* Bouton de connexion à droite */}
+              {/* Bouton de connexion à droite - Agrandi et moderne */}
               <div className="hidden md:flex items-center">
                 {isAuthenticated ? (
                   <div className="relative">
                     <button
                       ref={userMenuButtonRef}
                       onClick={handleUserMenuButtonClick}
-                      onMouseEnter={handleUserMenuButtonMouseEnter}
-                      onMouseLeave={handleUserMenuMouseLeave}
-                      className="flex items-center px-4 py-2 bg-teal-600 text-white hover:bg-teal-700 transition-colors duration-200 rounded-md relative"
+                      className="flex items-center gap-3 px-6 py-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 hover:shadow-md font-medium"
                       aria-label="Mon compte"
                       aria-expanded={isUserMenuOpen}
                       aria-haspopup="true"
                       id="user-menu-button"
                       type="button"
                     >
-                      <div className="relative inline-block">
-                        <FaUser className="w-4 h-4 mr-2" />
+                      <div className="relative">
+                        <HiOutlineUser className="w-6 h-6" />
                         {user && !user?.client?.emailVerified && (
-                          <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center border-2 border-teal-600">
-                            <span className="text-[10px] text-teal-600 font-bold">!</span>
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
+                            <span className="text-[10px] text-gray-800 font-bold">!</span>
                           </div>
                         )}
                       </div>
-                      <span>{formatUserName()}</span>
-                      <svg 
-                        className={`h-4 w-4 ml-1 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} 
-                        fill="none" 
-                        viewBox="0 0 24 24" 
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <span className="text-base">{formatUserName()}</span>
+                      <FaChevronDown className={`h-4 w-4 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isUserMenuOpen && (
                       <div
                         ref={userMenuContentRef}
-                        className="absolute right-0 mt-2 w-60 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-100 animate-fade-in"
-                        onMouseLeave={handleUserMenuMouseLeave}
-                        onMouseEnter={openUserMenu}
+                        className="absolute right-0 mt-3 w-80 bg-gradient-to-br from-white/90 via-slate-50/80 to-blue-50/80 backdrop-blur-xl rounded-3xl shadow-xl ring-1 ring-black/10 border border-white/60 z-50 overflow-hidden animate-fade-in"
                         id="user-menu-content"
                       >
-                        <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-medium text-gray-700">Profil utilisateur</p>
-                          <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                        {/* Flèche */}
+                        <div className="absolute -top-2 right-8 w-4 h-4 bg-gradient-to-br from-white/90 to-blue-50/80 backdrop-blur-xl rotate-45 shadow-lg ring-1 ring-black/10 border border-white/60"></div>
+                        <div className="px-6 py-4 border-b border-slate-100/80">
+                          <p className="text-base font-bold text-slate-800 tracking-tight">Profil utilisateur</p>
+                          <p className="text-sm text-gray-500 truncate mt-0.5">{user?.email}</p>
                           {user && !user?.client?.emailVerified && (
-                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
-                              <div className="flex items-center justify-between">
-                                <p className="text-xs text-yellow-700 flex items-center">
-                                  <span className="mr-1">⚠️</span>
-                                  Email non vérifié
-                                </p>
-                                <Link
-                                  to="/verification-email"
-                                  className="text-xs font-medium text-teal-600 hover:text-teal-500"
-                                  onClick={closeUserMenu}
-                                >
-                                  Vérifier
-                                </Link>
+                            <div className="mt-3 p-3 bg-yellow-50/80 rounded-xl flex items-center justify-between text-xs text-yellow-800 shadow-sm border border-yellow-100/60">
+                              <div className="flex items-center">
+                                <span className="mr-1">⚠️</span>
+                                <span>Email non vérifié</span>
                               </div>
+                              <Link
+                                to="/verification-email"
+                                className="font-semibold text-teal-600 hover:text-teal-700 transition-colors"
+                                onClick={closeUserMenu}
+                              >
+                                Vérifier →
+                              </Link>
                             </div>
                           )}
                         </div>
                         <Link
                           to="/mon-profil"
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-blue-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
                           onClick={closeUserMenu}
                         >
-                          <FaUser className="mr-2 text-gray-500" />
-                          Modifier mon profil
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                            <HiOutlineUser className="w-4 h-4" />
+                          </div>
+                          <span className="font-medium">Modifier mon profil</span>
                         </Link>
                         <Link
                           to="/favoris"
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-pink-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
                           onClick={closeUserMenu}
                         >
-                          <FaHeartFilled className="mr-2 text-gray-500" />
-                          Mes Favoris
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-100 text-pink-600">
+                            <HiOutlineHeart className="w-4 h-4" />
+                          </div>
+                          <span className="font-medium">Mes Favoris</span>
                         </Link>
+
                         <Link
-                          to="/mes-commandes"
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                          to="/mes-devis"
+                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-green-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
                           onClick={closeUserMenu}
                         >
-                          <svg className="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                          </svg>
-                          Mes commandes
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
+                          <span className="font-medium">Mes Devis</span>
                         </Link>
-                        <Link
-                          to="/Mes-devis"
-                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                          onClick={closeUserMenu}
-                        >
-                          <svg className="h-4 w-4 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          Mes Devis
-                        </Link>
-                        <button
-                          onClick={() => {
-                            logout();
-                            closeUserMenu();
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
-                        >
-                          <FaSignOutAlt className="mr-2" />
-                          Déconnexion
-                        </button>
+                        <div className="border-t border-gray-100 mt-2 pt-2">
+                          <button
+                            onClick={() => {
+                              logout();
+                              closeUserMenu();
+                            }}
+                            className="flex items-center gap-3 w-full px-6 py-3 text-[15px] font-semibold text-red-600 hover:bg-red-50/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
+                          >
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                              <HiOutlineLogout className="w-4 h-4" />
+                            </div>
+                            <span className="font-medium">Déconnexion</span>
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
                 ) : (
                   <Link
                     to="/connexion"
-                    className="flex items-center px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200 rounded-md"
+                    className="flex items-center gap-3 px-6 py-4 bg-blue-500 text-white hover:bg-blue-600 rounded-xl transition-all duration-300 hover:shadow-md font-medium"
                     aria-label="Connexion"
                   >
-                    <FaUser className="w-4 h-4 mr-2" />
-                    <span>Connexion</span>
+                    <HiOutlineUser className="w-6 h-6" />
+                    <span className="text-base">Connexion</span>
                   </Link>
                 )}
               </div>
             </div>
             
-            {/* Version mobile des liens */}
+            {/* Version mobile des liens - Design moderne */}
             <div 
               id="mobile-menu" 
-              className={`sm:hidden mt-4 space-y-2 ${isMobileMenuOpen ? 'block' : 'hidden'}`}
+              className={`sm:hidden mt-3 sm:mt-4 space-y-2 sm:space-y-3 ${isMobileMenuOpen ? 'block' : 'hidden'}`}
             >
               {/* Menu principal mobile */}
-              <div className="space-y-2">
+              <div className="space-y-2 sm:space-y-3">
                 {/* Bouton Voir toutes les catégories */}
                 <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     setIsMenuOpen(true);
                   }}
-                  className="flex w-full items-center justify-between py-3 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
+                  className="group relative flex w-full items-center justify-between py-3 sm:py-4 px-4 sm:px-5 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-300 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl"
                   id="mobile-categories-button"
                   aria-label="Voir toutes les catégories"
                 >
-                  <span className="font-medium">Voir toutes les catégories</span>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="absolute inset-0 bg-white/10 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <span className="relative z-10 font-bold text-base sm:text-lg">Voir toutes les catégories</span>
+                  <svg className="relative z-10 w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
 
                 {/* Liens de navigation */}
-                <nav className="bg-white rounded-lg shadow-sm divide-y divide-gray-100">
+                <nav className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg overflow-hidden">
                   <Link
                     to="/"
-                    className={`flex items-center w-full py-3.5 px-4 ${
-                      isActive('/') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-colors first:rounded-t-lg`}
+                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
+                      isActive('/') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Accueil
                   </Link>
-           
-                  <Link
-                    to="/a-propos"
-                    className={`flex items-center w-full py-3.5 px-4 ${
-                      isActive('/a-propos') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-colors`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    À propos
-                  </Link>
                   <Link
                     to="/nos-produits"
-                    className={`flex items-center w-full py-3.5 px-4 ${
-                      isActive('/nos-produits') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-colors`}
+                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
+                      isActive('/nos-produits') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Produits
                   </Link>
                   <Link
                     to="/promotions"
-                    className={`flex items-center w-full py-3.5 px-4 ${
-                      isActive('/promotions') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-colors`}
+                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
+                      isActive('/promotions') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Promotions
                   </Link>
                   <Link
-                    to="/espace-recrutement"
-                    className={`flex items-center w-full py-3.5 px-4 ${
-                      isActive('/espace-recrutement') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-colors`}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Recrutement
-                  </Link>
-                  <Link
                     to="/nous-contact"
-                    className={`flex items-center w-full py-3.5 px-4 ${
-                      isActive('/nous-contact') ? 'text-teal-600 bg-teal-50 font-medium' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-colors last:rounded-b-lg`}
+                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
+                      isActive('/nous-contact') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-all duration-200 text-sm sm:text-base`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Contact
@@ -917,27 +849,29 @@ const Navbar: React.FC = () => {
                       setIsMobileMenuOpen(false);
                       navigate('/mon-profil');
                     }}
-                    className="flex w-full items-center justify-between py-3.5 px-4 bg-teal-600 text-white hover:bg-teal-700 transition-colors rounded-lg shadow-sm"
+                    className="group relative flex w-full items-center justify-between py-3 sm:py-4 px-4 sm:px-5 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-300 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl"
                   >
-                    <span className="flex items-center">
-                      <FaUser className="w-4 h-4 mr-2" />
-                      <span className="font-medium">{user?.name || 'Mon profil'}</span>
+                    <div className="absolute inset-0 bg-white/10 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span className="relative z-10 flex items-center">
+                      <HiOutlineUser className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
+                      <span className="font-bold text-base sm:text-lg">{user?.name || 'Mon profil'}</span>
                     </span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="relative z-10 w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 ) : (
                   <Link
                     to="/connexion"
-                    className="flex w-full items-center justify-between py-3.5 px-4 bg-blue-600 text-white hover:bg-blue-700 transition-colors rounded-lg shadow-sm"
+                    className="group relative flex w-full items-center justify-between py-3 sm:py-4 px-4 sm:px-5 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-300 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <span className="flex items-center">
-                      <FaUser className="w-4 h-4 mr-2" />
-                      <span className="font-medium">Connexion</span>
+                    <div className="absolute inset-0 bg-white/10 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <span className="relative z-10 flex items-center">
+                      <HiOutlineUser className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
+                      <span className="font-bold text-base sm:text-lg">Connexion</span>
                     </span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="relative z-10 w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
@@ -963,17 +897,6 @@ const Navbar: React.FC = () => {
           onClose={() => setIsMenuOpen(false)} 
         />
       )}
-      
-      {/* Boutons de navigation mobile */}
-      <div className="flex items-center space-x-2 lg:hidden">
-        <button
-          onClick={handleSearchClick}
-          className="p-2 hover:bg-gray-100 rounded-full"
-          aria-label="Rechercher"
-        >
-          <FaSearch className="w-6 h-6 text-gray-600" />
-        </button>
-      </div>
 
       {/* Formulaire de rappel */}
       <CallbackForm isOpen={isCallbackFormOpen} onClose={() => setIsCallbackFormOpen(false)} />

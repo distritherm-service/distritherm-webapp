@@ -1,22 +1,50 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Promotion, getDaysRemaining } from '../../data/promotions';
-import FavoriteButton from '../../components/favorites/FavoriteButton';
+import { Promotion } from '../../services/promotionService';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
-import { FaHeart } from 'react-icons/fa';
-import type { FavoriteItem } from '@/types';
+import { FaHeart, FaRegHeart, FaShoppingCart, FaCheck, FaInfoCircle, FaTag, FaClock } from 'react-icons/fa';
+import { formatPrice } from '../../utils/format';
+import FavoriteButton from '../favorites/FavoriteButton';
 
 interface PromotionCardProps {
   promotion: Promotion;
 }
 
 const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
-  const [showNotification, setShowNotification] = useState<string | null>(null);
+  const [showAdded, setShowAdded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const { addToCart, isInCart } = useCart();
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   
-  const handleAddToCart = () => {
+  // Vérifier que promotion est défini pour éviter des erreurs
+  if (!promotion) {
+    return <div className="bg-white rounded-2xl shadow-lg p-6">Chargement...</div>;
+  }
+  
+  // Vérifier si le produit est dans le panier
+  const productInCart = isInCart(promotion.id);
+  
+  // Image à afficher (première image ou image par défaut en cas d'erreur)
+  const imageUrl = imageError || !promotion.image 
+    ? '/image-produit-defaut.jpeg' 
+    : promotion.image;
+  
+  // Calculer le nombre de jours restant avant la fin de la promotion
+  const getDaysRemaining = (): number => {
+    if (!promotion.validUntil) return 0;
+    
+    const today = new Date();
+    const endDate = new Date(promotion.validUntil);
+    const timeDiff = endDate.getTime() - today.getTime();
+    return Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+  };
+  
+  const daysRemaining = getDaysRemaining();
+  
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!promotion.inStock) return;
     
     addToCart({
@@ -27,194 +55,171 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
       quantity: 1
     });
     
-    showToast("Promotion ajoutée au panier");
+    setShowAdded(true);
+    setTimeout(() => setShowAdded(false), 2000);
   };
   
-  const handleToggleFavorite = () => {
-    if (isFavorite(promotion.id)) {
-      removeFromFavorites(promotion.id);
-      showToast("Retiré des favoris");
-    } else {
-      const favoriteItem: FavoriteItem = {
-        id: promotion.id,
-        name: promotion.title,
-        price: promotion.discountPrice,
-        image: promotion.image,
-        description: promotion.description,
-        category: promotion.category,
-        brand: promotion.brand
-      };
-      addToFavorites(favoriteItem);
-      showToast("Ajouté aux favoris");
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (isToggling) return;
+    
+    setIsToggling(true);
+    try {
+      // Convertir l'ID de la promotion en nombre si nécessaire
+      const productId = typeof promotion.id === 'string' ? parseInt(promotion.id) : promotion.id;
+      await toggleFavorite(productId);
+    } finally {
+      setIsToggling(false);
     }
   };
-  
-  const showToast = (message: string) => {
-    setShowNotification(message);
-    setTimeout(() => setShowNotification(null), 2000);
-  };
 
-  const promotionInCart = isInCart(promotion.id);
-  const daysRemaining = getDaysRemaining(promotion.validUntil);
+  // Prix sécurisés pour éviter les NaN
+  const safeOriginalPrice = promotion.originalPrice || 0;
+  const safeDiscountPrice = promotion.discountPrice || 0;
+  const safeDiscountPercentage = promotion.discountPercentage || 0;
+  const savings = safeOriginalPrice - safeDiscountPrice;
+  
+  // Convertir l'ID en nombre pour la vérification des favoris
+  const promotionIdAsNumber = typeof promotion.id === 'string' ? parseInt(promotion.id) : promotion.id;
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 h-full flex flex-col group relative">
-      {/* Toast notification */}
-      {showNotification && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full text-sm z-50 animate-fade-in-down">
-          {showNotification}
+    <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out overflow-hidden border border-orange-100/50 hover:border-orange-300/70 transform hover:-translate-y-2">
+      {/* Image container with modern aspect ratio */}
+      <div className="relative h-64 overflow-hidden bg-gradient-to-br from-orange-50 to-red-50">
+        {/* Badge de promotion en haut à gauche */}
+        <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-1">
+          <FaTag className="w-3 h-3" />
+          -{safeDiscountPercentage}%
         </div>
-      )}
-      
-      {/* Badge de réduction */}
-      <div className="absolute top-0 right-0 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold py-1.5 px-3 rounded-bl-xl z-10 transform translate-y-0 group-hover:-translate-y-0.5 transition-transform">
-        -{promotion.discountPercentage}%
-      </div>
-      
-      <div className="relative aspect-[4/3]">
-        <img 
-          src={promotion.image} 
-          alt={promotion.title} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.onerror = null;
-            target.src = 'https://via.placeholder.com/400x300?text=Distritherm';
-          }}
-        />
         
-        {promotion.featured && (
-          <div className="absolute top-4 left-4">
-            <span className="bg-gradient-to-r from-amber-400 to-amber-600 text-white text-sm px-3 py-1 rounded-full shadow-md">
-              Offre vedette
-            </span>
+        {/* Badge stock limité si applicable */}
+        {promotion.quantity && promotion.quantity <= 5 && (
+          <div className="absolute top-16 left-4 z-20 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg">
+            Plus que {promotion.quantity} en stock
           </div>
         )}
-        
-        {!promotion.inStock && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <span className="bg-red-500 text-white px-4 py-2 rounded-full font-bold transform -rotate-12 shadow-lg">
-              Rupture de stock
-            </span>
-          </div>
-        )}
-        
-        <FavoriteButton
-          item={{
-            id: promotion.id,
-            name: promotion.title,
-            price: promotion.discountPrice,
-            image: promotion.image,
-            description: promotion.description,
-            category: promotion.category,
-            brand: promotion.brand
-          }}
-          type="promotion"
-          className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-red-50"
+
+        {/* Product Image */}
+        <img
+          src={imageUrl}
+          alt={promotion.title}
+          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+          onError={() => setImageError(true)}
         />
         
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent pt-10 pb-4 px-4">
-          <div className="flex justify-between items-end">
-            <div>
-              <span className="inline-block bg-white/20 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded mb-1">
-                {promotion.category}
-              </span>
-              <h3 className="text-lg font-bold text-white line-clamp-1">{promotion.title}</h3>
-            </div>
-            <div className="text-right">
-              <span className="line-through text-gray-300 text-sm">
-                {promotion.originalPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-              </span>
-              <div className="text-white font-bold text-xl">
-                {promotion.discountPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="mb-2 flex justify-between items-center">
-          <span className="text-sm font-semibold text-indigo-600">{promotion.brand}</span>
-          <span className="text-xs text-gray-500">{promotion.subcategory}</span>
-        </div>
+        {/* Overlay with gradient */}
+        <div className="absolute inset-0 bg-gradient-to-t from-red-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-grow">{promotion.description}</p>
-        
-        <div className="mt-auto space-y-4">
-          {/* Prix et économies */}
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="text-xs text-gray-500">Prix original</span>
-                <div className="flex gap-2 items-center">
-                  <span className="line-through text-gray-500 text-sm">
-                    {promotion.originalPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                  </span>
-                  <span className="text-xs text-gray-400">(TTC)</span>
-                </div>
-                <span className="text-xs text-gray-400">
-                  HT: {(promotion.originalPrice / 1.2).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                </span>
-              </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs text-gray-500">Prix promo</span>
-                <div className="flex gap-2 items-center">
-                  <span className="font-bold text-teal-600">
-                    {promotion.discountPrice.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                  </span>
-                  <span className="text-xs text-gray-400">(TTC)</span>
-                </div>
-                <span className="text-xs text-gray-400">
-                  HT: {(promotion.discountPrice / 1.2).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-                </span>
-              </div>
-            </div>
-          </div>
+        {/* Floating Action Buttons */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
+          {/* Favorite Button */}
+          <FavoriteButton
+            productId={promotionIdAsNumber}
+            variant="floating"
+            size="md"
+            className="z-10"
+          />
           
-          {/* Code promo et économie réalisée */}
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">Code promo:</span>
-              <span className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">{promotion.code}</span>
-            </div>
-            <div className="text-right">
-              <span className="text-xs text-gray-500">Économie:</span>
-              <div className="font-bold text-red-500">
-                {(promotion.originalPrice - promotion.discountPrice).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
-              </div>
-            </div>
-          </div>
+          {/* View Details Button */}
+          <Link
+            to={`/produit/${promotion.id}`}
+            className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-orange-600 hover:text-orange-700"
+          >
+            <FaInfoCircle className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* Status et temps restant */}
+        <div className="absolute bottom-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+          {/* Badge stock */}
+          {promotion.inStock ? (
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-green-500/90 text-white backdrop-blur-sm shadow-lg">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              En stock
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-orange-400/90 text-white backdrop-blur-sm shadow-lg">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+              Sur commande
+            </span>
+          )}
           
-          {/* Boutons d'action */}
-          <div className="flex gap-2">
-            <button
-              onClick={handleAddToCart}
-              disabled={!promotion.inStock || promotionInCart}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium text-sm transition-all ${
-                !promotion.inStock || promotionInCart
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              {promotionInCart ? 'Dans le panier' : 'Ajouter au panier'}
-            </button>
-            <button
-              onClick={handleToggleFavorite}
-              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              <FaHeart className={`w-5 h-5 ${isFavorite(promotion.id) ? 'text-red-500' : 'text-gray-400'}`} />
-            </button>
-          </div>
-          
-          {/* Jours restants */}
+          {/* Badge temps restant */}
           {daysRemaining > 0 && (
-            <div className="text-center text-sm text-gray-500">
-              {daysRemaining} jour{daysRemaining > 1 ? 's' : ''} restant{daysRemaining > 1 ? 's' : ''}
-            </div>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-red-500/90 text-white backdrop-blur-sm shadow-lg">
+              <FaClock className="w-3 h-3" />
+              {daysRemaining} jour{daysRemaining > 1 ? 's' : ''}
+            </span>
           )}
         </div>
       </div>
+
+      {/* Content Section */}
+      <div className="p-6 space-y-4">
+        {/* Product Title */}
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 line-clamp-2 leading-tight mb-2 group-hover:text-red-700 transition-colors duration-300">
+            {promotion.title}
+          </h3>
+          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
+            {promotion.description}
+          </p>
+        </div>
+
+        {/* Pricing Section modernisée */}
+        <div className="space-y-3">
+          {/* Prix original barré */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500 line-through">
+              Prix normal: {formatPrice(safeOriginalPrice)}
+            </span>
+          </div>
+          
+          {/* Prix promotionnel en évidence */}
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-medium text-red-600">Prix promotion</span>
+            <span className="text-1xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+              {formatPrice(safeDiscountPrice)}
+            </span>
+          </div>
+          
+          {/* Économies */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-green-600">Vous économisez</span>
+            <span className="text-lg font-bold text-green-600">
+              {formatPrice(savings)}
+            </span>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <button
+          onClick={handleAddToCart}
+          disabled={!promotion.inStock || productInCart}
+          className={`w-full py-3.5 px-6 rounded-xl font-semibold text-sm transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 shadow-lg ${
+            !promotion.inStock
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : showAdded || productInCart
+                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-green-200'
+                : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white shadow-red-200 hover:shadow-red-300'
+          }`}
+        >
+          {showAdded || productInCart ? (
+            <>
+              <FaCheck className="w-4 h-4" />
+              <span>Ajouté au panier !</span>
+            </>
+          ) : (
+            <>
+              <FaShoppingCart className="w-4 h-4" />
+              <span>Ajouter au panier</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Subtle bottom accent */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-red-400 via-red-600 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
     </div>
   );
 };

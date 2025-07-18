@@ -1,21 +1,16 @@
 import React, { useState, useEffect, lazy, Suspense, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FaHeart, FaShoppingCart, FaRuler, FaWeight, FaBox, FaChevronRight, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
+import { useParams, useNavigate } from 'react-router-dom';
+import {  FaShoppingCart, FaRuler, FaWeight, FaBox, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumb from '../components/navigation/Breadcrumb';
-import { ProductDetails } from '../types/product';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { products, Product } from '../data/products';
+import { getProductById, getProducts } from '../services/productService';
 import { FiChevronLeft, FiChevronRight, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import Footer from '../components/layout/Footer';
 import ProductCard from '../components/products/ProductCard';
-import Slider from '../components/home/Slider';
 import Layout from '../components/layout/Layout';
-import ProductGallery from '../components/products/ProductGallery';
-import ProductInfo from '../components/products/ProductInfo';
-import ProductTabs from '../components/products/ProductTabs';
-import RelatedProducts from '../components/products/RelatedProducts';
+import { Product } from '../types/product';
 
 // Utilisation du lazy loading pour les composants de détails non critiques
 const ProductSpecifications = lazy(() => import('../components/products/ProductSpecifications'));
@@ -31,7 +26,7 @@ const SectionLoader = () => (
 // Types pour les onglets
 type TabType = 'description' | 'features' | 'specs' | 'documents';
 
-const ImageGallery = ({ images }: { images: string[] }) => {
+const ImageGallery = ({ images, onImageError }: { images: string[], onImageError?: () => void }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
@@ -45,6 +40,13 @@ const ImageGallery = ({ images }: { images: string[] }) => {
 
   const toggleZoom = () => {
     setIsZoomed(!isZoomed);
+  };
+  
+  // Gérer l'erreur de chargement d'image
+  const handleImageError = () => {
+    if (onImageError) {
+      onImageError();
+    }
   };
 
   return (
@@ -65,6 +67,7 @@ const ImageGallery = ({ images }: { images: string[] }) => {
             className={`w-full h-full object-contain transition-transform duration-300 ${
               isZoomed ? 'scale-150' : 'scale-100'
             }`}
+            onError={handleImageError}
           />
         </motion.div>
       </AnimatePresence>
@@ -115,13 +118,46 @@ const ImageGallery = ({ images }: { images: string[] }) => {
   );
 };
 
-const ProductRelatedSlider = ({ relatedProductIds }: { relatedProductIds: string[] }) => {
+const ProductRelatedSlider = ({ product }: { product: Product }) => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   
-  // Filtrer les produits reliés
-  const relatedProducts = products.filter(p => relatedProductIds.includes(p.id));
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        // Récupérer des produits de la même catégorie
+        const categoryId = product.categoryId;
+        const response = await getProducts({ 
+          category: categoryId.toString(),
+          limit: 10 // Récupérer plus de produits pour pouvoir filtrer
+        });
+        
+        // Filtrer pour exclure le produit actuel et garder ceux de la même catégorie
+        const filteredProducts = response.products.filter(p => 
+          p.id !== product.id && 
+          p.categoryId === product.categoryId
+        );
+        
+        // Trier les produits: d'abord ceux de la même marque, puis les autres
+        const sortedProducts = filteredProducts.sort((a, b) => {
+          // Même marque que le produit actuel en premier
+          if (a.markId === product.markId && b.markId !== product.markId) return -1;
+          if (a.markId !== product.markId && b.markId === product.markId) return 1;
+          return 0;
+        });
+        
+        // Limiter à 5 produits maximum
+        setRelatedProducts(sortedProducts.slice(0, 5));
+      } catch (error) {
+        console.error('Erreur lors de la récupération des produits similaires:', error);
+        setRelatedProducts([]);
+      }
+    };
+    
+    fetchRelatedProducts();
+  }, [product]);
 
   const checkScrollButtons = () => {
     if (!sliderRef.current) return;
@@ -152,8 +188,6 @@ const ProductRelatedSlider = ({ relatedProductIds }: { relatedProductIds: string
     
     setTimeout(checkScrollButtons, 350);
   };
-
-  if (relatedProducts.length === 0) return null;
 
   return (
     <div className="relative bg-white rounded-2xl p-6 shadow-lg mb-8">
@@ -186,11 +220,17 @@ const ProductRelatedSlider = ({ relatedProductIds }: { relatedProductIds: string
         className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide scroll-smooth"
         onScroll={checkScrollButtons}
       >
-        {relatedProducts.map(product => (
-          <div key={product.id} className="flex-shrink-0 w-[280px]">
-            <ProductCard product={product} />
+        {relatedProducts.length > 0 ? (
+          relatedProducts.map((product) => (
+            <div key={product.id} className="flex-shrink-0 w-[280px]">
+              <ProductCard product={product} />
+            </div>
+          ))
+        ) : (
+          <div className="w-full text-center py-8 text-gray-500">
+            Aucun produit similaire trouvé
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
@@ -200,160 +240,35 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart, isInCart } = useCart();
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [product, setProduct] = useState<ProductDetails | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>('description');
   const [isLoading, setIsLoading] = useState(true);
-
-  // Trouver le produit par ID
-  const foundProduct = products.find(p => p.id === id);
-  
-  // Simulation du chargement des données
-  useEffect(() => {
-    // Dans une application réelle, ici on ferait un appel API
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [id]);
+  const [error, setError] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
 
   useEffect(() => {
-    if (!foundProduct) {
-      // Récupérer la promotion correspondante si elle existe
-      const promotionData = import.meta.glob('../data/promotions.ts', { eager: true });
-      // @ts-ignore
-      const { promotions } = promotionData['../data/promotions.ts'];
+    const loadProduct = async () => {
+      if (!id) return;
       
-      const promo = promotions?.find((p: any) => p.id === id);
-      
-      if (promo) {
-        // Si c'est une promotion, créer un produit à partir des données de la promotion
-        const productDetails: ProductDetails = {
-          id: promo.id,
-          name: promo.title,
-          description: promo.description,
-          longDescription: promo.description,
-          image: promo.image,
-          category: {
-            id: promo.category,
-            name: promo.category
-          },
-          brand: {
-            id: promo.brand,
-            name: promo.brand,
-            logo: `/brands/${promo.brand}.png`
-          },
-          price: promo.discountPrice,
-          inStock: promo.inStock,
-          model: `MOD-${promo.id}`,
-          reference: `REF-${promo.id}`,
-          specifications: [
-            { key: 'Catégorie', value: promo.category },
-            { key: 'Sous-catégorie', value: promo.subcategory },
-            { key: 'Marque', value: promo.brand },
-            { key: 'Code promo', value: promo.code },
-            { key: 'Disponibilité', value: promo.inStock ? 'En stock' : 'Rupture de stock' },
-            { key: 'Remise', value: `${promo.discountPercentage}%` }
-          ],
-          documents: [
-            {
-              id: 'doc1',
-              name: `Fiche technique ${promo.title}`,
-              type: 'fiche_technique',
-              url: '/documents/fiche-technique.pdf'
-            },
-            {
-              id: 'doc2',
-              name: 'Manuel d\'installation',
-              type: 'manuel',
-              url: '/documents/manuel-installation.pdf'
-            }
-          ],
-          features: [
-            'Haute performance',
-            'Installation professionnelle',
-            'Garantie fabricant',
-            'Service après-vente'
-          ],
-          relatedProducts: ['1', '2', '3'],
-          warranty: '2 ans pièces et main d\'œuvre',
-          dimensions: {
-            height: 100,
-            width: 60,
-            depth: 30,
-            weight: 50
-          },
-          energyClass: 'A+',
-          installationRequirements: 'Installation par un professionnel certifié recommandée'
-        };
-        
-        setProduct(productDetails);
-        return;
+      try {
+        setIsLoading(true);
+        setError(null);
+        const productData = await getProductById(id);
+        setProduct(productData);
+      } catch (err) {
+        console.error('Erreur lors du chargement du produit:', err);
+        setError('Impossible de charger les détails du produit. Veuillez réessayer plus tard.');
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Si ni produit ni promotion n'est trouvé, rediriger
-      navigate('/nos-produits');
-      return;
-    }
-
-    // Créer un objet ProductDetails à partir du produit trouvé
-    const productDetails: ProductDetails = {
-      ...foundProduct,
-      name: foundProduct.title,
-      longDescription: foundProduct.description,
-      category: {
-        id: foundProduct.category,
-        name: foundProduct.category
-      },
-      brand: {
-        id: foundProduct.brand,
-        name: foundProduct.brand,
-        logo: `/brands/${foundProduct.brand}.png`
-      },
-      model: `MOD-${foundProduct.id}`,
-      reference: `REF-${foundProduct.id}`,
-      specifications: [
-        { key: 'Catégorie', value: foundProduct.category },
-        { key: 'Sous-catégorie', value: foundProduct.subcategory },
-        { key: 'Marque', value: foundProduct.brand },
-        { key: 'Disponibilité', value: foundProduct.inStock ? 'En stock' : 'Rupture de stock' }
-      ],
-      documents: [
-        {
-          id: 'doc1',
-          name: `Fiche technique ${foundProduct.title}`,
-          type: 'fiche_technique',
-          url: '/documents/fiche-technique.pdf'
-        },
-        {
-          id: 'doc2',
-          name: 'Manuel d\'installation',
-          type: 'manuel',
-          url: '/documents/manuel-installation.pdf'
-        }
-      ],
-      features: [
-        'Haute performance',
-        'Installation professionnelle',
-        'Garantie fabricant',
-        'Service après-vente'
-      ],
-      relatedProducts: ['1', '2', '3'],
-      warranty: '2 ans pièces et main d\'œuvre',
-      dimensions: {
-        height: 100,
-        width: 60,
-        depth: 30,
-        weight: 50
-      },
-      energyClass: 'A+',
-      installationRequirements: 'Installation par un professionnel certifié recommandée'
     };
 
-    setProduct(productDetails);
-  }, [id, navigate]);
+    loadProduct();
+  }, [id]);
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
@@ -375,32 +290,31 @@ const ProductDetail: React.FC = () => {
   const handleAddToCart = () => {
     if (!product) return;
     
-    addToCart({
-      id: product.id,
+    // Utiliser la même logique pour l'image que dans ProductCard
+    const imageUrl = imageError || !product.imagesUrl || product.imagesUrl.length === 0 
+      ? '/image-produit-defaut.jpeg' 
+      : `/images/products/${product.imagesUrl[0]}`;
+    
+    // Préparer l'objet à ajouter au panier avec la structure attendue
+    const cartItem = {
+      id: product.id.toString(),
       name: product.name,
-      price: product.price,
-      image: product.image,
+      price: product.priceTtc,
+      image: imageUrl,
       quantity
-    });
+    };
+    
+    addToCart(cartItem);
   };
 
-  const toggleFavorite = () => {
-    if (!product) return;
+  const handleToggleFavorite = async () => {
+    if (!product || isToggling) return;
 
-    if (isFavorite(product.id)) {
-      removeFromFavorites(product.id);
-    } else {
-      const productForFavorites = {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        image: product.image,
-        category: product.category.name,
-        brand: product.brand.name,
-        price: product.price,
-        inStock: product.inStock
-      };
-      addToFavorites(productForFavorites);
+    setIsToggling(true);
+    try {
+      await toggleFavorite(product.id);
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -417,7 +331,7 @@ const ProductDetail: React.FC = () => {
             exit={{ opacity: 0 }}
             className="prose max-w-none text-gray-600"
           >
-            {product.longDescription.split('\n').map((paragraph, index) => (
+            {product.description.split('\n').map((paragraph: string, index: number) => (
               <p key={index} className="mb-4 leading-relaxed">
                 {paragraph}
               </p>
@@ -425,6 +339,19 @@ const ProductDetail: React.FC = () => {
           </motion.div>
         );
       case 'features':
+        // Générer des caractéristiques basiques à partir des données disponibles
+        const features = [
+          `Marque: ${product.mark?.name || 'Non spécifiée'}`,
+          `Référence: ${product.productDetail?.itemCode || 'Non spécifiée'}`,
+          product.productDetail?.directorWord1 ? 
+            `Caractéristique 1: ${product.productDetail.directorWord1}` : null,
+          product.productDetail?.directorWord2 ? 
+            `Caractéristique 2: ${product.productDetail.directorWord2}` : null,
+          `Poids: ${product.productDetail?.weight ? product.productDetail.weight + ' kg' : 'Non spécifié'}`,
+          `État: ${product.active ? 'Actif' : 'Inactif'}`,
+          `Quantité disponible: ${product.quantity}`
+        ].filter(Boolean) as string[];
+        
         return (
           <motion.div
             initial={{ opacity: 0 }}
@@ -432,7 +359,7 @@ const ProductDetail: React.FC = () => {
             exit={{ opacity: 0 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {product.features.map((feature, index) => (
+            {features.map((feature: string, index: number) => (
               <motion.div
                 key={index}
                 whileHover={{ scale: 1.02 }}
@@ -445,15 +372,57 @@ const ProductDetail: React.FC = () => {
           </motion.div>
         );
       case 'specs':
+        // Générer des spécifications à partir des données disponibles
+        const specifications = [
+          { key: 'Catégorie', value: product.category?.name || 'Non spécifiée' },
+          { key: 'Marque', value: product.mark?.name || 'Non spécifiée' },
+          { key: 'Référence', value: product.productDetail?.itemCode || 'Non spécifiée' },
+          product.productDetail?.designation1 ? 
+            { key: 'Désignation 1', value: product.productDetail.designation1 } : null,
+          product.productDetail?.designation2 ? 
+            { key: 'Désignation 2', value: product.productDetail.designation2 } : null,
+          product.productDetail?.complementDesignation ? 
+            { key: 'Complément', value: product.productDetail.complementDesignation } : null,
+          product.productDetail?.packaging ? 
+            { key: 'Conditionnement', value: product.productDetail.packaging } : null,
+          product.productDetail?.packagingType ? 
+            { key: 'Type d\'emballage', value: product.productDetail.packagingType } : null,
+          product.productDetail?.label ? 
+            { key: 'Label', value: product.productDetail.label } : null,
+          product.productDetail?.unity ? 
+            { key: 'Unité', value: product.productDetail.unity } : null,
+          { key: 'Prix HT', value: `${product.priceHt.toFixed(2)} €` },
+          { key: 'Prix TTC', value: `${product.priceTtc.toFixed(2)} €` },
+          product.isInPromotion && product.promotionPrice ? 
+            { key: 'Prix promotionnel', value: `${product.promotionPrice.toFixed(2)} €` } : null,
+          { key: 'Disponibilité', value: product.quantity > 0 ? 'En stock' : 'Rupture de stock' }
+        ].filter(Boolean) as { key: string, value: string }[];
+        
         return (
           <Suspense fallback={<SectionLoader />}>
-            <ProductSpecifications specifications={product.specifications} />
+            <ProductSpecifications specifications={specifications} />
           </Suspense>
         );
       case 'documents':
+        // Pour l'instant, générer des documents fictifs
+        const documents = [
+          {
+            id: '1',
+            name: `Fiche technique ${product.name}`,
+            type: 'fiche_technique',
+            url: '#'
+          },
+          {
+            id: '2',
+            name: 'Guide d\'installation',
+            type: 'manuel',
+            url: '#'
+          }
+        ];
+        
         return (
           <Suspense fallback={<SectionLoader />}>
-            <ProductDocuments documents={product.documents} />
+            <ProductDocuments documents={documents} />
           </Suspense>
         );
       default:
@@ -461,14 +430,37 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  if (isLoading || !product) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-teal-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Chargement du produit...</p>
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="h-80 bg-gray-200 rounded mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+          </div>
         </div>
-      </div>
+      </Layout>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+              {error || "Produit non trouvé"}
+            </h1>
+            <button
+              onClick={() => navigate('/nos-produits')}
+              className="bg-[#007FFF] text-white px-6 py-2 rounded-lg hover:bg-[#007FFF]/90 transition-colors"
+            >
+              Retour aux produits
+            </button>
+          </div>
+        </div>
+      </Layout>
     );
   }
 
@@ -490,7 +482,14 @@ const ProductDetail: React.FC = () => {
               className="space-y-4 md:space-y-8"
             >
               <div className="w-full max-w-2xl mx-auto">
-                <ImageGallery images={[product.image, product.image, product.image, product.image]} />
+                <ImageGallery 
+                  images={
+                    imageError || !product.imagesUrl || product.imagesUrl.length === 0 
+                    ? ['/image-produit-defaut.jpeg']
+                    : product.imagesUrl.map(img => `/images/products/${img}`)
+                  } 
+                  onImageError={() => setImageError(true)}
+                />
               </div>
             </motion.div>
 
@@ -502,42 +501,67 @@ const ProductDetail: React.FC = () => {
             >
               {/* Titre et informations principales */}
               <div className="space-y-4">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900">{product.name}</h1>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">{product.name}</h1>
                 <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm">
                   <div className="flex items-center text-gray-600">
                     <span className="font-medium">RÉF:</span>
-                    <span className="ml-2">{product.reference}</span>
+                    <span className="ml-2">{product.productDetail?.itemCode || 'N/A'}</span>
                   </div>
                   <div className="flex items-center text-gray-600">
                     <span className="font-medium">MARQUE:</span>
-                    <span className="ml-2 text-[#007FFF]">{product.brand.name}</span>
+                    <span className="ml-2 text-[#007FFF]">{product.mark?.name || 'Non spécifiée'}</span>
                   </div>
                 </div>
-              </div>
-
-              {/* Description */}
-              <div>
-                <p className="text-base md:text-lg text-gray-600 leading-relaxed">{product.description}</p>
               </div>
 
               {/* Prix et stock */}
-              <div className="flex flex-wrap items-center justify-between gap-4 py-4 border-t border-gray-100">
-                <div>
-                  <div className="text-2xl md:text-4xl font-bold text-gray-900">
-                    {product.price.toFixed(2)} €
-                  </div>
-                  <div className="text-xs md:text-sm text-gray-500 mt-1">Prix HT</div>
+              <div className="flex flex-wrap items-center justify-between gap-4 py-6 border-t border-gray-100">
+                <div className="space-y-2 flex-1">
+                  {product.isInPromotion && product.promotionPrice ? (
+                    <div className="flex flex-col">
+                      <div className="flex items-center mb-1">
+                        <span className="text-xs font-medium bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-0.5 rounded-sm">
+                          PROMOTION
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl md:text-3xl font-bold text-gray-900">
+                          {product.promotionPrice.toFixed(2)} €
+                        </span>
+                        <span className="text-sm line-through text-gray-400">
+                          {product.priceTtc.toFixed(2)} €
+                        </span>
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500 mt-0.5">
+                        <span>Prix HT: {(product.promotionPrice / 1.2).toFixed(2)} €</span>
+                        <span className="mx-2">•</span>
+                        <span>TTC</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl md:text-3xl font-bold text-gray-900">
+                          {product.priceTtc.toFixed(2)} €
+                        </span>
+                        <span className="text-sm text-gray-500">TTC</span>
+                      </div>
+                      <div className="text-sm text-gray-500 mt-0.5">
+                        Prix HT: {product.priceHt.toFixed(2)} €
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <motion.div whileHover={{ scale: 1.05 }}>
                   <span className={`inline-flex items-center px-4 md:px-6 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium ${
-                    product.inStock
+                    product.quantity > 0
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
                     <span className={`w-2 h-2 rounded-full mr-2 ${
-                      product.inStock ? 'bg-green-500' : 'bg-red-500'
+                      product.quantity > 0 ? 'bg-green-500' : 'bg-red-500'
                     }`}></span>
-                    {product.inStock ? 'En stock' : 'Rupture de stock'}
+                    {product.quantity > 0 ? 'En stock' : 'Rupture de stock'}
                   </span>
                 </motion.div>
               </div>
@@ -580,47 +604,66 @@ const ProductDetail: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
-                  disabled={!product.inStock}
+                  disabled={!product.quantity}
                   className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-medium transition-all ${
-                    !product.inStock
+                    !product.quantity
                       ? 'bg-gray-300 cursor-not-allowed'
-                      : isInCart(product.id)
+                      : isInCart(product.id.toString())
                       ? 'bg-green-500 hover:bg-green-600'
                       : 'bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] hover:from-[#007FFF] hover:to-[#0056b3]'
                   }`}
                 >
                   <FaShoppingCart className="w-5 h-5" />
                   <span className="text-base md:text-lg">
-                    {!product.inStock
+                    {!product.quantity
                       ? 'Produit indisponible'
-                      : isInCart(product.id)
+                      : isInCart(product.id.toString())
                       ? 'Dans le panier'
                       : 'Ajouter au panier'}
                   </span>
                 </motion.button>
               </div>
 
-              {/* Dimensions */}
-              <div className="flex flex-wrap gap-6 py-4 border-t border-gray-100">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#7CB9E8] to-[#007FFF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                    <FaRuler className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-gray-400">Dimensions</div>
-                    <div className="text-sm font-medium">{product.dimensions?.height}×{product.dimensions?.width}×{product.dimensions?.depth} cm</div>
-                  </div>
+              {/* Caractéristiques supplémentaires */}
+              {product.productDetail && (
+                <div className="flex flex-wrap gap-6 py-4 border-t border-gray-100">
+                  {product.productDetail.weight && (
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[#7CB9E8] to-[#007FFF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                        <FaWeight className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-400">Poids</div>
+                        <div className="text-sm font-medium">{product.productDetail.weight} kg</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {product.productDetail.unity && (
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[#7CB9E8] to-[#007FFF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                        <FaRuler className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-400">Unité</div>
+                        <div className="text-sm font-medium">{product.productDetail.unity}</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {product.productDetail.packaging && (
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-[#7CB9E8] to-[#007FFF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                        <FaBox className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <div className="text-[10px] uppercase tracking-wider text-gray-400">Conditionnement</div>
+                        <div className="text-sm font-medium">{product.productDetail.packaging}</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#7CB9E8] to-[#007FFF] rounded-lg flex items-center justify-center mr-3 shadow-sm">
-                    <FaWeight className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-[10px] uppercase tracking-wider text-gray-400">Poids</div>
-                    <div className="text-sm font-medium">{product.dimensions?.weight} kg</div>
-                  </div>
-                </div>
-              </div>
+              )}
             </motion.div>
           </div>
 
@@ -679,9 +722,7 @@ const ProductDetail: React.FC = () => {
 
           {/* Produits similaires */}
           <div className="mt-12 md:mt-16">
-            {(product.relatedProducts ?? []).length > 0 && (
-              <ProductRelatedSlider relatedProductIds={product.relatedProducts ?? []} />
-            )}
+            <ProductRelatedSlider product={product} />
           </div>
           
           {/* Navigation rapide */}

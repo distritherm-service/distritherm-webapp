@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 interface Category {
   title: string;
   image: string;
+  imageUrl: string;
   icon: React.ReactNode;
   slug: string;
 }
@@ -13,6 +14,9 @@ interface CategoryGridProps {
 }
 
 const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
+
+  console.log(categories);
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -23,7 +27,7 @@ const CategoryGrid: React.FC<CategoryGridProps> = ({ categories }) => {
             className="relative group overflow-hidden rounded-xl aspect-[4/3] cursor-pointer block"
           >
             <img 
-              src={category.image}
+              src={category.imageUrl || category.image}
               alt={category.title} 
               className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-500"
             />

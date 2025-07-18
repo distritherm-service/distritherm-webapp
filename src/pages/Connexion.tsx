@@ -31,9 +31,10 @@ interface LoginResponse {
 
 interface ConnexionProps {
   inCart?: boolean;
+  onSuccess?: () => void;
 }
 
-const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
+const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
   const navigate = useNavigate();
   const { isAuthenticated, error: authError, clearError } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -49,9 +50,13 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
   // Si l'utilisateur est déjà connecté, rediriger vers la page d'accueil
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/');
+      if (inCart && onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, inCart, onSuccess]);
 
   // Surveillance des erreurs d'authentification
   useEffect(() => {
@@ -182,6 +187,38 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false }) => {
     </section>
   );
 
+  // Si on est dans le panier, ne pas utiliser le Layout pour éviter le breadcrumb
+  if (inCart) {
+    return (
+      <>
+        {showAdditionalInfoForm && googleCredential && (
+          <AdditionalInfoForm
+            googleCredential={googleCredential}
+            onCancel={cancelAdditionalInfo}
+            inCart={inCart}
+          />
+        )}
+        
+        {showForgotPasswordForm && (
+          <ForgotPasswordForm
+            onCancel={hideForgotPassword}
+          />
+        )}
+        
+        {showResetPasswordForm && (
+          <ResetPasswordForm
+            token={resetToken}
+            onCancel={cancelResetPassword}
+            onSuccess={handleResetPasswordSuccess}
+          />
+        )}
+        
+        {renderContent()}
+      </>
+    );
+  }
+
+  // Sinon, utiliser le Layout normal
   return (
     <Layout>
       {showAdditionalInfoForm && googleCredential && (
