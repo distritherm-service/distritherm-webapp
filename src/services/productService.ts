@@ -156,13 +156,22 @@ export const getProductById = async (id: string): Promise<Product> => {
   try {
     const response = await axiosInstance.get(`/products/${id}`);
     
+    // L'API retourne { "message": "...", "product": { ... } }
+    // Il faut accéder à response.data.product pour avoir les vraies données
+    const productData = response.data.product;
+    
+    if (!productData) {
+      throw new Error('Données du produit non trouvées dans la réponse API');
+    }
+    
     // Normaliser le produit
-    const product = response.data;
-    return {
-      ...product,
-      priceHt: product.priceHt || product.priceTtc || 0,
-      priceTtc: product.priceTtc || product.priceHt || 0,
+    const normalizedProduct = {
+      ...productData,
+      priceHt: productData.priceHt || productData.priceTtc || 0,
+      priceTtc: productData.priceTtc || productData.priceHt || 0,
     };
+    
+    return normalizedProduct;
   } catch (error) {
     // console.error('Erreur lors de la récupération du produit:', error);
     throw error;
@@ -213,6 +222,45 @@ export const getRecommendedProducts = async (excludedIds?: string[], page: numbe
     };
   } catch (error) {
     // console.error('Erreur lors de la récupération des produits recommandés:', error);
+    throw error;
+  }
+};
+
+// Interface pour la réponse des produits similaires
+export interface SimilarProductsResponse {
+  message: string;
+  products: Product[];
+  count: number;
+  criteriaUsed: string[];
+  originalProduct: {
+    id: number;
+    name: string;
+    category: string;
+    mark: string;
+    price: number;
+  };
+}
+
+/**
+ * Récupère les produits similaires à un produit donné
+ */
+export const getSimilarProducts = async (productId: string | number): Promise<SimilarProductsResponse> => {
+  try {
+    const response = await axiosInstance.get<SimilarProductsResponse>(`/products/${productId}/similar`);
+    
+    // Normaliser les produits dans la réponse
+    const products = response.data.products.map((product: any) => ({
+      ...product,
+      priceHt: product.priceHt || product.priceTtc || 0,
+      priceTtc: product.priceTtc || product.priceHt || 0,
+    }));
+    
+    return {
+      ...response.data,
+      products
+    };
+  } catch (error) {
+    // console.error('Erreur lors de la récupération des produits similaires:', error);
     throw error;
   }
 }; 

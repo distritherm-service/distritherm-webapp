@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FaTrash, FaShoppingCart } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../../contexts/CartContext';
-import { formatPrice } from '../../utils/format';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface CartPreviewProps {
   isOpen: boolean;
@@ -11,11 +10,15 @@ interface CartPreviewProps {
 }
 
 const CartPreview: React.FC<CartPreviewProps> = ({ isOpen, onClose }) => {
-  const { cart, removeFromCart, updateQuantity } = useCart();
+  const { cart, localCart, updateQuantity, removeFromCart, getCartTotal, getCartItemCount } = useCart();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isNavbarHidden, setIsNavbarHidden] = useState(false);
 
-  const totalAmount = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  // Déterminer quels items afficher selon l'état de connexion
+  const cartItems = isAuthenticated && cart ? cart.cartItems : localCart.items;
+  const totalAmount = getCartTotal();
+  const itemCount = getCartItemCount();
 
   // Détecter si la navbar est cachée
   useEffect(() => {
@@ -44,6 +47,23 @@ const CartPreview: React.FC<CartPreviewProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
+  const handleQuantityChange = async (itemId: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    
+    if (isAuthenticated && cart) {
+      await updateQuantity(itemId, newQuantity);
+    }
+    // Pour les utilisateurs non connectés, on ne peut pas modifier ici
+    // car on n'a que l'ID produit, pas l'ID item de panier
+  };
+
+  const handleRemoveItem = async (itemId: number) => {
+    if (isAuthenticated && cart) {
+      await removeFromCart(itemId);
+    }
+    // Pour les utilisateurs non connectés, rediriger vers le panier complet
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -63,88 +83,117 @@ const CartPreview: React.FC<CartPreviewProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Mon Panier</h3>
               <span className="text-sm text-gray-500">
-                {cart.length} {cart.length > 1 ? 'articles' : 'article'}
+                {itemCount} {itemCount > 1 ? 'articles' : 'article'}
               </span>
             </div>
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
-            {cart.length === 0 ? (
-              <div className="p-4 text-center">
-                <FaShoppingCart className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-gray-500">Votre panier est vide</p>
+          <div className="max-h-80 overflow-y-auto">
+            {cartItems.length === 0 ? (
+              <div className="p-6 text-center">
+                <p className="text-gray-500 mb-4">Votre panier est vide</p>
+                <button
+                  onClick={onClose}
+                  className="text-teal-600 hover:text-teal-700 font-medium"
+                >
+                  Continuer mes achats
+                </button>
               </div>
             ) : (
-              <div className="py-2">
-                {cart.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center px-4 py-2 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+              <div className="p-4 space-y-4">
+                {cartItems.map((item) => {
+                  // Adapter l'affichage selon le type d'item (cart API vs local)
+                  const isCartItem = 'product' in item; // Item du panier API
+                  const displayName = isCartItem ? item.product.name : item.name;
+                  const displayPrice = isCartItem ? item.priceTtc : item.priceTtc;
+                  const displayImage = isCartItem 
+                    ? (item.product.imagesUrl?.[0] || '/image-produit-defaut.jpeg')
+                    : item.image;
+                  const itemId = isCartItem ? item.id : item.productId;
+
+                  return (
+                    <div key={`${isCartItem ? 'cart' : 'local'}-${itemId}`} className="flex items-center space-x-3">
                       <img
-                        src={item.image}
-                        alt={item.name}
-                        className="h-full w-full object-cover object-center"
+                        src={displayImage}
+                        alt={displayName}
+                        className="w-12 h-12 object-cover rounded-md border border-gray-200"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/image-produit-defaut.jpeg';
+                        }}
                       />
-                    </div>
-                    <div className="ml-4 flex-1">
-                      <div className="flex justify-between">
-                        <div>
-                          <h4 className="text-sm font-medium text-gray-900">{item.name}</h4>
-                          <p className="mt-1 text-sm text-gray-500">
-                            {formatPrice(item.price)}
-                          </p>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="flex items-center border rounded-md">
+                      
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {displayName}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {displayPrice.toLocaleString('fr-FR', {
+                            style: 'currency',
+                            currency: 'EUR'
+                          })}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        {isAuthenticated && cart ? (
+                          <>
                             <button
-                              onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
-                              className="px-2 py-1 text-gray-600 hover:text-gray-800 transition-colors"
+                              onClick={() => handleQuantityChange(itemId, item.quantity - 1)}
+                              className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 border border-gray-300 rounded-md hover:border-gray-400"
+                              disabled={item.quantity <= 1}
                             >
                               -
                             </button>
-                            <span className="px-2 text-sm">{item.quantity}</span>
+                            
+                            <span className="text-sm font-medium w-8 text-center">
+                              {item.quantity}
+                            </span>
+                            
                             <button
-                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                              className="px-2 py-1 text-gray-600 hover:text-gray-800 transition-colors"
+                              onClick={() => handleQuantityChange(itemId, item.quantity + 1)}
+                              className="w-6 h-6 flex items-center justify-center text-gray-400 hover:text-gray-600 border border-gray-300 rounded-md hover:border-gray-400"
                             >
                               +
                             </button>
-                          </div>
-                          <button
-                            onClick={() => removeFromCart(item.id)}
-                            className="ml-2 text-red-500 hover:text-red-700 transition-colors"
-                          >
-                            <FaTrash className="h-4 w-4" />
-                          </button>
-                        </div>
+                            
+                            <button
+                              onClick={() => handleRemoveItem(itemId)}
+                              className="w-6 h-6 flex items-center justify-center text-red-400 hover:text-red-600"
+                            >
+                              ×
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-sm font-medium px-2">
+                            {item.quantity}
+                          </span>
+                        )}
                       </div>
                     </div>
-                  </motion.div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
 
-          {cart.length > 0 && (
+          {cartItems.length > 0 && (
             <div className="p-4 border-t border-gray-100">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-sm font-medium text-gray-900">Total</span>
-                <span className="text-lg font-semibold text-gray-900">
-                  {formatPrice(totalAmount)}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-lg font-semibold text-gray-900">Total</span>
+                <span className="text-lg font-bold text-teal-600">
+                  {totalAmount.toLocaleString('fr-FR', {
+                    style: 'currency',
+                    currency: 'EUR'
+                  })}
                 </span>
               </div>
+              
               <button
                 onClick={handleViewCart}
-                className="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 transition-colors flex items-center justify-center space-x-2"
+                className="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 transition-colors duration-200 font-medium"
               >
-                <FaShoppingCart className="h-5 w-5" />
-                <span>Voir mon panier</span>
+                Voir le panier
               </button>
             </div>
           )}
