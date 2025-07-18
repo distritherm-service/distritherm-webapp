@@ -50,7 +50,7 @@ const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) 
       id: item.id.toString(),
       name: item.name,
       price: item.priceTtc,
-      image: item.image || (item.imagesUrl && item.imagesUrl.length > 0 ? item.imagesUrl[0] : ''),
+      image: item.imagesUrl && item.imagesUrl.length > 0 ? item.imagesUrl[0] : '/image-produit-defaut.jpeg',
       quantity: 1
     };
 
@@ -58,7 +58,7 @@ const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) 
   };
 
   const renderProductImage = (item: FavoriteItem) => {
-    const imageUrl = item.image || (item.imagesUrl && item.imagesUrl.length > 0 ? item.imagesUrl[0] : '');
+    const imageUrl = item.imagesUrl && item.imagesUrl.length > 0 ? item.imagesUrl[0] : '';
     
     if (!imageUrl) {
       return (
@@ -170,7 +170,7 @@ const FavoritesPreview: React.FC<FavoritesPreviewProps> = ({ isOpen, onClose }) 
                             <FaShoppingCart className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => removeFromFavorites(item.id)}
+                            onClick={() => removeFromFavorites(typeof item.id === 'string' ? parseInt(item.id) : item.id)}
                             className="p-1 text-red-500 hover:text-red-700 transition-colors"
                             title="Retirer des favoris"
                           >

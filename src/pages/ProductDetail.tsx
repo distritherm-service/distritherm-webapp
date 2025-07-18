@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { getProductById, Product, getProducts } from '../services/productService';
+import { getProductById, getProducts } from '../services/productService';
 import { FiChevronLeft, FiChevronRight, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import Footer from '../components/layout/Footer';
 import ProductCard from '../components/products/ProductCard';
 import Layout from '../components/layout/Layout';
+import { Product } from '../types/product';
 
 // Utilisation du lazy loading pour les composants de détails non critiques
 const ProductSpecifications = lazy(() => import('../components/products/ProductSpecifications'));
@@ -239,7 +240,7 @@ const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart, isInCart } = useCart();
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState<Product | null>(null);
@@ -247,6 +248,7 @@ const ProductDetail: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -305,29 +307,14 @@ const ProductDetail: React.FC = () => {
     addToCart(cartItem);
   };
 
-  const toggleFavorite = () => {
-    if (!product) return;
+  const handleToggleFavorite = async () => {
+    if (!product || isToggling) return;
 
-    if (isFavorite(product.id.toString())) {
-      removeFromFavorites(product.id.toString());
-    } else {
-      // Utiliser la même logique pour l'image que dans ProductCard
-      const imageUrl = imageError || !product.imagesUrl || product.imagesUrl.length === 0 
-        ? '/image-produit-defaut.jpeg' 
-        : `/images/products/${product.imagesUrl[0]}`;
-      
-      // Adapter l'objet product à la structure attendue par addToFavorites
-      const favoriteItem = {
-        id: product.id.toString(),
-        name: product.name,
-        description: product.description,
-        image: imageUrl,
-        category: product.category?.name || '',
-        brand: product.mark?.name || '',
-        price: product.priceTtc,
-        inStock: product.quantity > 0
-      };
-      addToFavorites(favoriteItem);  
+    setIsToggling(true);
+    try {
+      await toggleFavorite(product.id);
+    } finally {
+      setIsToggling(false);
     }
   };
 

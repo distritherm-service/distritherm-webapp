@@ -8,13 +8,12 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useAuth } from '../../contexts/AuthContext';
-import CartPreview from '../cart/CartPreview';
-import FavoritesPreview from '../favorites/FavoritesPreview';
 import CallbackForm from '../common/CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
 import MobileVerticalMenu from './MobileVerticalMenu';
 import { FaHeart as FaHeartFilled } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
+import FavoritesCounter from '../favorites/FavoritesCounter';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -31,7 +30,7 @@ const Navbar: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navbarHeight = useRef<number>(0);
-  const { favorites, favoritesCount } = useFavorites();
+  const { favorites } = useFavorites();
   const { cart } = useCart();
   const { 
     searchQuery, 
@@ -42,10 +41,7 @@ const Navbar: React.FC = () => {
   } = useSearch();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
-  const [isCartPreviewOpen, setIsCartPreviewOpen] = useState(false);
-  const [isFavoritesPreviewOpen, setIsFavoritesPreviewOpen] = useState(false);
-  const cartPreviewRef = useRef<HTMLDivElement>(null);
-  const favoritesPreviewRef = useRef<HTMLDivElement>(null);
+
   const navigate = useNavigate();
   const userMenuButtonRef = useRef<HTMLButtonElement>(null);
   const userMenuContentRef = useRef<HTMLDivElement>(null);
@@ -233,47 +229,11 @@ const Navbar: React.FC = () => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  const handleCartMouseEnter = () => {
-    setIsCartPreviewOpen(true);
-    setIsFavoritesPreviewOpen(false);
-  };
-
-  const handleFavoritesMouseEnter = () => {
-    setIsFavoritesPreviewOpen(true);
-    setIsCartPreviewOpen(false);
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent) => {
-    const cartPreview = cartPreviewRef.current;
-    const favoritesPreview = favoritesPreviewRef.current;
-    const target = e.relatedTarget as Node;
-
-    if (cartPreview && !cartPreview.contains(target) && favoritesPreview && !favoritesPreview.contains(target)) {
-      setIsCartPreviewOpen(false);
-      setIsFavoritesPreviewOpen(false);
-    }
-  };
-
   // Gestion ouverture/fermeture du menu utilisateur
-  const openUserMenu = () => setIsUserMenuOpen(true);
   const closeUserMenu = () => setIsUserMenuOpen(false);
 
   // Ouvre le menu au clic ou au survol
-  const handleUserMenuButtonMouseEnter = () => openUserMenu();
   const handleUserMenuButtonClick = () => setIsUserMenuOpen((open) => !open);
-
-  // Ferme le menu si la souris quitte le bouton ET le menu
-  const handleUserMenuMouseLeave = (e: React.MouseEvent) => {
-    // Vérifie si la souris quitte vers un élément du menu ou du bouton
-    const related = e.relatedTarget as Node;
-    if (
-      userMenuButtonRef.current?.contains(related) ||
-      userMenuContentRef.current?.contains(related)
-    ) {
-      return;
-    }
-    closeUserMenu();
-  };
 
   // Gestionnaire de recherche
   const handleSearchFocus = () => {
@@ -448,48 +408,24 @@ const Navbar: React.FC = () => {
                 >
                   <HiOutlineSearch className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
-                <div className="relative">
-                  <Link
-                    to="/favoris"
-                    className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
-                    onMouseEnter={handleFavoritesMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineHeart className="h-4 w-4 sm:h-5 sm:w-5" />
-                    {favoritesCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
-                        <span className="text-[10px] sm:text-xs">{favoritesCount}</span>
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <FavoritesPreview 
-                      isOpen={isFavoritesPreviewOpen} 
-                      onClose={() => setIsFavoritesPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
-                <div className="relative">
-                  <Link
-                    to="/panier"
-                    className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
-                    onMouseEnter={handleCartMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
-                    {cartItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
-                        <span className="text-[10px] sm:text-xs">{cartItemsCount}</span>
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <CartPreview 
-                      isOpen={isCartPreviewOpen} 
-                      onClose={() => setIsCartPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                <Link
+                  to="/favoris"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                >
+                  <HiOutlineHeart className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <FavoritesCounter size="sm" />
+                </Link>
+                <Link
+                  to="/panier"
+                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                >
+                  <HiOutlineShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
+                      <span className="text-[10px] sm:text-xs">{cartItemsCount}</span>
+                    </span>
+                  )}
+                </Link>
                 <button
                   onClick={toggleMobileMenu}
                   className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-gray-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
@@ -635,50 +571,26 @@ const Navbar: React.FC = () => {
                 <div className="h-8 w-px bg-gray-200"></div>
                 
                 {/* Favoris avec design amélioré */}
-                <div className="relative">
-                  <Link
-                    to="/favoris"
-                    className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
-                    onMouseEnter={handleFavoritesMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineHeart className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                    {favoritesCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
-                        {favoritesCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={favoritesPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <FavoritesPreview 
-                      isOpen={isFavoritesPreviewOpen} 
-                      onClose={() => setIsFavoritesPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                <Link
+                  to="/favoris"
+                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                >
+                  <HiOutlineHeart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  <FavoritesCounter size="md" />
+                </Link>
                 
                 {/* Panier avec design amélioré */}
-                <div className="relative">
-                  <Link
-                    to="/panier"
-                    className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
-                    onMouseEnter={handleCartMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                  >
-                    <HiOutlineShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
-                    {cartItemsCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
-                        {cartItemsCount}
-                      </span>
-                    )}
-                  </Link>
-                  <div ref={cartPreviewRef} onMouseLeave={handleMouseLeave}>
-                    <CartPreview 
-                      isOpen={isCartPreviewOpen} 
-                      onClose={() => setIsCartPreviewOpen(false)} 
-                    />
-                  </div>
-                </div>
+                <Link
+                  to="/panier"
+                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                >
+                  <HiOutlineShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                </Link>
               </div>
             </div>
           </div>
@@ -758,8 +670,6 @@ const Navbar: React.FC = () => {
                     <button
                       ref={userMenuButtonRef}
                       onClick={handleUserMenuButtonClick}
-                      onMouseEnter={handleUserMenuButtonMouseEnter}
-                      onMouseLeave={handleUserMenuMouseLeave}
                       className="flex items-center gap-3 px-6 py-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 hover:shadow-md font-medium"
                       aria-label="Mon compte"
                       aria-expanded={isUserMenuOpen}
@@ -781,64 +691,61 @@ const Navbar: React.FC = () => {
                     {isUserMenuOpen && (
                       <div
                         ref={userMenuContentRef}
-                        className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50"
-                        onMouseLeave={handleUserMenuMouseLeave}
-                        onMouseEnter={openUserMenu}
+                        className="absolute right-0 mt-3 w-80 bg-gradient-to-br from-white/90 via-slate-50/80 to-blue-50/80 backdrop-blur-xl rounded-3xl shadow-xl ring-1 ring-black/10 border border-white/60 z-50 overflow-hidden animate-fade-in"
                         id="user-menu-content"
                       >
-                        <div className="px-4 py-3 border-b border-gray-100">
-                          <p className="text-sm font-medium text-blue-600">Profil utilisateur</p>
-                          <p className="text-sm text-gray-500 truncate mt-1">{user?.email}</p>
+                        {/* Flèche */}
+                        <div className="absolute -top-2 right-8 w-4 h-4 bg-gradient-to-br from-white/90 to-blue-50/80 backdrop-blur-xl rotate-45 shadow-lg ring-1 ring-black/10 border border-white/60"></div>
+                        <div className="px-6 py-4 border-b border-slate-100/80">
+                          <p className="text-base font-bold text-slate-800 tracking-tight">Profil utilisateur</p>
+                          <p className="text-sm text-gray-500 truncate mt-0.5">{user?.email}</p>
                           {user && !user?.client?.emailVerified && (
-                            <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-                              <div className="flex items-center justify-between">
-                                <p className="text-xs text-yellow-700 flex items-center">
-                                  <span className="mr-1">⚠️</span>
-                                  Email non vérifié
-                                </p>
-                                <Link
-                                  to="/verification-email"
-                                  className="text-xs font-medium text-teal-600 hover:text-teal-700 transition-colors"
-                                  onClick={closeUserMenu}
-                                >
-                                  Vérifier →
-                                </Link>
+                            <div className="mt-3 p-3 bg-yellow-50/80 rounded-xl flex items-center justify-between text-xs text-yellow-800 shadow-sm border border-yellow-100/60">
+                              <div className="flex items-center">
+                                <span className="mr-1">⚠️</span>
+                                <span>Email non vérifié</span>
                               </div>
+                              <Link
+                                to="/verification-email"
+                                className="font-semibold text-teal-600 hover:text-teal-700 transition-colors"
+                                onClick={closeUserMenu}
+                              >
+                                Vérifier →
+                              </Link>
                             </div>
                           )}
                         </div>
                         <Link
                           to="/mon-profil"
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-blue-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
                           onClick={closeUserMenu}
                         >
-                          <HiOutlineUser className="mr-3 text-gray-400 w-4 h-4" />
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                            <HiOutlineUser className="w-4 h-4" />
+                          </div>
                           <span className="font-medium">Modifier mon profil</span>
                         </Link>
                         <Link
                           to="/favoris"
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-pink-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
                           onClick={closeUserMenu}
                         >
-                          <HiOutlineHeart className="mr-3 text-gray-400 w-4 h-4" />
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-100 text-pink-600">
+                            <HiOutlineHeart className="w-4 h-4" />
+                          </div>
                           <span className="font-medium">Mes Favoris</span>
                         </Link>
+
                         <Link
-                          to="/mes-commandes"
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                          to="/mes-devis"
+                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-green-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
                           onClick={closeUserMenu}
                         >
-                          <HiOutlineShoppingBag className="mr-3 text-gray-400 w-4 h-4" />
-                          <span className="font-medium">Mes commandes</span>
-                        </Link>
-                        <Link
-                          to="/Mes-devis"
-                          className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                          onClick={closeUserMenu}
-                        >
-                          <svg className="h-4 w-4 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                          </div>
                           <span className="font-medium">Mes Devis</span>
                         </Link>
                         <div className="border-t border-gray-100 mt-2 pt-2">
@@ -847,9 +754,11 @@ const Navbar: React.FC = () => {
                               logout();
                               closeUserMenu();
                             }}
-                            className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                            className="flex items-center gap-3 w-full px-6 py-3 text-[15px] font-semibold text-red-600 hover:bg-red-50/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
                           >
-                            <HiOutlineLogout className="mr-3 w-4 h-4" />
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                              <HiOutlineLogout className="w-4 h-4" />
+                            </div>
                             <span className="font-medium">Déconnexion</span>
                           </button>
                         </div>

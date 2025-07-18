@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Promotion } from '../../services/promotionService';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { FaHeart, FaRegHeart, FaShoppingCart, FaCheck, FaInfoCircle, FaTag, FaClock } from 'react-icons/fa';
 import { formatPrice } from '../../utils/format';
+import FavoriteButton from '../favorites/FavoriteButton';
 
 interface PromotionCardProps {
   promotion: Promotion;
@@ -13,14 +14,9 @@ interface PromotionCardProps {
 const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
   const [showAdded, setShowAdded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const { addToCart, isInCart } = useCart();
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
-  
-  // S'assurer que le composant est hydraté côté client
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  const { isFavorite, toggleFavorite } = useFavorites();
   
   // Vérifier que promotion est défini pour éviter des erreurs
   if (!promotion) {
@@ -63,21 +59,17 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
     setTimeout(() => setShowAdded(false), 2000);
   };
   
-  const handleToggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!isClient) return;
+    if (isToggling) return;
     
-    if (isFavorite(promotion.id)) {
-      removeFromFavorites(promotion.id);
-    } else {
-      const favoriteItem = {
-        id: promotion.id,
-        name: promotion.title,
-        priceTtc: promotion.discountPrice,
-        image: promotion.image,
-        description: promotion.description
-      };
-      addToFavorites(favoriteItem);
+    setIsToggling(true);
+    try {
+      // Convertir l'ID de la promotion en nombre si nécessaire
+      const productId = typeof promotion.id === 'string' ? parseInt(promotion.id) : promotion.id;
+      await toggleFavorite(productId);
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -86,6 +78,9 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
   const safeDiscountPrice = promotion.discountPrice || 0;
   const safeDiscountPercentage = promotion.discountPercentage || 0;
   const savings = safeOriginalPrice - safeDiscountPrice;
+  
+  // Convertir l'ID en nombre pour la vérification des favoris
+  const promotionIdAsNumber = typeof promotion.id === 'string' ? parseInt(promotion.id) : promotion.id;
 
   return (
     <div className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out overflow-hidden border border-orange-100/50 hover:border-orange-300/70 transform hover:-translate-y-2">
@@ -115,30 +110,24 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
         {/* Overlay with gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-red-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        {/* Floating Action Buttons - Seulement côté client */}
-        {isClient && (
-          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
-            {/* Favorite Button */}
-            <button
-              onClick={handleToggleFavorite}
-              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
-            >
-              {isFavorite(promotion.id) ? (
-                <FaHeart className="w-4 h-4 text-red-500" />
-              ) : (
-                <FaRegHeart className="w-4 h-4 text-gray-600 hover:text-red-500" />
-              )}
-            </button>
-            
-            {/* View Details Button */}
-            <Link
-              to={`/produit/${promotion.id}`}
-              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-orange-600 hover:text-orange-700"
-            >
-              <FaInfoCircle className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
+        {/* Floating Action Buttons */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
+          {/* Favorite Button */}
+          <FavoriteButton
+            productId={promotionIdAsNumber}
+            variant="floating"
+            size="md"
+            className="z-10"
+          />
+          
+          {/* View Details Button */}
+          <Link
+            to={`/produit/${promotion.id}`}
+            className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-orange-600 hover:text-orange-700"
+          >
+            <FaInfoCircle className="w-4 h-4" />
+          </Link>
+        </div>
 
         {/* Status et temps restant */}
         <div className="absolute bottom-4 left-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
@@ -189,7 +178,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
           {/* Prix promotionnel en évidence */}
           <div className="flex items-baseline justify-between">
             <span className="text-sm font-medium text-red-600">Prix promotion</span>
-            <span className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
+            <span className="text-1xl font-bold bg-gradient-to-r from-red-600 to-red-800 bg-clip-text text-transparent">
               {formatPrice(safeDiscountPrice)}
             </span>
           </div>

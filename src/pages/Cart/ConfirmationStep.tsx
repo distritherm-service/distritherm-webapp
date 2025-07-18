@@ -1,295 +1,323 @@
 import React, { useState } from 'react';
-import { FaCreditCard, FaLock, FaApplePay, FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
+import { 
+  FaFileInvoice, 
+  FaCheckCircle, 
+  FaShoppingCart, 
+  FaEnvelope, 
+  FaUser, 
+  FaBuilding, 
+  FaPhone,
+  FaPaperPlane,
+  FaSpinner,
+  FaIdCard
+} from 'react-icons/fa';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { quoteService } from '../../services/quoteService';
+import Toast from '../../components/notifications/Toast';
 
 const ConfirmationStep: React.FC = () => {
-  const { cart } = useCart();
-  const [paymentMethod, setPaymentMethod] = useState<string>('card');
-  const [saveCard, setSaveCard] = useState<boolean>(false);
-  const [cardInfo, setCardInfo] = useState({
-    number: '',
-    name: '',
-    expiry: '',
-    cvc: ''
-  });
-  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
+  const { cart, cartId, clearCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [quoteNumber, setQuoteNumber] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [showError, setShowError] = useState(false);
 
-  const handlePaymentMethodChange = (method: string) => {
-    setPaymentMethod(method);
-  };
-
-  const handleCardInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCardInfo({
-      ...cardInfo,
-      [name]: value
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Traitement du paiement
-    alert('Paiement traité avec succès !');
-  };
-
+  // Calculs
   const totalTTC = cart.reduce((sum, item) => sum + (item.price || item.priceTTC) * item.quantity, 0);
-  const totalWithShipping = totalTTC;
-
-  // Calcul du prix HT (Prix TTC / 1.2 pour une TVA à 20%)
-  const totalHT = totalTTC / 1.2;
+  const totalHT = totalTTC / 1.2; // TVA à 20%
   const TVA = totalTTC - totalHT;
 
-  return (
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-      <div className="mb-5 sm:mb-6">
-        <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2 sm:mb-4">Récapitulatif de la commande</h3>
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5, staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0 }
+  };
+
+  const handleSubmitQuote = async () => {
+    if (!user || !cartId) {
+      setError('Impossible de créer le devis. Veuillez vous reconnecter.');
+      setShowError(true);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+    
+    try {
+      // Créer le devis via l'API
+      // L'API assignera automatiquement un commercial côté serveur
+      const response = await quoteService.createQuote({
+        cartId: cartId,
+        commercialId: 1 // ID temporaire, sera remplacé côté serveur par le commercial assigné
+      });
+      
+      // Afficher le succès
+      setQuoteNumber(`#${response.devis.id}`);
+      setShowSuccess(true);
+      
+      // Vider le panier après 3 secondes et rediriger
+      setTimeout(() => {
+        clearCart();
+        navigate('/mes-devis');
+      }, 3000);
+      
+    } catch (error: any) {
+     // console.error('Erreur lors de l\'envoi du devis:', error);
+      setError(error.message || 'Une erreur est survenue lors de l\'envoi de votre demande de devis.');
+      setShowError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (showSuccess) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center max-w-2xl mx-auto"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+          className="w-24 h-24 mx-auto mb-6 bg-green-100 rounded-full flex items-center justify-center"
+        >
+          <FaCheckCircle className="text-5xl text-green-500" />
+        </motion.div>
         
-        <div className="border-t border-b border-gray-200 py-3 sm:py-4 mb-4">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          Demande de devis envoyée !
+        </h2>
+        
+        <p className="text-lg text-gray-600 mb-2">
+          Votre demande de devis <span className="font-semibold text-[#007FFF]">{quoteNumber}</span> a été envoyée avec succès.
+        </p>
+        
+        <p className="text-gray-500 mb-8">
+          Notre équipe commerciale vous contactera dans les plus brefs délais.
+        </p>
+        
+        <div className="animate-pulse text-sm text-gray-400">
+          Redirection vers vos devis...
+        </div>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-6"
+    >
+      {/* Toast pour les erreurs */}
+      {showError && error && (
+        <Toast
+          message={error}
+          type="error"
+          onClose={() => setShowError(false)}
+        />
+      )}
+
+      {/* Récapitulatif de la commande */}
+      <motion.div 
+        variants={itemVariants}
+        className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100"
+      >
+        <div className="flex items-center mb-6">
+          <div className="w-12 h-12 bg-gradient-to-br from-[#007FFF] to-blue-600 rounded-xl flex items-center justify-center mr-4">
+            <FaShoppingCart className="text-white text-xl" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-800">Récapitulatif de votre demande</h3>
+        </div>
+        
+        {/* Liste des produits */}
+        <div className="space-y-4 mb-6">
           {cart.map((item, index) => (
-            <div key={index} className="flex justify-between items-center mb-3 sm:mb-4 text-sm sm:text-base">
-              <div className="flex-1">
-                <span className="font-medium">{item.quantity}x</span> {item.name}
+            <motion.div 
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-white rounded-lg shadow-sm flex items-center justify-center p-2">
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-200 rounded-md"></div>
+                  )}
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800">{item.name}</h4>
+                  <p className="text-sm text-gray-500">Quantité: {item.quantity}</p>
+                </div>
               </div>
-              <div className="text-right font-medium">
-                {(item.price || item.priceTTC).toLocaleString('fr-FR', {
-                  style: 'currency',
-                  currency: 'EUR'
-                })}
+              <div className="text-right">
+                <p className="font-bold text-gray-800">
+                  {((item.price || item.priceTTC) * item.quantity).toLocaleString('fr-FR', {
+                    style: 'currency',
+                    currency: 'EUR'
+                  })}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {(item.price || item.priceTTC).toLocaleString('fr-FR', {
+                    style: 'currency',
+                    currency: 'EUR'
+                  })} / unité
+                </p>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
         
-        <div className="space-y-2 sm:space-y-3 text-sm sm:text-base">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Sous-total HT:</span>
+        {/* Totaux */}
+        <div className="border-t border-gray-200 pt-4 space-y-3">
+          <div className="flex justify-between text-gray-600">
+            <span>Sous-total HT</span>
             <span>{totalHT.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">TVA (20%):</span>
+          <div className="flex justify-between text-gray-600">
+            <span>TVA (20%)</span>
             <span>{TVA.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
           </div>
-          <div className="flex justify-between font-bold text-base sm:text-lg pt-2 sm:pt-3 border-t border-gray-200">
-            <span>Total:</span>
-            <span>{totalWithShipping.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
+          <div className="flex justify-between text-xl font-bold text-gray-800 pt-3 border-t border-gray-200">
+            <span>Total TTC</span>
+            <span className="text-[#007FFF]">
+              {totalTTC.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}
+            </span>
           </div>
         </div>
-      </div>
-      
-      <div className="mb-5 sm:mb-6">
-        <h3 className="text-lg sm:text-xl font-medium text-gray-900 mb-2 sm:mb-4">Méthode de paiement</h3>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 mb-4">
-          <button
-            type="button"
-            className={`flex items-center justify-center py-2 sm:py-3 px-2 sm:px-4 border rounded-md ${
-              paymentMethod === 'card' 
-                ? 'border-blue-600 bg-blue-50 text-blue-600' 
-                : 'border-gray-300 text-gray-700 hover:border-blue-300'
-            }`}
-            onClick={() => handlePaymentMethodChange('card')}
-          >
-            <FaCreditCard className="mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">Carte bancaire</span>
-          </button>
-          
-          <button
-            type="button"
-            className={`flex items-center justify-center py-2 sm:py-3 px-2 sm:px-4 border rounded-md ${
-              paymentMethod === 'virement' 
-                ? 'border-blue-600 bg-blue-50 text-blue-600' 
-                : 'border-gray-300 text-gray-700 hover:border-blue-300'
-            }`}
-            onClick={() => handlePaymentMethodChange('virement')}
-          >
-            <FaUniversity className="mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">Virement</span>
-          </button>
-          
-          <button
-            type="button"
-            className={`flex items-center justify-center py-2 sm:py-3 px-2 sm:px-4 border rounded-md ${
-              paymentMethod === 'acompte' 
-                ? 'border-blue-600 bg-blue-50 text-blue-600' 
-                : 'border-gray-300 text-gray-700 hover:border-blue-300'
-            }`}
-            onClick={() => handlePaymentMethodChange('acompte')}
-          >
-            <FaMoneyBillWave className="mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">Acompte</span>
-          </button>
-          
-          <button
-            type="button"
-            className={`flex items-center justify-center py-2 sm:py-3 px-2 sm:px-4 border rounded-md ${
-              paymentMethod === 'applepay' 
-                ? 'border-blue-600 bg-blue-50 text-blue-600' 
-                : 'border-gray-300 text-gray-700 hover:border-blue-300'
-            }`}
-            onClick={() => handlePaymentMethodChange('applepay')}
-          >
-            <FaApplePay className="mr-1 sm:mr-2" />
-            <span className="text-xs sm:text-sm">Apple Pay</span>
-          </button>
+      </motion.div>
+
+      {/* Informations client */}
+      <motion.div 
+        variants={itemVariants}
+        className="bg-white rounded-2xl shadow-lg p-6 md:p-8 border border-gray-100"
+      >
+        <div className="flex items-center mb-6">
+          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
+            <FaUser className="text-white text-xl" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-800">Vos informations</h3>
         </div>
         
-        {paymentMethod === 'card' && (
-          <form className="space-y-3 sm:space-y-4">
-            <div>
-              <label htmlFor="cardNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                Numéro de carte
-              </label>
-              <input
-                type="text"
-                id="cardNumber"
-                name="number"
-                placeholder="1234 5678 9012 3456"
-                value={cardInfo.number}
-                onChange={handleCardInfoChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="cardName" className="block text-sm font-medium text-gray-700 mb-1">
-                Nom sur la carte
-              </label>
-              <input
-                type="text"
-                id="cardName"
-                name="name"
-                placeholder="John Doe"
-                value={cardInfo.name}
-                onChange={handleCardInfoChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <FaUser className="text-gray-400" />
               <div>
-                <label htmlFor="cardExpiry" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date d'expiration
-                </label>
-                <input
-                  type="text"
-                  id="cardExpiry"
-                  name="expiry"
-                  placeholder="MM/AA"
-                  value={cardInfo.expiry}
-                  onChange={handleCardInfoChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="cardCVC" className="block text-sm font-medium text-gray-700 mb-1">
-                  CVC
-                </label>
-                <input
-                  type="text"
-                  id="cardCVC"
-                  name="cvc"
-                  placeholder="123"
-                  value={cardInfo.cvc}
-                  onChange={handleCardInfoChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
-                />
+                <p className="text-sm text-gray-500">Nom complet</p>
+                <p className="font-semibold text-gray-800">
+                  {user?.firstName} {user?.lastName}
+                </p>
               </div>
             </div>
             
-            <div className="flex items-center">
-              <input
-                id="saveCard"
-                type="checkbox"
-                checked={saveCard}
-                onChange={() => setSaveCard(!saveCard)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="saveCard" className="ml-2 block text-sm text-gray-700">
-                Enregistrer cette carte pour mes prochains achats
-              </label>
-            </div>
-          </form>
-        )}
-        
-        {paymentMethod === 'virement' && (
-          <div className="mt-3 p-4 bg-blue-50 rounded-md border border-blue-100">
-            <h4 className="font-medium text-blue-800 mb-2">Informations pour le virement bancaire</h4>
-            <p className="text-sm text-blue-700 mb-3">Veuillez effectuer votre virement aux coordonnées suivantes:</p>
-            <div className="space-y-2 text-sm">
-              <div className="grid grid-cols-3 gap-1">
-                <span className="text-blue-800 font-medium">IBAN:</span>
-                <span className="col-span-2">FR76 1234 5678 9012 3456 7890 123</span>
+            <div className="flex items-center space-x-3">
+              <FaEnvelope className="text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-500">Email</p>
+                <p className="font-semibold text-gray-800">{user?.email}</p>
               </div>
-              <div className="grid grid-cols-3 gap-1">
-                <span className="text-blue-800 font-medium">BIC:</span>
-                <span className="col-span-2">ABCDEFGHIJK</span>
-              </div>
-              <div className="grid grid-cols-3 gap-1">
-                <span className="text-blue-800 font-medium">Titulaire:</span>
-                <span className="col-span-2">DISTRITHERM SAS</span>
-              </div>
-              <div className="grid grid-cols-3 gap-1">
-                <span className="text-blue-800 font-medium">Banque:</span>
-                <span className="col-span-2">Crédit Mutuel</span>
-              </div>
-              <p className="mt-2 font-medium">Référence à indiquer: Votre nom + numéro de commande</p>
             </div>
           </div>
-        )}
-        
-        {paymentMethod === 'acompte' && (
-          <div className="mt-3 p-4 bg-blue-50 rounded-md border border-blue-100">
-            <h4 className="font-medium text-blue-800 mb-2">Paiement par acompte</h4>
-            <p className="text-sm text-blue-700 mb-3">Versez 30% maintenant et le reste à la réception:</p>
-            <div className="space-y-2 text-sm">
-              <div className="grid grid-cols-3 gap-1">
-                <span className="text-blue-800 font-medium">Acompte (30%):</span>
-                <span className="col-span-2 font-medium">{(totalWithShipping * 0.3).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <FaBuilding className="text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-500">Entreprise</p>
+                <p className="font-semibold text-gray-800">{user?.companyName || user?.client?.companyName || 'Non renseigné'}</p>
               </div>
-              <div className="grid grid-cols-3 gap-1">
-                <span className="text-blue-800 font-medium">Solde à régler:</span>
-                <span className="col-span-2">{(totalWithShipping * 0.7).toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })}</span>
-              </div>
-              <p className="mt-2">Vous serez contacté par notre service client pour finaliser les modalités de paiement du solde.</p>
             </div>
+            
+            <div className="flex items-center space-x-3">
+              <FaPhone className="text-gray-400" />
+              <div>
+                <p className="text-sm text-gray-500">Téléphone</p>
+                <p className="font-semibold text-gray-800">{user?.phoneNumber || 'Non renseigné'}</p>
+              </div>
+            </div>
+            
+            {(user?.siretNumber || user?.client?.siretNumber) && (
+              <div className="flex items-center space-x-3">
+                <FaIdCard className="text-gray-400" />
+                <div>
+                  <p className="text-sm text-gray-500">SIRET</p>
+                  <p className="font-semibold text-gray-800">{user?.siretNumber || user?.client?.siretNumber}</p>
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      
-      <div className="mb-5 sm:mb-6">
-        <div className="flex items-center mb-4">
-          <input
-            id="termsAccepted"
-            type="checkbox"
-            checked={termsAccepted}
-            onChange={() => setTermsAccepted(!termsAccepted)}
-            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-          />
-          <label htmlFor="termsAccepted" className="ml-2 block text-sm text-gray-700">
-            J'accepte les <a href="#" className="text-blue-600 hover:underline">conditions générales de vente</a>
-          </label>
         </div>
-        
+      </motion.div>
+
+      {/* Bouton de soumission */}
+      <motion.div 
+        variants={itemVariants}
+        className="flex justify-center"
+      >
         <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={!termsAccepted}
-          className={`w-full flex items-center justify-center py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base font-medium rounded-md ${
-            termsAccepted
-              ? 'bg-blue-600 text-white hover:bg-blue-700'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          }`}
+          onClick={handleSubmitQuote}
+          disabled={isSubmitting || !cartId}
+          className={`
+            relative px-8 py-4 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105
+            ${(isSubmitting || !cartId)
+              ? 'bg-gray-400 cursor-not-allowed' 
+              : 'bg-gradient-to-r from-[#007FFF] to-blue-600 hover:from-blue-600 hover:to-[#007FFF] text-white shadow-lg hover:shadow-xl'
+            }
+          `}
         >
-          <FaLock className="mr-2" />
-          Confirmer et payer
+          <span className="flex items-center space-x-3">
+            {isSubmitting ? (
+              <>
+                <FaSpinner className="animate-spin" />
+                <span>Envoi en cours...</span>
+              </>
+            ) : (
+              <>
+                <FaPaperPlane />
+                <span>Envoyer ma demande de devis</span>
+              </>
+            )}
+          </span>
+          
+          {!isSubmitting && cartId && (
+            <div className="absolute inset-0 bg-white opacity-0 hover:opacity-20 rounded-xl transition-opacity duration-300"></div>
+          )}
         </button>
-        
-        <p className="mt-3 text-xs sm:text-sm text-gray-500 text-center">
-          Vos informations de paiement sont sécurisées. Nous n'enregistrons pas les détails de votre carte.
+      </motion.div>
+
+      {/* Note d'information */}
+      <motion.div 
+        variants={itemVariants}
+        className="text-center"
+      >
+        <p className="text-sm text-gray-500 bg-blue-50 rounded-lg p-4 inline-block">
+          <FaFileInvoice className="inline mr-2 text-[#007FFF]" />
+          Votre demande sera traitée par notre équipe commerciale dans un délai de 24 à 48 heures.
         </p>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
