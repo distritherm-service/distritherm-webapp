@@ -122,7 +122,7 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
           
           {/* View Details Button */}
           <Link
-            to={`/produit/${promotion.id}`}
+            to={`/produit/${promotion.id}?from=promotions`}
             className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-orange-600 hover:text-orange-700"
           >
             <FaInfoCircle className="w-4 h-4" />
@@ -158,9 +158,11 @@ const PromotionCard: React.FC<PromotionCardProps> = ({ promotion }) => {
       <div className="p-6 space-y-4">
         {/* Product Title */}
         <div>
-          <h3 className="text-xl font-bold text-gray-900 line-clamp-2 leading-tight mb-2 group-hover:text-red-700 transition-colors duration-300">
-            {promotion.title}
-          </h3>
+          <Link to={`/produit/${promotion.id}?from=promotions`}>
+            <h3 className="text-xl font-bold text-gray-900 line-clamp-2 leading-tight mb-2 group-hover:text-red-700 transition-colors duration-300 cursor-pointer hover:underline">
+              {promotion.title}
+            </h3>
+          </Link>
           <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">
             {promotion.description}
           </p>

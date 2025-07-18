@@ -26,14 +26,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    const cartItem = {
-      ...product,
-      id: product.id.toString(),
-      quantity: 1,
-      image: imageUrl,
-      price: product.priceTtc
-    };
-    addToCart(cartItem);
+    // Appeler directement addToCart avec le produit original
+    addToCart(product, 1);
     setShowAdded(true);
     setTimeout(() => setShowAdded(false), 2000);
   };

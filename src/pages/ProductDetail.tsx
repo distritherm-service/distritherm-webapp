@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 import { useCart } from '../contexts/CartContext';
 import { useFavorites } from '../contexts/FavoritesContext';
-import { getProductById, getProducts } from '../services/productService';
+import { getProductById, getSimilarProducts } from '../services/productService';
 import { FiChevronLeft, FiChevronRight, FiZoomIn, FiZoomOut } from 'react-icons/fi';
 import Footer from '../components/layout/Footer';
 import ProductCard from '../components/products/ProductCard';
@@ -127,36 +127,26 @@ const ProductRelatedSlider = ({ product }: { product: Product }) => {
   useEffect(() => {
     const fetchRelatedProducts = async () => {
       try {
-        // Récupérer des produits de la même catégorie
-        const categoryId = product.categoryId;
-        const response = await getProducts({ 
-          category: categoryId.toString(),
-          limit: 10 // Récupérer plus de produits pour pouvoir filtrer
-        });
+        // Vérifier que le produit existe
+        if (!product?.id) {
+          setRelatedProducts([]);
+          return;
+        }
         
-        // Filtrer pour exclure le produit actuel et garder ceux de la même catégorie
-        const filteredProducts = response.products.filter(p => 
-          p.id !== product.id && 
-          p.categoryId === product.categoryId
-        );
-        
-        // Trier les produits: d'abord ceux de la même marque, puis les autres
-        const sortedProducts = filteredProducts.sort((a, b) => {
-          // Même marque que le produit actuel en premier
-          if (a.markId === product.markId && b.markId !== product.markId) return -1;
-          if (a.markId !== product.markId && b.markId === product.markId) return 1;
-          return 0;
-        });
+        // Utiliser l'endpoint spécialisé pour les produits similaires
+        const response = await getSimilarProducts(product.id);
         
         // Limiter à 5 produits maximum
-        setRelatedProducts(sortedProducts.slice(0, 5));
+        setRelatedProducts(response.products.slice(0, 5));
       } catch (error) {
-        console.error('Erreur lors de la récupération des produits similaires:', error);
+        // console.error('Erreur lors de la récupération des produits similaires:', error);
         setRelatedProducts([]);
       }
     };
     
-    fetchRelatedProducts();
+    if (product) {
+      fetchRelatedProducts();
+    }
   }, [product]);
 
   const checkScrollButtons = () => {
@@ -260,7 +250,7 @@ const ProductDetail: React.FC = () => {
         const productData = await getProductById(id);
         setProduct(productData);
       } catch (err) {
-        console.error('Erreur lors du chargement du produit:', err);
+        // console.error('Erreur lors du chargement du produit:', err);
         setError('Impossible de charger les détails du produit. Veuillez réessayer plus tard.');
       } finally {
         setIsLoading(false);
@@ -287,24 +277,16 @@ const ProductDetail: React.FC = () => {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
     
-    // Utiliser la même logique pour l'image que dans ProductCard
-    const imageUrl = imageError || !product.imagesUrl || product.imagesUrl.length === 0 
-      ? '/image-produit-defaut.jpeg' 
-      : `/images/products/${product.imagesUrl[0]}`;
-    
-    // Préparer l'objet à ajouter au panier avec la structure attendue
-    const cartItem = {
-      id: product.id.toString(),
-      name: product.name,
-      price: product.priceTtc,
-      image: imageUrl,
-      quantity
-    };
-    
-    addToCart(cartItem);
+    try {
+      await addToCart(product, quantity);
+      // Optionnel: afficher une notification de succès
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout au panier:', error);
+      // Optionnel: afficher une notification d'erreur
+    }
   };
 
   const handleToggleFavorite = async () => {
@@ -331,7 +313,7 @@ const ProductDetail: React.FC = () => {
             exit={{ opacity: 0 }}
             className="prose max-w-none text-gray-600"
           >
-            {product.description.split('\n').map((paragraph: string, index: number) => (
+            {(product.description || 'Aucune description disponible').split('\n').map((paragraph: string, index: number) => (
               <p key={index} className="mb-4 leading-relaxed">
                 {paragraph}
               </p>
@@ -339,17 +321,24 @@ const ProductDetail: React.FC = () => {
           </motion.div>
         );
       case 'features':
-        // Générer des caractéristiques basiques à partir des données disponibles
+        // Générer des caractéristiques à partir des données disponibles
         const features = [
           `Marque: ${product.mark?.name || 'Non spécifiée'}`,
           `Référence: ${product.productDetail?.itemCode || 'Non spécifiée'}`,
-          product.productDetail?.directorWord1 ? 
-            `Caractéristique 1: ${product.productDetail.directorWord1}` : null,
-          product.productDetail?.directorWord2 ? 
-            `Caractéristique 2: ${product.productDetail.directorWord2}` : null,
-          `Poids: ${product.productDetail?.weight ? product.productDetail.weight + ' kg' : 'Non spécifié'}`,
-          `État: ${product.active ? 'Actif' : 'Inactif'}`,
-          `Quantité disponible: ${product.quantity}`
+          `Catégorie: ${product.category?.name || 'Non spécifiée'}`,
+          product.productDetail?.designation1 ? 
+            `Désignation: ${product.productDetail.designation1}` : null,
+          product.productDetail?.complementDesignation ? 
+            `Complément: ${product.productDetail.complementDesignation}` : null,
+          product.productDetail?.weight ? 
+            `Poids: ${product.productDetail.weight} kg` : null,
+          product.unity ? `Unité: ${product.unity}` : null,
+          product.productDetail?.packaging ? 
+            `Conditionnement: ${product.productDetail.packaging}` : null,
+          product.productDetail?.label ? 
+            `Label: ${product.productDetail.label}` : null,
+          `Quantité disponible: ${product.quantity}`,
+          ...(product.isInPromotion ? [`🏷️ En promotion jusqu'au ${new Date(product.promotionEndDate || '').toLocaleDateString('fr-FR')}`] : [])
         ].filter(Boolean) as string[];
         
         return (
@@ -372,30 +361,56 @@ const ProductDetail: React.FC = () => {
           </motion.div>
         );
       case 'specs':
-        // Générer des spécifications à partir des données disponibles
+        // Générer des spécifications techniques complètes
         const specifications = [
+          // Identification
+          { key: 'Référence produit', value: product.productDetail?.itemCode || 'Non spécifiée' },
+          { key: 'Code famille', value: product.productDetail?.familyCode || 'Non spécifié' },
           { key: 'Catégorie', value: product.category?.name || 'Non spécifiée' },
           { key: 'Marque', value: product.mark?.name || 'Non spécifiée' },
-          { key: 'Référence', value: product.productDetail?.itemCode || 'Non spécifiée' },
+          
+          // Désignations
           product.productDetail?.designation1 ? 
-            { key: 'Désignation 1', value: product.productDetail.designation1 } : null,
+            { key: 'Désignation principale', value: product.productDetail.designation1 } : null,
           product.productDetail?.designation2 ? 
-            { key: 'Désignation 2', value: product.productDetail.designation2 } : null,
+            { key: 'Désignation secondaire', value: product.productDetail.designation2 } : null,
           product.productDetail?.complementDesignation ? 
-            { key: 'Complément', value: product.productDetail.complementDesignation } : null,
+            { key: 'Complément de désignation', value: product.productDetail.complementDesignation } : null,
+          
+          // Caractéristiques physiques
+          product.productDetail?.weight ? 
+            { key: 'Poids', value: `${product.productDetail.weight} kg` } : null,
+          product.unity ? { key: 'Unité de vente', value: product.unity } : null,
+          
+          // Conditionnement
           product.productDetail?.packaging ? 
             { key: 'Conditionnement', value: product.productDetail.packaging } : null,
           product.productDetail?.packagingType ? 
             { key: 'Type d\'emballage', value: product.productDetail.packagingType } : null,
+          
+          // Certifications et labels
           product.productDetail?.label ? 
-            { key: 'Label', value: product.productDetail.label } : null,
-          product.productDetail?.unity ? 
-            { key: 'Unité', value: product.productDetail.unity } : null,
+            { key: 'Label/Certification', value: product.productDetail.label } : null,
+          product.productDetail?.submissionFgaz ? 
+            { key: 'Soumission FGAZ', value: product.productDetail.submissionFgaz } : null,
+          
+          // Prix
           { key: 'Prix HT', value: `${product.priceHt.toFixed(2)} €` },
           { key: 'Prix TTC', value: `${product.priceTtc.toFixed(2)} €` },
           product.isInPromotion && product.promotionPrice ? 
-            { key: 'Prix promotionnel', value: `${product.promotionPrice.toFixed(2)} €` } : null,
-          { key: 'Disponibilité', value: product.quantity > 0 ? 'En stock' : 'Rupture de stock' }
+            { key: 'Prix promotionnel TTC', value: `${product.promotionPrice.toFixed(2)} € (-${product.promotionPercentage}%)` } : null,
+          
+          // Eco-contribution
+          product.productDetail?.ecoContributionApplication ? 
+            { key: 'Éco-contribution', value: `${product.productDetail.ecoContributionPercentage}% applicable` } : null,
+          
+          // Disponibilité
+          { key: 'Stock disponible', value: `${product.quantity} unité(s)` },
+          { key: 'État', value: product.productDetail?.active ? 'Actif' : 'Inactif' },
+          
+          // Dates
+          { key: 'Créé le', value: new Date(product.createdAt || '').toLocaleDateString('fr-FR') },
+          { key: 'Modifié le', value: new Date(product.updatedAt || '').toLocaleDateString('fr-FR') }
         ].filter(Boolean) as { key: string, value: string }[];
         
         return (
@@ -404,19 +419,37 @@ const ProductDetail: React.FC = () => {
           </Suspense>
         );
       case 'documents':
-        // Pour l'instant, générer des documents fictifs
+        // Générer des documents basés sur les données disponibles
         const documents = [
           {
             id: '1',
-            name: `Fiche technique ${product.name}`,
+            name: `Fiche technique - ${product.name}`,
             type: 'fiche_technique',
-            url: '#'
+            url: '#',
+            description: `Documentation technique complète pour ${product.productDetail?.itemCode || 'ce produit'}`
           },
           {
             id: '2',
-            name: 'Guide d\'installation',
+            name: 'Manuel d\'installation',
             type: 'manuel',
-            url: '#'
+            url: '#',
+            description: 'Guide d\'installation et de mise en service'
+          },
+          // Ajouter le document FGAZ si le produit est soumis à FGAZ
+          ...(product.productDetail?.submissionFgaz === 'Oui' ? [{
+            id: '3',
+            name: 'Document FGAZ',
+            type: 'certification',
+            url: '#',
+            description: 'Certification et documentation FGAZ'
+          }] : []),
+          // Ajouter des documents génériques selon la catégorie
+          {
+            id: '4',
+            name: 'Certificat de conformité',
+            type: 'certification',
+            url: '#',
+            description: `Certificat de conformité ${product.productDetail?.label || 'CE'}`
           }
         ];
         
@@ -466,7 +499,12 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <Breadcrumb />
+      {/* Marge pour compenser la navbar fixe */}
+      <div className="pt-20">
+        <div className="container mx-auto px-4 ">
+          <Breadcrumb productName={product?.name} />
+        </div>
+      </div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -486,7 +524,7 @@ const ProductDetail: React.FC = () => {
                   images={
                     imageError || !product.imagesUrl || product.imagesUrl.length === 0 
                     ? ['/image-produit-defaut.jpeg']
-                    : product.imagesUrl.map(img => `/images/products/${img}`)
+                    : product.imagesUrl
                   } 
                   onImageError={() => setImageError(true)}
                 />
@@ -511,6 +549,12 @@ const ProductDetail: React.FC = () => {
                     <span className="font-medium">MARQUE:</span>
                     <span className="ml-2 text-[#007FFF]">{product.mark?.name || 'Non spécifiée'}</span>
                   </div>
+                  {product.unity && (
+                    <div className="flex items-center text-gray-600">
+                      <span className="font-medium">UNITÉ:</span>
+                      <span className="ml-2">{product.unity}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -519,23 +563,23 @@ const ProductDetail: React.FC = () => {
                 <div className="space-y-2 flex-1">
                   {product.isInPromotion && product.promotionPrice ? (
                     <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
-                        <span className="text-xs font-medium bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-0.5 rounded-sm">
-                          PROMOTION
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full">
+                          PROMOTION -{product.promotionPercentage}%
                         </span>
                       </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl md:text-3xl font-bold text-gray-900">
+                      <div className="flex items-baseline gap-3">
+                        <span className="text-2xl md:text-3xl font-bold text-red-600">
                           {product.promotionPrice.toFixed(2)} €
                         </span>
-                        <span className="text-sm line-through text-gray-400">
+                        <span className="text-lg line-through text-gray-400">
                           {product.priceTtc.toFixed(2)} €
                         </span>
+                        <span className="text-sm text-gray-500">TTC</span>
                       </div>
-                      <div className="flex items-center text-sm text-gray-500 mt-0.5">
-                        <span>Prix HT: {(product.promotionPrice / 1.2).toFixed(2)} €</span>
-                        <span className="mx-2">•</span>
-                        <span>TTC</span>
+                      <div className="text-sm text-gray-500 mt-1">
+                        Prix HT: {(product.promotionPrice / 1.2).toFixed(2)} € | 
+                        Économie: {(product.priceTtc - product.promotionPrice).toFixed(2)} €
                       </div>
                     </div>
                   ) : (
@@ -546,7 +590,7 @@ const ProductDetail: React.FC = () => {
                         </span>
                         <span className="text-sm text-gray-500">TTC</span>
                       </div>
-                      <div className="text-sm text-gray-500 mt-0.5">
+                      <div className="text-sm text-gray-500 mt-1">
                         Prix HT: {product.priceHt.toFixed(2)} €
                       </div>
                     </div>
@@ -561,7 +605,7 @@ const ProductDetail: React.FC = () => {
                     <span className={`w-2 h-2 rounded-full mr-2 ${
                       product.quantity > 0 ? 'bg-green-500' : 'bg-red-500'
                     }`}></span>
-                    {product.quantity > 0 ? 'En stock' : 'Rupture de stock'}
+                    {product.quantity > 0 ? `En stock (${product.quantity})` : 'Rupture de stock'}
                   </span>
                 </motion.div>
               </div>
@@ -604,20 +648,20 @@ const ProductDetail: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleAddToCart}
-                  disabled={!product.quantity}
+                  disabled={product.quantity <= 0}
                   className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-medium transition-all ${
-                    !product.quantity
+                    product.quantity <= 0
                       ? 'bg-gray-300 cursor-not-allowed'
-                      : isInCart(product.id.toString())
+                      : isInCart(product.id)
                       ? 'bg-green-500 hover:bg-green-600'
                       : 'bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] hover:from-[#007FFF] hover:to-[#0056b3]'
                   }`}
                 >
                   <FaShoppingCart className="w-5 h-5" />
                   <span className="text-base md:text-lg">
-                    {!product.quantity
+                    {product.quantity <= 0
                       ? 'Produit indisponible'
-                      : isInCart(product.id.toString())
+                      : isInCart(product.id)
                       ? 'Dans le panier'
                       : 'Ajouter au panier'}
                   </span>

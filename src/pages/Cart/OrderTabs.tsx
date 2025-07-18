@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 //import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface TabProps {
   number: string;
@@ -55,42 +56,85 @@ const OrderTabs: React.FC<{ activeTab: number; onChangeTab: (tab: number) => voi
   activeTab, 
   onChangeTab 
 }) => {
-  const { cart } = useCart();
-  const isEmpty = cart.length === 0;
+  const { getCartItemCount } = useCart();
+  const { isAuthenticated } = useAuth();
+  const isEmpty = getCartItemCount() === 0;
 
-  const tabs = [
+  // Définir les onglets en fonction de l'état de connexion
+  const allTabs = [
     { number: "01", title: "Récapitulatif", path: "recap" },
     { number: "02", title: "Connexion", path: "login" },
     { number: "03", title: "Demande de devis", path: "devis" }
   ];
 
+  // Si l'utilisateur est connecté, on filtre l'onglet connexion et on ajuste la numérotation
+  const tabs = isAuthenticated 
+    ? [
+        { number: "01", title: "Récapitulatif", path: "recap" },
+        { number: "02", title: "Demande de devis", path: "devis" }
+      ]
+    : allTabs;
+
+  // Ajuster l'index réel en fonction de l'état de connexion
+  const getActualTabIndex = (displayIndex: number) => {
+    if (isAuthenticated && displayIndex >= 1) {
+      // Si on est sur l'onglet "Demande de devis" (index 1 dans la vue), 
+      // cela correspond à l'index 2 dans la logique complète
+      return displayIndex === 1 ? 2 : displayIndex;
+    }
+    return displayIndex;
+  };
+
+  const getDisplayTabIndex = (actualIndex: number) => {
+    if (isAuthenticated && actualIndex === 2) {
+      // L'index 2 (Demande de devis) devient l'index 1 dans l'affichage
+      return 1;
+    }
+    return actualIndex;
+  };
+
   const isTabDisabled = (tabIndex: number) => {
-    if (isEmpty && tabIndex > 0) return true;
-    return tabIndex > activeTab + 1;
+    const actualIndex = getActualTabIndex(tabIndex);
+    if (isEmpty && actualIndex > 0) return true;
+    
+    // Pour la navigation, on vérifie si on peut accéder à cet onglet
+    if (isAuthenticated) {
+      // Si connecté, on peut passer directement du récap (0) au devis (2)
+      return false;
+    } else {
+      // Si non connecté, navigation séquentielle normale
+      return actualIndex > activeTab + 1;
+    }
   };
 
   const isTabCompleted = (tabIndex: number) => {
-    return tabIndex < activeTab;
+    const actualIndex = getActualTabIndex(tabIndex);
+    return actualIndex < activeTab;
   };
 
   return (
     <div className="bg-white rounded-xl shadow-md mb-6 overflow-hidden">
       <div className="flex divide-x divide-gray-100">
-        {tabs.map((tab, index) => (
-          <Tab
-            key={tab.number}
-            number={tab.number}
-            title={tab.title}
-            isActive={activeTab === index}
-            isCompleted={isTabCompleted(index)}
-            isDisabled={isTabDisabled(index)}
-            onClick={() => {
-              if (!isTabDisabled(index)) {
-                onChangeTab(index);
-              }
-            }}
-          />
-        ))}
+        {tabs.map((tab, index) => {
+          const actualIndex = getActualTabIndex(index);
+          const isActive = activeTab === actualIndex;
+          
+          return (
+            <Tab
+              key={tab.number}
+              number={tab.number}
+              title={tab.title}
+              isActive={isActive}
+              isCompleted={isTabCompleted(index)}
+              isDisabled={isTabDisabled(index)}
+              onClick={() => {
+                if (!isTabDisabled(index)) {
+                  onChangeTab(actualIndex);
+                }
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );

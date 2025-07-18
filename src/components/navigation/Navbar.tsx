@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navbarHeight = useRef<number>(0);
   const { favorites } = useFavorites();
-  const { cart } = useCart();
+  const { getCartItemCount } = useCart();
   const { 
     searchQuery, 
     searchResults, 
@@ -47,7 +47,7 @@ const Navbar: React.FC = () => {
   const userMenuContentRef = useRef<HTMLDivElement>(null);
 
   // Calcul du nombre total d'articles dans le panier
-  const cartItemsCount = cart.reduce((total, item) => total + item.quantity, 0);
+  const cartItemsCount = getCartItemCount();
 
   const handleStoreSelect = (store: string) => {
     setSelectedStore(store);
@@ -493,7 +493,7 @@ const Navbar: React.FC = () => {
                               >
                                 <div className="w-14 h-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                   <img
-                                    src={product.imagesUrl && product.imagesUrl.length > 0 ? product.imagesUrl[0] : '/placeholder-image.png'}
+                                    src={product.imagesUrl && product.imagesUrl.length > 0 ? product.imagesUrl[0] : '/image-produit-defaut.jpeg'}
                                     alt={product.name}
                                     className="w-full h-full object-cover"
                                   />

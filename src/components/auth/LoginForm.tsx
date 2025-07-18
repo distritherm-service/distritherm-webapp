@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaLock } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../contexts/AuthContext';
@@ -30,6 +30,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [loginFormData, setLoginFormData] = useState<LoginFormData>({
     email: '',
@@ -119,14 +120,25 @@ const LoginForm: React.FC<LoginFormProps> = ({
             <FaLock className="h-5 w-5 text-gray-400" />
           </div>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             name="password"
-            className="w-full pl-10 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
+            className="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#007FFF] focus:border-transparent"
             placeholder="********"
             value={loginFormData.password}
             onChange={handleLoginFormChange}
             required
           />
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            onClick={() => setShowPassword(!showPassword)}
+          >
+            {showPassword ? (
+              <FaEyeSlash className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+            ) : (
+              <FaEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+            )}
+          </button>
         </div>
       </div>
       

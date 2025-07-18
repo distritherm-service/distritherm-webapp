@@ -5,49 +5,56 @@ import OrderTabs from './OrderTabs';
 import CartSummary from './CartSummary';
 import ConfirmationStep from './ConfirmationStep';
 import { useCart } from '../../contexts/CartContext';
+import { useAuth } from '../../contexts/AuthContext';
 import Breadcrumb from '../../components/navigation/Breadcrumb';
 // import Slider from '../../components/Slider';
 import Footer from '../../components/layout/Footer';
 import BrandsSection from '../../components/home/BrandsSection';
 import { motion } from 'framer-motion';
-import Connexion from '../../pages/Connexion';
+import Connexion from '../Connexion';
 
 const Cart: React.FC = () => {
   const [activeTab, setActiveTab] = useState(0);
-  const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
-  const isEmpty = cart.length === 0;
+  const { cart, localCart, getCartItemCount, getCartTotal } = useCart();
+  const { isAuthenticated } = useAuth();
+  
+  // Utiliser les bonnes données selon l'état de connexion
+  const cartItems = isAuthenticated && cart ? cart.cartItems : localCart.items;
+  const isEmpty = cartItems.length === 0;
+  const totalAmount = getCartTotal();
+  const itemCount = getCartItemCount();
 
-  const totalTTC = cart.reduce((sum, item) => sum + (item.priceTTC * item.quantity), 0);
-  const totalHT = cart.reduce((sum, item) => sum + (item.priceHT * item.quantity), 0);
-  
-  const formattedTotalTTC = totalTTC.toLocaleString('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2
-  });
-  
-  const formattedTotalHT = totalHT.toLocaleString('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2
-  });
-  
-  const tva = totalTTC - totalHT;
-  const formattedTVA = tva.toLocaleString('fr-FR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2
-  });
+  const formatPrice = (price: number) => {
+    return price.toLocaleString('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      minimumFractionDigits: 2
+    });
+  };
 
   const handleNextStep = () => {
-    if (activeTab < 2) {
-      setActiveTab(activeTab + 1);
+    // Si on est sur le récapitulatif (tab 0)
+    if (activeTab === 0) {
+      // Si l'utilisateur est connecté, passer directement à la demande de devis (tab 2)
+      // Sinon, aller à la connexion (tab 1)
+      setActiveTab(isAuthenticated ? 2 : 1);
+    } 
+    // Si on est sur la connexion (tab 1), aller à la demande de devis (tab 2)
+    else if (activeTab === 1) {
+      setActiveTab(2);
     }
   };
 
   const handlePreviousStep = () => {
-    if (activeTab > 0) {
-      setActiveTab(activeTab - 1);
+    // Si on est sur la demande de devis (tab 2)
+    if (activeTab === 2) {
+      // Si l'utilisateur est connecté, retourner au récapitulatif (tab 0)
+      // Sinon, retourner à la connexion (tab 1)
+      setActiveTab(isAuthenticated ? 0 : 1);
+    }
+    // Si on est sur la connexion (tab 1), retourner au récapitulatif (tab 0)
+    else if (activeTab === 1) {
+      setActiveTab(0);
     }
   };
 
@@ -68,7 +75,7 @@ const Cart: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col">
         {/* <Slider showOnPages={['/panier']} /> */}
-        <div className="lex-grow">
+        <div className="flex-grow">
         <section className="relative h-64 md:h-80 lg:h-[420px] w-full overflow-hidden shadow-md">
           {/* Image d'arrière-plan */}
           <div className="absolute inset-0">
@@ -95,18 +102,14 @@ const Cart: React.FC = () => {
             </svg>
           </div>
         </section>
+
+        <div className="bg-gray-50 py-8 sm:py-16">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="relative bg-white rounded-2xl shadow-xl p-6 sm:p-8 md:p-12 text-center overflow-hidden"
+            transition={{ duration: 0.6 }}
+            className="max-w-2xl mx-auto text-center px-4 sm:px-6 lg:px-8"
           >
-            {/* Gradient background decoratif */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-500 via-blue-500 to-purple-500"></div>
-            
-            {/* Cercles décoratifs en arrière-plan */}
-            <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-teal-100 to-blue-100 rounded-full opacity-20"></div>
-            <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-tr from-blue-100 to-purple-100 rounded-full opacity-15"></div>
             
             <div className="relative z-10">
               {/* Icône animée avec arrière-plan stylé */}
@@ -149,18 +152,17 @@ const Cart: React.FC = () => {
                 </span>
               </motion.h2>
 
-              {/* Description avec style amélioré */}
+              {/* Description */}
               <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="text-gray-600 mb-8 sm:mb-10 text-base sm:text-lg max-w-md mx-auto leading-relaxed"
+                className="text-gray-600 mb-6 sm:mb-8 text-base sm:text-lg leading-relaxed"
               >
-                Explorez notre catalogue et découvrez des produits 
-                <span className="font-medium text-teal-600"> exceptionnels</span> qui vous attendent
+                Découvrez notre large gamme de produits et commencez vos achats dès maintenant
               </motion.p>
 
-              {/* Bouton call-to-action amélioré */}
+              {/* Bouton d'action principal */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -168,18 +170,14 @@ const Cart: React.FC = () => {
               >
                 <Link 
                   to="/nos-produits" 
-                  className="group relative inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-teal-600 to-blue-600 text-white font-semibold rounded-xl hover:from-teal-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg shadow-md"
+                  className="inline-flex items-center bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white font-semibold py-3 sm:py-4 px-6 sm:px-8 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 text-sm sm:text-base"
                 >
-                  <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-xl transition-opacity duration-300"></div>
-                  <FaArrowLeft className="mr-3 transition-transform group-hover:-translate-x-1" />
-                  <span className="relative">Découvrir nos produits</span>
-                  
-                  {/* Effet de brillance au survol */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transform -skew-x-12 group-hover:animate-pulse rounded-xl"></div>
+                  <FaArrowLeft className="mr-2 sm:mr-3" />
+                  Découvrir nos produits
                 </Link>
               </motion.div>
 
-              {/* Indicateurs décoratifs */}
+              {/* Animation de points */}
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -192,6 +190,7 @@ const Cart: React.FC = () => {
               </motion.div>
             </div>
           </motion.div>
+        </div>
         </div>
         <BrandsSection />
         <Footer />
@@ -231,50 +230,71 @@ const Cart: React.FC = () => {
           </div>
         </section>
 
-        <div className="container mx-auto px-3 sm:px-4 p-20">
-          {/* Tabs */}
-          <OrderTabs activeTab={activeTab} onChangeTab={setActiveTab} />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          {/* En-tête du panier */}
+          <div className="mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                  Mon Panier ({itemCount} {itemCount > 1 ? 'articles' : 'article'})
+                </h2>
+                <p className="text-gray-600">
+                  Total: <span className="font-semibold text-teal-600">{formatPrice(totalAmount)}</span>
+                </p>
+              </div>
+              
+              <div className="mt-4 sm:mt-0">
+                <Link
+                  to="/nos-produits"
+                  className="inline-flex items-center text-teal-600 hover:text-teal-700 font-medium"
+                >
+                  <FaArrowLeft className="mr-2" />
+                  Continuer mes achats
+                </Link>
+              </div>
+            </div>
+          </div>
 
-          {/* Current step content */}
-          <div className="mb-6 sm:mb-8">
+                     {/* Onglets de navigation */}
+           <OrderTabs activeTab={activeTab} onChangeTab={setActiveTab} />
+
+          {/* Contenu de l'étape active */}
+          <div className="mt-8">
             {renderStepContent()}
           </div>
 
-          {/* Bottom navigation buttons */}
-          {activeTab > 0 && activeTab < 2 && !isEmpty && (
-            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4">
-              <button
-                onClick={handlePreviousStep}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 hover:scale-105 transition-all duration-300 ease-in-out text-sm sm:text-base"
-              >
-                Étape précédente
-              </button>
-              <button
-                onClick={handleNextStep}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:scale-105 transition-all duration-300 ease-in-out text-sm sm:text-base"
-              >
-                Continuer
-              </button>
-            </div>
-          )}
-
-          {activeTab === 0 && !isEmpty && (
-            <div className="flex justify-end">
-              <button
-                onClick={handleNextStep}
-                className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 hover:scale-105 transition-all duration-300 ease-in-out text-sm sm:text-base"
-              >
-                Continuer
-              </button>
+          {/* Navigation entre les étapes */}
+          {!isEmpty && (
+            <div className="mt-8 flex flex-col sm:flex-row justify-between gap-4">
+              {activeTab > 0 && (
+                <button
+                  onClick={handlePreviousStep}
+                  className="flex items-center justify-center py-3 px-6 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <FaArrowLeft className="mr-2" />
+                  Étape précédente
+                </button>
+              )}
+              
+              <div className="sm:ml-auto">
+                {activeTab < 2 && (
+                  <button
+                    onClick={handleNextStep}
+                    className="w-full sm:w-auto flex items-center justify-center py-3 px-6 bg-teal-600 text-white rounded-md hover:bg-teal-700 transition-colors font-medium"
+                  >
+                    {activeTab === 0 
+                      ? (isAuthenticated ? 'Demander un devis' : 'Continuer') 
+                      : 'Finaliser la commande'}
+                    <FaCreditCard className="ml-2" />
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
       
-      {/* Section des marques */}
       <BrandsSection />
-      
-      {/* Footer */}
       <Footer />
     </div>
   );
