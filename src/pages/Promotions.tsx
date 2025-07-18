@@ -66,14 +66,14 @@ const Promotions: React.FC = () => {
       setTotalPromotions(count);
       setTotalPages(Math.ceil(count / itemsPerPage));
       
-      console.log('Promotions chargées:', {
-        nombre: promos?.length || 0,
-        total: count,
-        page: currentPage,
-        totalPages: Math.ceil(count / itemsPerPage)
-      });
+      // console.log('Promotions chargées:', {
+      //   nombre: promos?.length || 0,
+      //   total: count,
+      //   page: currentPage,
+      //   totalPages: Math.ceil(count / itemsPerPage)
+      // });
     } catch (error) {
-      console.error("Erreur lors du chargement des promotions:", error);
+      // console.error("Erreur lors du chargement des promotions:", error);
       setPromotions([]);
       setTotalPromotions(0);
       setTotalPages(1);

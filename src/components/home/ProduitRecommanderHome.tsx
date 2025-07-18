@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProductGrid from '../products/ProductGrid';
-import { Product, getRecommendedProducts } from '../../services/productService';
+import { Product } from '../../types/product';
+import { getRecommendedProducts } from '../../services/productService';
 
 const ProduitRecommanderHome: React.FC = () => {
   const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);

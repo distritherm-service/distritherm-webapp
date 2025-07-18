@@ -58,13 +58,13 @@ const NosProducts: React.FC = () => {
         const brandsData = await getAllBrands();
         setBrands(brandsData);
         
-        console.log('Données initiales chargées:', {
-          produits: productsData.products.length,
-          total: productsData.total,
-          marques: brandsData.length
-        });
+        // console.log('Données initiales chargées:', {
+        //   produits: productsData.products.length,
+        //   total: productsData.total,
+        //   marques: brandsData.length
+        // });
       } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
+        // console.error('Erreur lors du chargement des données:', error);
         setHasError(true);
       } finally {
         setIsLoading(false);
@@ -80,14 +80,14 @@ const NosProducts: React.FC = () => {
       setIsLoading(true);
       setHasError(false);
       try {
-        console.log('Chargement des produits avec filtres:', { filters, currentPage });
+        // console.log('Chargement des produits avec filtres:', { filters, currentPage });
         
         const response = await getProducts({
           ...filters,
           page: currentPage
         });
         
-        console.log('Réponse reçue:', response);
+        // console.log('Réponse reçue:', response);
         
         // Vérifier si response et response.products sont définis
         if (response && Array.isArray(response.products)) {
@@ -95,22 +95,22 @@ const NosProducts: React.FC = () => {
           setTotalProducts(response.total || response.products.length);
           setTotalPages(Math.ceil((response.total || response.products.length) / itemsPerPage));
           
-          console.log('Produits mis à jour:', {
-            nombre: response.products.length,
-            total: response.total,
-            page: currentPage,
-            totalPages: Math.ceil((response.total || response.products.length) / itemsPerPage)
-          });
+          // console.log('Produits mis à jour:', {
+          //   nombre: response.products.length,
+          //   total: response.total,
+          //   page: currentPage,
+          //   totalPages: Math.ceil((response.total || response.products.length) / itemsPerPage)
+          // });
         } else {
           // En cas de réponse inattendue, utiliser un tableau vide
           setFilteredProducts([]);
           setTotalProducts(0);
           setTotalPages(1);
-          console.error("Réponse API inattendue:", response);
+          // console.error("Réponse API inattendue:", response);
           setHasError(true);
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des produits:', error);
+        // console.error('Erreur lors du chargement des produits:', error);
         setFilteredProducts([]);
         setTotalProducts(0);
         setTotalPages(1);
@@ -139,7 +139,7 @@ const NosProducts: React.FC = () => {
   };
 
   const handleSaveFilters = () => {
-    console.log('Filtres sauvegardés:', filters);
+    // console.log('Filtres sauvegardés:', filters);
     // Dans une application réelle, on sauvegarderait ces filtres dans le localStorage ou un backend
   };
 
@@ -165,7 +165,7 @@ const NosProducts: React.FC = () => {
           setTotalPages(1);
         }
       } catch (error) {
-        console.error('Erreur lors du chargement des produits:', error);
+        // console.error('Erreur lors du chargement des produits:', error);
         setFilteredProducts([]);
         setTotalProducts(0);
         setTotalPages(1);

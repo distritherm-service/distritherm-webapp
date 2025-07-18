@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { FaShoppingCart, FaCheck, FaInfoCircle, FaHeart, FaRegHeart, FaTag } from 'react-icons/fa';
 import { useCart } from '../../contexts/CartContext';
 import { useFavorites } from '../../contexts/FavoritesContext';
-import { Product } from '../../services/productService';
+import { Product } from '../../types/product';
 import { formatPrice } from '../../utils/formatters';
+import FavoriteButton from '../favorites/FavoriteButton';
 
 interface ProductCardProps {
   product: Product;
@@ -13,21 +14,10 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const { addToCart, isInCart } = useCart();
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [showAdded, setShowAdded] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  
-  // S'assurer que le composant est hydraté côté client
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-  
-  // Vérifier si le produit est dans les favoris seulement côté client
-  const isFavorite = (id: number) => {
-    if (!isClient) return false;
-    return favorites.some(fav => fav.id.toString() === id.toString());
-  };
+  const [isToggling, setIsToggling] = useState(false);
   
   // Image à afficher (première image ou image par défaut en cas d'erreur)
   const imageUrl = imageError || !product.imagesUrl || product.imagesUrl.length === 0 
@@ -48,19 +38,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     setTimeout(() => setShowAdded(false), 2000);
   };
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isFavorite(product.id)) {
-      removeFromFavorites(product.id.toString());
-    } else {
-      const favoriteItem = {
-        ...product,
-        id: product.id.toString(),
-        price: product.priceTtc,
-        image: imageUrl,
-        addedAt: new Date().toISOString()
-      };
-      addToFavorites(favoriteItem);
+    if (isToggling) return;
+    
+    setIsToggling(true);
+    try {
+      await toggleFavorite(product.id);
+    } finally {
+      setIsToggling(false);
     }
   };
   
@@ -104,30 +90,24 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
         {/* Overlay with gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-blue-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        {/* Floating Action Buttons - Seulement côté client */}
-        {isClient && (
-          <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
-            {/* Favorite Button */}
-            <button
-              onClick={handleToggleFavorite}
-              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
-            >
-              {isFavorite(product.id) ? (
-                <FaHeart className="w-4 h-4 text-blue-500" />
-              ) : (
-                <FaRegHeart className="w-4 h-4 text-gray-600 hover:text-blue-500" />
-              )}
-            </button>
-            
-            {/* View Details Button */}
-            <Link
-              to={`/produit/${product.id}`}
-              className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-blue-600 hover:text-blue-700"
-            >
-              <FaInfoCircle className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
+        {/* Floating Action Buttons */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-2 group-hover:translate-x-0">
+          {/* Favorite Button */}
+          <FavoriteButton
+            productId={product.id}
+            variant="floating"
+            size="md"
+            className="z-10"
+          />
+          
+          {/* View Details Button */}
+          <Link
+            to={`/produit/${product.id}`}
+            className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-blue-600 hover:text-blue-700"
+          >
+            <FaInfoCircle className="w-4 h-4" />
+          </Link>
+        </div>
 
         {/* Status Badge */}
         <div className="absolute bottom-4 left-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
@@ -171,6 +151,42 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
               {formatProductPrice(product.priceTtc)} €
             </span>
           </div>
+          
+          {/* Affichage de l'unité de mesure */}
+          {product.unity && (
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm font-medium text-gray-500">Unité</span>
+              <span className="text-sm font-medium text-gray-700">
+                {product.unity}
+              </span>
+            </div>
+          )}
+          
+          {/* Affichage des informations pro si disponibles */}
+          {product.proInfo && product.proInfo.isPro && (
+            <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-blue-700 uppercase tracking-wide">
+                  Prix Pro {product.proInfo.categoryProName}
+                </span>
+                <span className="text-xs bg-blue-600 text-white px-2 py-1 rounded-full">
+                  -{product.proInfo.percentage}%
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm font-medium text-blue-600">Prix Pro HT</span>
+                <span className="text-lg font-bold text-blue-800">
+                  {formatProductPrice(product.proInfo.proPriceHt)} €
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between">
+                <span className="text-sm font-medium text-blue-600">Prix Pro TTC</span>
+                <span className="text-lg font-bold text-blue-800">
+                  {formatProductPrice(product.proInfo.proPriceTtc)} €
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action Button */}

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Product, getProducts, FilterOptions } from '../services/productService';
+import { Product } from '../types/product';
+import { getProducts, FilterOptions } from '../services/productService';
 import { getAllMarks } from '../services/markService';
 import ProductCard from '../components/products/ProductCard';
-import { categoryService, Category } from '../services/categoryService';
+import { categoryService } from '../services/categoryService';
+import { Category } from '../types/category';
 import ProductFilters from '../components/products/ProductFilters';
 import Footer from '../components/layout/Footer';
 import Breadcrumb from '../components/navigation/Breadcrumb';

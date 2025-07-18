@@ -29,7 +29,25 @@ interface CartContextType {
   clearCart: () => void;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+// Création du contexte avec une valeur par défaut
+const CartContext = createContext<CartContextType>({
+  cart: [],
+  cartId: null,
+  isLoading: false,
+  addToCart: () => {
+    throw new Error('CartContext not initialized');
+  },
+  removeFromCart: () => {
+    throw new Error('CartContext not initialized');
+  },
+  updateQuantity: () => {
+    throw new Error('CartContext not initialized');
+  },
+  isInCart: () => false,
+  clearCart: () => {
+    throw new Error('CartContext not initialized');
+  },
+});
 
 // Clef localStorage pour le panier invité
 const GUEST_CART_KEY = 'distritherm_guest_cart';
@@ -40,6 +58,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { isAuthenticated, user } = useAuth();
+
+  const numericUserId = user && !isNaN(Number(user.id)) ? Number(user.id) : null;
 
   // Helper : convertir la réponse API en CartItem "front"
   const mapApiItems = (apiCart: ApiCart): CartItem[] =>
@@ -63,7 +83,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Hydratation initiale si l'utilisateur est connecté
   useEffect(() => {
     const init = async () => {
-      if (!isAuthenticated || !user) {
+      if (!isAuthenticated || !user || numericUserId === null) {
         // Utilisateur déconnecté => restaurer le panier invité si présent
         try {
           const stored = localStorage.getItem(GUEST_CART_KEY);
@@ -77,7 +97,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       try {
         setIsLoading(true);
-        const { cart: apiCart } = await getActiveCart(Number(user.id));
+        const { cart: apiCart } = await getActiveCart(numericUserId);
 
         // Récupérer le panier invité pour fusion
         const guestRaw = localStorage.getItem(GUEST_CART_KEY);
@@ -98,15 +118,25 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Recharger le panier API après fusion
-        const { cart: mergedCart } = await getActiveCart(Number(user.id));
+        const { cart: mergedCart } = await getActiveCart(numericUserId);
         setCart(mapApiItems(mergedCart));
         setCartId(mergedCart.id);
 
         // Nettoyer le panier invité
         localStorage.removeItem(GUEST_CART_KEY);
-      } catch (e) {
-        // Si l'API renvoie 404 (pas de panier actif) on garde un panier vide
-        console.error('Hydratation du panier échouée :', e);
+      } catch (e: any) {
+        // Si l'API renvoie 404 (pas de panier actif) ou 401 (non autorisé), utiliser le panier local
+        if (e.response?.status === 404 || e.response?.status === 401) {
+          // Charger le panier local s'il existe
+          try {
+            const stored = localStorage.getItem(GUEST_CART_KEY);
+            setCart(stored ? (JSON.parse(stored) as CartItem[]) : []);
+          } catch (_) {
+            setCart([]);
+          }
+        } else {
+          console.error('Erreur lors de l\'hydratation du panier:', e);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -192,8 +222,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Si connecté, on pourrait appeler clearCartServerSide, mais non implémenté par l'API.
   };
 
+  const contextValue: CartContextType = {
+    cart,
+    cartId,
+    isLoading,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    isInCart,
+    clearCart
+  };
+
   return (
-    <CartContext.Provider value={{ cart, cartId, isLoading, addToCart, removeFromCart, updateQuantity, isInCart, clearCart }}>
+    <CartContext.Provider value={contextValue}>
       {children}
     </CartContext.Provider>
   );

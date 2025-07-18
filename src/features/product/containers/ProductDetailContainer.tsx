@@ -13,12 +13,13 @@ const ProductDetailContainer: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { addToCart, isInCart } = useCart();
-  const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
   
   const [product, setProduct] = useState<ProductDetails | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<TabType>('description');
   const [isLoading, setIsLoading] = useState(true);
+  const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -161,24 +162,20 @@ const ProductDetailContainer: React.FC = () => {
     });
   };
 
-  const handleToggleFavorite = () => {
-    if (!product) return;
+  const handleToggleFavorite = async () => {
+    if (!product || isTogglingFavorite) return;
 
-    if (isFavorite(product.id)) {
-      removeFromFavorites(product.id);
-    } else {
-      const productForFavorites = {
-        id: product.id,
-        name: product.name,
-        description: product.description,
-        image: product.image,
-        category: product.category.name,
-        brand: product.brand.name,
-        price: product.price
-      };
-      addToFavorites(productForFavorites);
+    setIsTogglingFavorite(true);
+    try {
+      const productId = typeof product.id === 'string' ? parseInt(product.id) : product.id;
+      await toggleFavorite(productId);
+    } finally {
+      setIsTogglingFavorite(false);
     }
   };
+  
+  // Convertir l'ID en nombre pour la vérification des favoris
+  const productIdAsNumber = product && typeof product.id === 'string' ? parseInt(product.id) : (product?.id || 0);
 
   return (
     <ProductDetailPresenter
@@ -187,7 +184,7 @@ const ProductDetailContainer: React.FC = () => {
       quantity={quantity}
       activeTab={activeTab}
       isInCart={product ? isInCart(product.id) : false}
-      isFavorite={product ? isFavorite(product.id) : false}
+      isFavorite={product ? isFavorite(productIdAsNumber) : false}
       onQuantityChange={handleQuantityChange}
       onAddToCart={handleAddToCart}
       onToggleFavorite={handleToggleFavorite}

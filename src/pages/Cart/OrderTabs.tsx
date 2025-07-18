@@ -33,7 +33,7 @@ const Tab: React.FC<TabProps> = ({ number, title, isActive, isCompleted, isDisab
   // Pour les écrans mobiles, utiliser des titres plus courts
   const mobileTitle = title === "Récapitulatif" ? "Panier" : 
                      title === "Connexion" ? "Connexion" : 
-                     title === "Confirmation" ? "Paiement" : title;
+                     title === "Demande de devis" ? "Devis" : title;
 
   return (
     <button 
@@ -61,7 +61,7 @@ const OrderTabs: React.FC<{ activeTab: number; onChangeTab: (tab: number) => voi
   const tabs = [
     { number: "01", title: "Récapitulatif", path: "recap" },
     { number: "02", title: "Connexion", path: "login" },
-    { number: "03", title: "Confirmation", path: "confirmation" }
+    { number: "03", title: "Demande de devis", path: "devis" }
   ];
 
   const isTabDisabled = (tabIndex: number) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from './ProductCard';
-import type { Product } from '@/services/productService';
+import type { Product } from '@/types/product';
 
 interface ProductGridProps {
   products: Product[];

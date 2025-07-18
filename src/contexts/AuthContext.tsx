@@ -9,7 +9,7 @@ import axiosInstance, {
 
 // Interface pour l'utilisateur
 interface User {
-  id: string;
+  id: string | number;
   email: string;
   firstName?: string;
   lastName?: string;
@@ -37,8 +37,29 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<void>;
 }
 
-// Création du contexte
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Création du contexte avec une valeur par défaut
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  accessToken: null,
+  isAuthenticated: false,
+  isLoading: true,
+  error: null,
+  login: async () => {
+    throw new Error('AuthContext not initialized');
+  },
+  logout: async () => {
+    throw new Error('AuthContext not initialized');
+  },
+  updateUser: () => {
+    throw new Error('AuthContext not initialized');
+  },
+  clearError: () => {
+    throw new Error('AuthContext not initialized');
+  },
+  verifyEmail: async () => {
+    throw new Error('AuthContext not initialized');
+  },
+});
 
 // Props pour le fournisseur de contexte
 interface AuthProviderProps {
@@ -75,9 +96,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
              // console.log('Données utilisateur mises à jour depuis l\'API');
               setUser(updatedUserData);
             }
-          } catch (apiError) {
-            // console.error('Erreur lors de la récupération des données utilisateur depuis l\'API:', apiError);
-            // Ne pas déconnecter l'utilisateur en cas d'erreur, conserver les données locales
+          } catch (apiError: any) {
+            // Si c'est une erreur 401, nettoyer les données locales car le token est invalide
+            if (apiError.response?.status === 401) {
+              console.log('Token invalide détecté, nettoyage des données locales');
+              setUser(null);
+              setAccessToken(null);
+              clearAuthData();
+            }
+            // Pour les autres erreurs, conserver les données locales
           }
         }
       } catch (error) {
@@ -202,10 +229,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Valeur du contexte
-  const value = {
+  const value: AuthContextType = {
     user,
     accessToken,
-    isAuthenticated: !!user && !!accessToken,
+    isAuthenticated: !!user && !!accessToken && (typeof user.id === 'number' ? !isNaN(user.id) : user.id !== undefined && user.id !== null && user.id !== ''),
     isLoading,
     error,
     login,

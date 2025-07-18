@@ -32,7 +32,7 @@ export interface PaginationMeta {
 // Fonction utilitaire pour transformer la réponse API en Promotion UI
 const mapPromotionAPIToPromotion = (api: PromotionAPI): Promotion => {
   if (!api) {
-    console.warn('Tentative de mapper une promotion undefined');
+    // console.warn('Tentative de mapper une promotion undefined');
     return {
       id: 'error',
       title: 'Promotion indisponible',
@@ -83,16 +83,16 @@ export const getPromotions = async (page = 1, limit = 10, categoryId?: string, m
       params.mark = mark;
     }
     
-    console.log('Récupération des promotions avec params:', params);
+    // console.log('Récupération des promotions avec params:', params);
     
     const response = await axiosInstance.get<PromotionsApiResponse>('/products/promotions', { params });
     
-    console.log('Réponse API promotions:', response.data);
+    // console.log('Réponse API promotions:', response.data);
     
     // Vérifier la structure de la réponse selon l'exemple JSON fourni
     if (response?.data?.products && Array.isArray(response.data.products)) {
       const products = response.data.products;
-      console.log('Produits en promotion trouvés:', products.length);
+      // console.log('Produits en promotion trouvés:', products.length);
       
       // Filtrer seulement les produits qui sont réellement en promotion
       const actualPromotions = products.filter(product => 
@@ -102,7 +102,7 @@ export const getPromotions = async (page = 1, limit = 10, categoryId?: string, m
         product.promotionPrice < product.priceTtc
       );
       
-      console.log('Produits réellement en promotion:', actualPromotions.length);
+      // console.log('Produits réellement en promotion:', actualPromotions.length);
       
       return actualPromotions.map(mapPromotionAPIToPromotion).filter(Boolean);
     }
@@ -147,30 +147,30 @@ export const getPromotionsCount = async (categoryId?: string, mark?: string): Pr
     
     const response = await axiosInstance.get('/products/promotions', { params });
     
-    console.log('Réponse API count promotions:', response.data);
+    // console.log('Réponse API count promotions:', response.data);
     
     // Vérifier si nous avons des méta-données de pagination selon la nouvelle structure
     if (response?.data?.meta?.total !== undefined) {
-      console.log('Total promotions depuis meta:', response.data.meta.total);
+      // console.log('Total promotions depuis meta:', response.data.meta.total);
       return response.data.meta.total;
     }
     
     // Vérifier s'il y a des produits et les compter selon la nouvelle structure
     if (response?.data?.products && Array.isArray(response.data.products)) {
-      console.log('Count promotions depuis products array:', response.data.products.length);
+      // console.log('Count promotions depuis products array:', response.data.products.length);
       return response.data.products.length;
     }
     
     // Fallback pour l'ancienne structure
     if (response?.data?.data && Array.isArray(response.data.data)) {
-      console.log('Count promotions depuis data array (ancienne structure):', response.data.data.length);
+      // console.log('Count promotions depuis data array (ancienne structure):', response.data.data.length);
       return response.data.data.length;
     }
     
-    console.warn('Méta-données de pagination non trouvées dans la réponse:', response?.data);
+    // console.warn('Méta-données de pagination non trouvées dans la réponse:', response?.data);
     return 0;
   } catch (error) {
-    console.error('Erreur lors de la récupération du nombre de promotions:', error);
+    // console.error('Erreur lors de la récupération du nombre de promotions:', error);
     return 0;
   }
 };
@@ -190,11 +190,11 @@ export const getPromotionsPaginationMeta = async (page = 1, limit = 10, category
     
     const response = await axiosInstance.get('/products/promotions', { params });
     
-    console.log('Réponse API pagination meta promotions:', response.data);
+    // console.log('Réponse API pagination meta promotions:', response.data);
     
     // Vérifier la nouvelle structure de réponse selon l'exemple JSON
     if (response?.data?.meta) {
-      console.log('Meta données trouvées:', response.data.meta);
+      // console.log('Meta données trouvées:', response.data.meta);
       // Adapter la structure de meta selon l'exemple JSON fourni
       const meta = response.data.meta;
       return {
@@ -207,10 +207,10 @@ export const getPromotionsPaginationMeta = async (page = 1, limit = 10, category
       } as PaginationMeta;
     }
     
-    console.warn('Méta-données non trouvées dans la réponse:', response?.data);
+    // console.warn('Méta-données non trouvées dans la réponse:', response?.data);
     return null;
   } catch (error) {
-    console.error('Erreur lors de la récupération des méta-données de pagination:', error);
+    // console.error('Erreur lors de la récupération des méta-données de pagination:', error);
     return null;
   }
 }; 

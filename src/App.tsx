@@ -14,6 +14,7 @@ import ValidateEmail from './pages/ValidateEmail';
 import CategoryProducts from './pages/CategoryProducts';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { Toaster } from 'react-hot-toast';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // Composant de chargement simple en attendant de créer le composant LoadingSpinner
 const LoadingSpinner = () => (
@@ -91,8 +92,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } 
       />
-      <Route path="/Mon-profil" element={<MonProfil />} />
-      <Route path="/Mes-devis" element={<MesDevis />} />
+      <Route path="/mon-profil" element={<MonProfil />} />
+      <Route path="/mes-devis" element={<MesDevis />} />
       <Route path="/panier/payment" element={<div>Page de paiement</div>} />
       <Route 
         path="/inscription-reussie" 
@@ -117,46 +118,48 @@ const AppRoutes = () => {
 
 const App: React.FC = () => {
   return (
-    <GoogleOAuthProvider clientId="592794634648-38n0hj2dhk0frc5tm2o7c3gol5d06clc.apps.googleusercontent.com">
-      <AuthProvider>
-        <CartProvider>
-          <Router>
-            <SearchProvider>
-              <FavoritesProvider>
-                <div className="min-h-screen bg-gray-50">
-                  <Navbar />
-                  <div className="navbar-spacer"></div>
-                  <ScrollToTop />
-                  <Toaster position="top-right" toastOptions={{
-                    duration: 4000,
-                    style: {
-                      borderRadius: '8px',
-                      background: '#333',
-                      color: '#fff',
-                    },
-                    success: {
+    <ErrorBoundary>
+      <GoogleOAuthProvider clientId="592794634648-38n0hj2dhk0frc5tm2o7c3gol5d06clc.apps.googleusercontent.com">
+        <AuthProvider>
+          <CartProvider>
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <SearchProvider>
+                <FavoritesProvider>
+                  <div className="min-h-screen bg-gray-50">
+                    <Navbar />
+                    <div className="navbar-spacer"></div>
+                    <ScrollToTop />
+                    <Toaster position="top-right" toastOptions={{
+                      duration: 4000,
                       style: {
-                        background: '#10B981',
+                        borderRadius: '8px',
+                        background: '#333',
+                        color: '#fff',
                       },
-                    },
-                    error: {
-                      style: {
-                        background: '#EF4444',
+                      success: {
+                        style: {
+                          background: '#10B981',
+                        },
                       },
-                    }
-                  }} />
-                  <main>
-                    <Suspense fallback={<LoadingSpinner />}>
-                      <AppRoutes />
-                    </Suspense>
-                  </main>
-                </div>
-              </FavoritesProvider>
-            </SearchProvider>
-          </Router>
-        </CartProvider>
-      </AuthProvider>
-    </GoogleOAuthProvider>
+                      error: {
+                        style: {
+                          background: '#EF4444',
+                        },
+                      }
+                    }} />
+                    <main>
+                      <Suspense fallback={<LoadingSpinner />}>
+                        <AppRoutes />
+                      </Suspense>
+                    </main>
+                  </div>
+                </FavoritesProvider>
+              </SearchProvider>
+            </Router>
+          </CartProvider>
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </ErrorBoundary>
   );
 };
 

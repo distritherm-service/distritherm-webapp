@@ -59,11 +59,8 @@ const LoginForm: React.FC<LoginFormProps> = ({
       login(responseData);
       
       // Redirection après connexion réussie
-      if (inCart) {
-        setTimeout(() => {
-          navigate('/panier/delivery');
-        }, 2000);
-      } else {
+      if (!inCart) {
+        // Hors processus de commande : retour à l'accueil après un léger délai
         setTimeout(() => {
           navigate('/');
         }, 2000);

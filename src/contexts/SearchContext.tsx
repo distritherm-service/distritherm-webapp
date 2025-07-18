@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Product, getProducts } from '../services/productService';
+import { Product } from '../types/product';
+import { getProducts } from '../services/productService';
 
 interface SearchContextType {
   searchQuery: string;
@@ -12,7 +13,25 @@ interface SearchContextType {
   clearSearch: () => void;
 }
 
-const SearchContext = createContext<SearchContextType | undefined>(undefined);
+// Création du contexte avec une valeur par défaut
+const SearchContext = createContext<SearchContextType>({
+  searchQuery: '',
+  searchResults: [],
+  isSearchOpen: false,
+  isSearching: false,
+  openSearch: () => {
+    throw new Error('SearchContext not initialized');
+  },
+  closeSearch: () => {
+    throw new Error('SearchContext not initialized');
+  },
+  setSearchQuery: () => {
+    throw new Error('SearchContext not initialized');
+  },
+  clearSearch: () => {
+    throw new Error('SearchContext not initialized');
+  },
+});
 
 export const useSearch = (): SearchContextType => {
   const context = useContext(SearchContext);
@@ -71,21 +90,21 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     setSearchResults([]);
   };
 
+  const contextValue: SearchContextType = {
+    searchQuery,
+    searchResults,
+    isSearchOpen,
+    isSearching,
+    openSearch,
+    closeSearch,
+    setSearchQuery: (query) => {
+      performSearch(query);
+    },
+    clearSearch
+  };
+
   return (
-    <SearchContext.Provider
-      value={{
-        searchQuery,
-        searchResults,
-        isSearchOpen,
-        isSearching,
-        openSearch,
-        closeSearch,
-        setSearchQuery: (query) => {
-          performSearch(query);
-        },
-        clearSearch
-      }}
-    >
+    <SearchContext.Provider value={contextValue}>
       {children}
     </SearchContext.Provider>
   );

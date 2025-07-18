@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Layout from '../components/layout/Layout';
 
 // import ProductGrid from '../components/products/ProductGrid';
-import { Product } from '../services/productService';
+import { Product } from '../types/product';
 import { getProducts } from '../services/productService';
 import { FaMapMarkerAlt, FaUserPlus, FaTools, FaFileAlt, FaCheckCircle, FaExternalLinkAlt, FaPhone, FaEnvelope, FaHeadset, FaTruck, FaChartLine } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';

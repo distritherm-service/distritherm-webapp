@@ -52,17 +52,73 @@ export interface ProductDetails {
   relatedProducts?: string[];
 }
 
+// Interface du produit correspondant à l'API
 export interface Product {
-  id: string;
+  id: number;
   name: string;
   description: string;
-  price: number;
-  image: string;
-  category: string;
-  subCategory: string;
-  features: string[];
-  stock: number;
-  brand: string;
-  rating: number;
-  reviews: number;
+  priceHt: number;
+  priceTtc: number;
+  quantity: number;
+  imagesUrl: string[];
+  categoryId: number;
+  markId: number;
+  unity?: string; // Unité de mesure (m², kg, etc.)
+  itemCode?: string;
+  active?: boolean;
+  directorWord1?: string;
+  directorWord2?: string;
+  directorWord3?: string;
+  directorWord4?: string;
+  directorWord5?: string;
+  directorWordLink1?: string;
+  directorWordLink2?: string;
+  directorWordLink3?: string;
+  directorWordLink4?: string;
+  directorWordLink5?: string;
+  brandLogo?: string;
+  weight?: number;
+  createdAt: string;
+  updatedAt: string;
+  category?: {
+    id: number;
+    name: string;
+  };
+  mark?: {
+    id: number;
+    name: string;
+  };
+  isInPromotion?: boolean;
+  promotionPrice?: number;
+  promotionEndDate?: string;
+  promotionPercentage?: number;
+  isFavorited?: boolean;
+  proInfo?: {
+    isPro: boolean;
+    categoryIdPro: number;
+    percentage: number;
+    categoryProName: string;
+    proPriceHt: number;
+    proPriceTtc: number;
+  };
+  productDetail?: {
+    id: number;
+    productId: number;
+    itemCode: string;
+    directorWord1?: string;
+    directorWord2?: string;
+    designation1?: string;
+    designation2?: string;
+    complementDesignation?: string;
+    packaging?: string;
+    packagingType?: string;
+    submissionFgaz?: string;
+    active: boolean;
+    label?: string;
+    unity?: string;
+    weight?: number;
+    familyCode?: string;
+    ecoContributionPercentage?: number;
+    ecoContributionApplication?: boolean;
+  };
 } 

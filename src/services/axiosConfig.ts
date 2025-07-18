@@ -95,6 +95,12 @@ let refreshSubscribers: Array<(token: string) => void> = [];
 // Fonction pour rafraîchir le token
 const refreshToken = async (): Promise<string> => {
   try {
+    // Vérifier d'abord si nous avons un token avant d'essayer de le rafraîchir
+    const currentToken = getAccessToken();
+    if (!currentToken) {
+      throw new Error('Aucun token à rafraîchir');
+    }
+    
     // console.log('Tentative de rafraîchissement du token...');
     const response = await axios.post<RefreshTokenResponse>(
       `${BASE_API_URL}/auth/refresh-token`,
@@ -169,6 +175,13 @@ axiosInstance.interceptors.response.use(
     const originalRequest: any = error.config;
     const errorResponse = error.response?.data as any;
     
+    // Ne pas logger les erreurs 401 pour les utilisateurs non connectés
+    const currentToken = getAccessToken();
+    if (error.response?.status === 401 && !currentToken) {
+      // Pas de token, donc l'utilisateur n'est pas connecté - pas besoin de logger ou de rafraîchir
+      return Promise.reject(error);
+    }
+    
     console.error('Erreur de réponse:', {
       status: error.response?.status,
       message: errorResponse?.message || error.message,
@@ -178,6 +191,7 @@ axiosInstance.interceptors.response.use(
     // Vérifier si l'erreur est liée à un token invalide (401)
     if (
       error.response?.status === 401 &&
+      currentToken && // Seulement si nous avons un token
       (errorResponse?.message === 'Token invalide' || 
        errorResponse?.message === 'Non autorisé' ||
        errorResponse?.message === 'jwt expired' ||
