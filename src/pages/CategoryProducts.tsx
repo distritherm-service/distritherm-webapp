@@ -11,22 +11,35 @@ import Footer from '../components/layout/Footer';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 
 const CategoryProducts: React.FC = () => {
-  const { category } = useParams<{ category: string }>();
+  // Récupère les différents paramètres d'URL (jusqu'à 4 niveaux de profondeur)
+  const { category, subCategory, level3, level4 } = useParams<{
+    category?: string;
+    subCategory?: string;
+    level3?: string;
+    level4?: string;
+  }>();
+
+  // Détermine l'identifiant de catégorie sélectionné (on prend le dernier indiqué dans l'URL)
+  const selectedCategoryIdStr = level4 || level3 || subCategory || category || '';
+  const selectedCategoryId = selectedCategoryIdStr ? parseInt(selectedCategoryIdStr, 10) : null;
   
   const [isLoading, setIsLoading] = useState(true);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [categoryData, setCategoryData] = useState<Category | null>(null);
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
   const [filters, setFilters] = useState<FilterOptions>({
-    category: category || '',
+    category: selectedCategoryIdStr,
     brand: 'Toutes les marques',
-    priceRange: [0, 1000],
     inStockOnly: false,
     sortBy: 'featured',
     searchQuery: ''
   });
+
+  // Met à jour le filtre de catégorie lorsque l'URL change
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, category: selectedCategoryIdStr }));
+  }, [selectedCategoryIdStr]);
 
   // Charger les données initiales (prix, marques)
   useEffect(() => {
@@ -52,12 +65,15 @@ const CategoryProducts: React.FC = () => {
       try {
         // Charger les catégories
         const allCategories = await categoryService.getAllCategories();
-        setCategories(allCategories);
         
-        // Trouver la catégorie correspondante
-        const foundCategory = allCategories.find(cat => 
-          cat.name.toLowerCase() === category?.toLowerCase()
-        );
+        // Trouver la catégorie correspondante par identifiant (fallback sur le nom si échec)
+        const foundCategory = allCategories.find(cat => {
+          if (selectedCategoryId !== null) {
+            return cat.id === selectedCategoryId;
+          }
+          // Fallback si l'URL contient un slug (ex. "chauffage") au lieu d'un identifiant numérique
+          return cat.name.toLowerCase() === selectedCategoryIdStr.toLowerCase();
+        });
         setCategoryData(foundCategory || null);
         
         // Charger les produits avec les filtres
@@ -86,7 +102,7 @@ const CategoryProducts: React.FC = () => {
     };
     
     fetchData();
-  }, [category]);
+  }, [selectedCategoryIdStr]);
 
   // Appliquer les filtres
   useEffect(() => {
@@ -151,57 +167,70 @@ const CategoryProducts: React.FC = () => {
 
   // Obtenir une image par défaut si aucune n'est disponible dans la catégorie
   const getCategoryImage = () => {
-    // Utiliser l'URL de l'image si elle existe dans la catégorie
-    // Sinon utiliser une image par défaut
-    return '/images/default-category.jpg';
+    if (categoryData?.imageUrl) {
+      return categoryData.imageUrl;
+    }
+    // Fallback vers une image statique présente dans /public
+    return '/image-produit-defaut.jpeg';
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Breadcrumb />
       <main className="flex-grow">
-        <div className="bg-gradient-to-b to-white min-h-screen">
-          <br />
-          <div className="text-center mb-7">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 relative inline-block">
-              <span className="bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
-                {categoryData?.name || 'Chargement...'}
-              </span>
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full"></div>
+        {/* HERO */}
+        <section className="relative h-64 md:h-80 lg:h-[420px] w-full overflow-hidden shadow-md">
+          {/* Image d'arrière-plan */}
+          <div className="absolute inset-0">
+            <img
+              src={getCategoryImage()}
+              alt={categoryData?.name || 'Catégorie'}
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Voile sombre pour lisibilité */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent backdrop-blur-sm" />
+          </div>
+
+          {/* Contenu : titre + description + breadcrumb */}
+          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white drop-shadow-lg mb-4 tracking-tight">
+              {categoryData?.name || 'Chargement...'}
             </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto mt-8">
+            <p className="text-white/90 max-w-2xl mx-auto">
               Découvrez nos produits dans la catégorie {categoryData?.name?.toLowerCase() || '...'}
             </p>
+            <br />
+            <Breadcrumb />
           </div>
+
+          {/* Ombre courbée en bas */}
+          <div className="absolute bottom-0 left-1/2 w-full max-w-none -translate-x-1/2">
+            <svg viewBox="0 0 1600 100" className="w-full h-6 md:h-8" preserveAspectRatio="none">
+              <path d="M0,0 C600,100 1000,100 1600,0 L1600,100 L0,100 Z" fill="#f8f9ff" />
+            </svg>
+          </div>
+        </section>
+
+        <div className="bg-gradient-to-b to-white">
           <div className="container mx-auto px-4 py-12">
-            {/* Image de la catégorie */}
-            <div className="mb-8 relative rounded-xl overflow-hidden shadow-lg h-64">
-              <img 
-                src={getCategoryImage()} 
-                alt={categoryData?.name || 'Catégorie'}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
-                <div className="p-6 text-white">
-                  <div className="w-12 h-12 mb-2">
-                    {/* Icône de catégorie si disponible */}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
+            {/* Contenu principal */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
             {/* Filtres */}
-            <div className="mb-8">
+            <div className="mb-8 lg:mb-0 lg:col-span-1">
               <ProductFilters 
                 filters={filters} 
                 onFilterChange={handleFilterChange} 
                 onSaveFilters={handleSaveFilters}
                 priceRange={priceRange}
                 availableBrands={availableBrands}
+                disableCategoryFilter
               />
             </div>
-            
-            {/* Résumé des résultats avec animation de chargement */}
+
+              {/* Contenu produits */}
+              <div className="lg:col-span-3 space-y-8">
+
+                {/* Résumé des résultats avec animation de chargement */}
             <div className="mb-8 flex justify-between items-center bg-white p-4 rounded-lg shadow-sm border border-gray-100">
               <div className="flex items-center">
                 <svg className="w-5 h-5 text-teal-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -246,6 +275,10 @@ const CategoryProducts: React.FC = () => {
                 </div>
               )}
             </div>
+              </div> {/* Fin contenu produits */}
+            </div> {/* Fin grid filtres + produits */}
+
+          
             
             {/* Section avantages */}
             <div className="mt-20 bg-white rounded-xl shadow-md p-8 border border-gray-100">

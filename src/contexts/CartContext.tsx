@@ -348,11 +348,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
-        toast.success(`Quantité mise à jour pour ${product.name}`);
+        // Message toast supprimé pour la mise à jour de quantité lors de l'ajout au panier
       } else {
         const newItem = createLocalCartItemFromProduct(product, quantity);
         updatedItems = [...state.localCart.items, newItem];
-        toast.success(`${product.name} ajouté au panier`);
+        // Message toast supprimé pour l'ajout au panier
       }
 
       const totalPrice = updatedItems.reduce(
@@ -394,7 +394,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
 
       dispatch({ type: 'SET_CART', payload: normalizeCart(response.cart) });
-      toast.success(`${product.name} ajouté au panier`);
+      // Message toast supprimé pour l'ajout au panier
     } catch (error) {
       console.error('Erreur lors de l\'ajout au panier:', error);
       

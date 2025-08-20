@@ -58,8 +58,8 @@ const Footer: React.FC = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-white">Informations</h3>
             <ul className="space-y-2">
-              <li><a href="https://distritcherm-site-vitrine.vercel.app/qui-sommes-nous" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-blue-400">À propos de Distritherm Services</a></li>
-              <li><a href="https://distritcherm-site-vitrine.vercel.app/recrutement" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-blue-400">Nous rejoindre</a></li>
+              <li><a href="https://distritherm-services.fr/qui-sommes-nous/" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-blue-400">À propos de Distritherm Services</a></li>
+              <li><a href="https://distritherm-services.fr/recrutement/" target="_blank" rel="noopener noreferrer" className="text-gray-200 hover:text-blue-400">Nous rejoindre</a></li>
 
               <li><Link to="/connexion" className="text-gray-200 hover:text-blue-400">Connexion</Link></li>
               <li><Link to="/conditions-utilisation" className="text-gray-200 hover:text-blue-400">Conditions générales de vente</Link></li>

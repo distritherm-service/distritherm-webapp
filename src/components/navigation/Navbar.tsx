@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '/logo-Transparent.png';
 import VerticalMenu from './VerticalMenu';
-import { FaShoppingCart, FaHeart, FaUser, FaBars, FaTimes, FaSearch, FaMapMarkerAlt, FaSignOutAlt, FaPhone, FaEnvelope, FaChevronDown } from 'react-icons/fa';
-import { HiOutlineShoppingBag, HiOutlineHeart, HiOutlineUser, HiOutlineMenu, HiOutlineX, HiOutlineSearch, HiOutlineLocationMarker, HiOutlineLogout, HiOutlinePhone, HiOutlineMail } from 'react-icons/hi';
+import {  FaChevronDown, FaBriefcase } from 'react-icons/fa';
+import { HiOutlineShoppingBag, HiOutlineHeart, HiOutlineUser, HiOutlineMenu, HiOutlineX, HiOutlineSearch, HiOutlineLocationMarker, HiOutlineLogout } from 'react-icons/hi';
 import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useSearch } from '../../contexts/SearchContext';
@@ -11,7 +11,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import CallbackForm from '../common/CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
 import MobileVerticalMenu from './MobileVerticalMenu';
-import { FaHeart as FaHeartFilled } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import FavoritesCounter from '../favorites/FavoritesCounter';
 
@@ -546,7 +545,7 @@ const Navbar: React.FC = () => {
                   
                   {isStoreMenuOpen && (
                     <div 
-                      className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl py-2 z-50 border border-gray-100 animate-in slide-in-from-top-2 fade-in duration-300"
+                      className="absolute sm:static right-0 sm:right-auto mt-2 sm:mt-0 w-64 bg-white rounded-2xl shadow-2xl sm:shadow-lg py-2 z-50 border border-gray-100"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
@@ -748,6 +747,18 @@ const Navbar: React.FC = () => {
                           </div>
                           <span className="font-medium">Mes Devis</span>
                         </Link>
+                        {user && user.type !== 'PROVIDER' && (
+                          <Link
+                            to="/demande-espace-pro"
+                            className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-indigo-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
+                            onClick={closeUserMenu}
+                          >
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                              <FaBriefcase className="w-4 h-4" />
+                            </div>
+                            <span className="font-medium">Espace Pro</span>
+                          </Link>
+                        )}
                         <div className="border-t border-gray-100 mt-2 pt-2">
                           <button
                             onClick={() => {
@@ -834,12 +845,27 @@ const Navbar: React.FC = () => {
                   <Link
                     to="/nous-contact"
                     className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
-                      isActive('/nous-contact') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
+                      isActive('/nous-contact') 
+                        ? 'text-teal-600 bg-teal-50 font-semibold' 
+                        : 'text-gray-700'
                     } hover:bg-gray-50 transition-all duration-200 text-sm sm:text-base`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Contact
                   </Link>
+                  {isAuthenticated && user && user.type !== 'PROVIDER' && (
+                    <Link
+                      to="/demande-espace-pro"
+                      className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
+                        isActive('/demande-espace-pro') 
+                          ? 'text-teal-600 bg-teal-50 font-semibold' 
+                          : 'text-gray-700'
+                      } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Espace Pro
+                    </Link>
+                  )}
                 </nav>
 
                 {/* Bouton Connexion/Profil */}

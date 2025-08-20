@@ -52,6 +52,7 @@ const MonProfil = lazy(() => import('./pages/MonProfil'));
 
 const MesDevis = lazy(() => import('./pages/MesDevis'));
 const RegisterSuccess = lazy(() => import('./pages/RegisterSuccess'));
+const DemandeEspacePro = lazy(() => import('./pages/DemandeEspacePro'));
 
 // Page 404 simple
 const NotFound = () => (
@@ -106,6 +107,14 @@ const AppRoutes = () => {
       <Route path="/verification-email" element={<EmailVerification />} />
       <Route path="/validate-email" element={<ValidateEmail />} />
       <Route path="/password-forgot" element={<ResetPasswordForm />} />
+      <Route 
+        path="/demande-espace-pro" 
+        element={
+          <ProtectedRoute>
+            <DemandeEspacePro />
+          </ProtectedRoute>
+        } 
+      />
       
       {/* Page de connexion - inaccessible si déjà connecté */}
       <Route path="/connexion" element={<LoginPage />} />

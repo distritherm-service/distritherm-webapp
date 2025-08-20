@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaChevronRight, FaTimes } from 'react-icons/fa';
 import { createPortal } from 'react-dom';
-import { Category, categoryService } from '../../services/categoryService';
+import { Category } from '../../types/category';
+import { categoryService } from '../../services/categoryService';
 
 interface VerticalMenuProps {
   isOpen: boolean;
@@ -179,7 +180,7 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                 {error && renderErrorState()}
                 {!isLoading && !error && level1Categories.length === 0 && renderEmptyState()}
                 {level1Categories.map((category) => (
-                  <motion.button
+                  <motion.div
                     key={category.id}
                     variants={itemVariants}
                     whileHover={{ 
@@ -187,21 +188,29 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                       x: 5,
                       transition: { duration: 0.2 }
                     }}
-                    onClick={() => handleLevel1Click(category)}
                     className={`w-full flex items-center justify-between p-4 border-b border-gray-100 transition-all ${
                       activeCategory?.id === category.id ? 'bg-gray-50 font-medium' : ''
                     }`}
                   >
-                    <span className="font-medium">{category.name}</span>
+                    <Link
+                      to={`/categorie/${category.id}`}
+                      onClick={onClose}
+                      className="flex-1 text-left font-medium hover:underline"
+                    >
+                      {category.name}
+                    </Link>
                     {category.haveChildren && (
-                      <motion.span
-                        animate={activeCategory?.id === category.id ? { rotate: 90 } : { rotate: 0 }}
-                        transition={{ duration: 0.2 }}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLevel1Click(category);
+                        }}
+                        className="p-1 ml-2 hover:bg-gray-200 rounded-full"
                       >
                         <FaChevronRight className="w-4 h-4 text-gray-400" />
-                      </motion.span>
+                      </button>
                     )}
-                  </motion.button>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>
@@ -225,18 +234,31 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                   {error && renderErrorState()}
                   {!isLoading && !error && getChildCategories(activeCategory.id).length === 0 && renderEmptyState()}
                   {getChildCategories(activeCategory.id).map((category) => (
-                    <button
+                    <div
                       key={category.id}
-                      onClick={() => handleLevel2Click(category)}
                       className={`w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                         activeSubCategory?.id === category.id ? 'bg-gray-50' : ''
                       }`}
                     >
-                      <span>{category.name}</span>
+                      <Link
+                        to={`/categorie/${activeCategory.id}/${category.id}`}
+                        onClick={onClose}
+                        className="flex-1 text-left hover:underline"
+                      >
+                        {category.name}
+                      </Link>
                       {category.haveChildren && (
-                        <FaChevronRight className="w-4 h-4 text-gray-400" />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleLevel2Click(category);
+                          }}
+                          className="p-1 ml-2 hover:bg-gray-200 rounded-full"
+                        >
+                          <FaChevronRight className="w-4 h-4 text-gray-400" />
+                        </button>
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
               </motion.div>
@@ -262,16 +284,29 @@ const VerticalMenu: React.FC<VerticalMenuProps> = ({ isOpen, onClose }) => {
                   {!isLoading && !error && getChildCategories(activeSubCategory.id).length === 0 && renderEmptyState()}
                   {getChildCategories(activeSubCategory.id).map((category) => (
                     category.haveChildren ? (
-                      <button
-                        key={category.id}
-                        onClick={() => handleLevel3Click(category)}
-                        className={`w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                          activeLevel3Category?.id === category.id ? 'bg-gray-50' : ''
-                        }`}
-                      >
-                        <span>{category.name}</span>
-                        <FaChevronRight className="w-4 h-4 text-gray-400" />
-                      </button>
+                      <div
+                       key={category.id}
+                       className={`w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                         activeLevel3Category?.id === category.id ? 'bg-gray-50' : ''
+                       }`}
+                     >
+                       <Link
+                         to={`/categorie/${activeCategory!.id}/${activeSubCategory!.id}/${category.id}`}
+                         onClick={onClose}
+                         className="flex-1 text-left hover:underline"
+                       >
+                         {category.name}
+                       </Link>
+                       <button
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           handleLevel3Click(category);
+                         }}
+                         className="p-1 ml-2 hover:bg-gray-200 rounded-full"
+                       >
+                         <FaChevronRight className="w-4 h-4 text-gray-400" />
+                       </button>
+                     </div>
                     ) : (
                       <Link
                         key={category.id}

@@ -19,28 +19,39 @@ const ConditionsUtilisation: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Breadcrumb />
       <main className="flex-grow relative">
-        {/* Arrière-plan décoratif */}
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-[#7CB9E8]/30">
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.2]" />
-          <div className="absolute w-96 h-96 -top-48 -left-48 bg-[#7CB9E8] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-          <div className="absolute w-96 h-96 -bottom-48 -right-48 bg-[#007FFF] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-        </div>
-
-        <div className="container mx-auto px-4 py-8 relative">
-          {/* En-tête */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 relative inline-block">
-              <span className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] bg-clip-text text-transparent">
-                Conditions Générales d'Utilisation
-              </span>
-              <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] rounded-full"></div>
+        {/* Section En-tête */}
+        <section className="relative h-64 md:h-80 lg:h-[420px] w-full overflow-hidden shadow-md">
+          {/* Image d'arrière-plan */}
+          <div className="absolute inset-0">
+            <img
+              src="/conditions-utilisation.png"
+              alt="Conditions Générales d'Utilisation"
+              className="w-full h-full object-cover object-center"
+            />
+            {/* Voile sombre en dégradé */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent backdrop-blur-sm" />
+          </div>
+          {/* Contenu : Titre + Date + Breadcrumb */}
+          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+            <h1 className="text-4xl md:text-6xl lg:text-6xl font-extrabold text-white drop-shadow-lg tracking-tight mb-2">
+              Conditions d'Utilisation
             </h1>
-            <p className="text-gray-600 max-w-2xl mx-auto mt-8">
+            <p className="text-white mb-4">
               Dernière mise à jour : {new Date().toLocaleDateString('fr-FR')}
             </p>
+            <Breadcrumb />
           </div>
+          {/* Ombre courbée en bas */}
+          <div className="absolute bottom-0 left-1/2 w-full max-w-none -translate-x-1/2">
+            <svg viewBox="0 0 1600 100" className="w-full h-6 md:h-8" preserveAspectRatio="none">
+              <path d="M0,0 C600,100 1000,100 1600,0 L1600,100 L0,100 Z" fill="#f8f9ff"/>
+            </svg>
+          </div>
+        </section>
+
+
+        <div className="container mx-auto px-4 py-8 relative">
 
           {/* Contenu principal */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8">

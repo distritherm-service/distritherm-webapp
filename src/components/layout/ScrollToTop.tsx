@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { FaArrowUp } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ScrollToTop: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const { pathname } = useLocation();
+
+  // Faire remonter la page automatiquement lorsqu'on change de route
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    setIsVisible(false);
+  }, [pathname]);
 
   // Afficher le bouton uniquement après avoir défilé vers le bas
   useEffect(() => {

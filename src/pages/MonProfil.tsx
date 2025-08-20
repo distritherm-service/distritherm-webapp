@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import { FaUserEdit, FaKey, FaSignOutAlt, FaMapMarkerAlt, FaHeart } from 'react-icons/fa';
+import { FaUserEdit, FaKey, FaSignOutAlt, FaMapMarkerAlt, FaHeart, FaBriefcase } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import PersonalInfoForm from '../components/profile/PersonalInfoForm';
 import PasswordChangeForm from '../components/profile/PasswordChangeForm';
@@ -107,6 +107,22 @@ const MonProfil: React.FC = () => {
                   <p className="text-sm text-gray-500">Voir mes favoris</p>
                 </div>
               </Link>
+
+              {user && user.type !== 'PROVIDER' && (
+                <Link
+                  to="/demande-espace-pro"
+                  state={{ from: 'profile' }}
+                  className="flex items-center p-4 bg-white border border-gray-200 rounded-xl hover:border-[#007FFF] transition-colors group"
+                >
+                  <div className="w-12 h-12 bg-[#7CB9E8]/20 rounded-lg flex items-center justify-center group-hover:bg-[#007FFF] transition-colors">
+                    <FaBriefcase className="w-6 h-6 text-[#007FFF] group-hover:text-white" />
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="font-medium text-gray-900">Espace pro</h3>
+                    <p className="text-sm text-gray-500">Demander un compte pro</p>
+                  </div>
+                </Link>
+              )}
 
               <button
                 onClick={handleLogout}

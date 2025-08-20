@@ -7,6 +7,10 @@ interface BreadcrumbItem {
   href: string;
 }
 
+import { useEffect, useState } from 'react';
+import { categoryService } from '@/services/categoryService';
+import { Category } from '@/types/category';
+
 interface BreadcrumbProps {
   customItems?: BreadcrumbItem[];
   productName?: string;
@@ -17,6 +21,27 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ customItems, productName }) => 
   const pathname = location.pathname;
   const searchParams = new URLSearchParams(location.search);
   const fromPage = searchParams.get('from');
+
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Charger la liste des catégories une seule fois (utilise le cache interne du service)
+  useEffect(() => {
+    const fetchCats = async () => {
+      const all = await categoryService.getAllCategories();
+      setCategories(all);
+    };
+    fetchCats();
+  }, []);
+  
+  // Helper pour trouver le nom d'une catégorie à partir de son id
+  const labelForSegment = (segment: string): string => {
+    if (/^\d+$/.test(segment)) {
+      const cat = categories.find(c => c.id === Number(segment));
+      return cat ? cat.name : segment;
+    }
+    // Remplacer les tirets par espaces et mettre majuscule
+    return segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, ' ');
+  };
   
   // Fonction pour générer les éléments du fil d'Ariane
   const generateBreadcrumbs = (): BreadcrumbItem[] => {
@@ -37,7 +62,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ customItems, productName }) => 
       currentPath += `/${path}`;
       
       // Formater le label pour l'affichage
-      let label = path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
+      let label = labelForSegment(path);
       
       // Cas spéciaux pour certaines routes
       if (path === 'nos-produits') {

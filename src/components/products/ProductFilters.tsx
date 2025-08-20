@@ -10,6 +10,7 @@ interface ProductFiltersProps {
   onSaveFilters?: () => void;
   priceRange: [number, number];
   availableBrands: string[];
+  disableCategoryFilter?: boolean; // Ne pas compter/afficher la catégorie comme filtre actif
 }
 
 const ProductFilters: React.FC<ProductFiltersProps> = ({ 
@@ -17,7 +18,8 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   onFilterChange, 
   onSaveFilters,
   priceRange,
-  availableBrands
+  availableBrands,
+  disableCategoryFilter = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [brands, setBrands] = useState<string[]>(['Toutes les marques']);
@@ -159,7 +161,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
   // Compter le nombre de filtres actifs
   const getActiveFiltersCount = () => {
     let count = 0;
-    if (filters.category !== 'Toutes les catégories') count++;
+    if (!disableCategoryFilter && filters.category !== 'Toutes les catégories') count++;
     if (filters.brand !== 'Toutes les marques') count++;
     if (filters.searchQuery) count++;
     if (isPriceFilterActive()) count++;
@@ -318,6 +320,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
         </div>
 
         {/* Catégorie */}
+        {!disableCategoryFilter && (
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
             Catégorie
@@ -342,6 +345,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
             </div>
           </div>
         </div>
+        )}
 
         {/* Marque */}
         <div className="space-y-2">
@@ -470,7 +474,7 @@ const ProductFilters: React.FC<ProductFiltersProps> = ({
               Filtres actifs ({getActiveFiltersCount()})
             </h4>
             <div className="flex flex-wrap gap-2">
-              {filters.category !== 'Toutes les catégories' && (
+              {!disableCategoryFilter && filters.category !== 'Toutes les catégories' && (
                 <span className="inline-flex items-center bg-gradient-to-r from-teal-50 to-blue-50 text-teal-700 text-xs px-3 py-1.5 rounded-full border border-teal-100 shadow-sm">
                   <span className="truncate max-w-[120px]">{filters.category}</span>
                   <button

@@ -53,7 +53,7 @@ const Home: React.FC = () => {
   return (
     <Layout>
       {/* Section titre et services */}
-      <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-6 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           {/* Titre principal */}
           <div className="text-center mb-16">
@@ -139,7 +139,7 @@ const Home: React.FC = () => {
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-800 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </button>
               </div>
-            </div>
+                     </div>
 
             {/* SAV en ligne */}
             <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out border border-blue-100/50 hover:border-blue-300/50 transform hover:-translate-y-3">

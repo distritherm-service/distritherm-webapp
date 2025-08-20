@@ -461,10 +461,13 @@ export const authService = {
   // Vérifier l'email avec le token
   async verifyEmail(token: string) {
     try {
-      // console.log("Vérification de l'email avec le token:", token);
+      console.log("Vérification de l'email avec le token:", token);
 
-      const response = await axiosInstance.get(
-        `/users/verify-email?token=${token}`,
+      const response = await axiosInstance.post(
+        `/users/verify-email`,
+        {
+          token: token
+        },
         {
           headers: {
             'x-platform': 'web',
@@ -473,16 +476,16 @@ export const authService = {
         }
       );
 
-      // console.log('Réponse complète:', response);
-      // console.log('Données de réponse:', response.data);
+      console.log('Réponse complète:', response);
+      console.log('Données de réponse:', response.data);
       return response.data;
     } catch (error: any) {
-      // console.error('Erreur détaillée:', {
-      //   message: error.message,
-      //   response: error.response,
-      //   status: error.response?.status,
-      //   data: error.response?.data,
-      // });
+      console.error('Erreur détaillée:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
       throw error;
     }
   },

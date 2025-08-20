@@ -43,7 +43,9 @@ export interface Cart {
 
 export interface Quote {
   id: number;
-  status: 'SENDED' | 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  status: 'SENDED' | 'CONSULTED' | 'PROGRESS' | 'EXPIRED' | 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  totalHt?: number;
+  totalTtc?: number;
   fileUrl: string;
   endDate: string;
   cartId: number;
@@ -152,11 +154,10 @@ export const quoteService = {
       const response = await axiosInstance.get<GetQuotesResponse>(url);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la récupération de vos devis:', error);
-      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération de vos devis');
+      console.error('Erreur lors de la récupération des devis:', error);
+      throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
     }
   },
-
   /**
    * Récupérer un devis spécifique par son ID
    */
@@ -291,4 +292,4 @@ export const quoteService = {
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
     }
   }
-}; 
+};

@@ -6,6 +6,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { Product } from '../../types/product';
 import { formatPrice } from '../../utils/formatters';
 import FavoriteButton from '../favorites/FavoriteButton';
+import { useInteraction } from '../../hooks/useInteraction';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
   const { addToCart, isInCart } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { trackProductClick, trackAddToCart } = useInteraction();
   const [showAdded, setShowAdded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
@@ -24,10 +26,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
     ? '/image-produit-defaut.jpeg' 
     : product.imagesUrl[0];
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     // Appeler directement addToCart avec le produit original
     addToCart(product, 1);
+    
+    // Tracker l'ajout au panier (sans bloquer l'action si ça échoue)
+    try {
+      await trackAddToCart(product.id);
+    } catch (error) {
+      // Ignorer silencieusement les erreurs de tracking
+      console.warn('Tracking d\'interaction échoué, mais l\'ajout au panier a réussi');
+    }
+    
     setShowAdded(true);
     setTimeout(() => setShowAdded(false), 2000);
   };
@@ -97,6 +108,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, index = 0 }) => {
           {/* View Details Button */}
           <Link
             to={`/produit/${product.id}`}
+            onClick={() => {
+              // Tracker le clic sans bloquer la navigation
+              trackProductClick(product.id).catch(() => {
+                console.warn('Tracking du clic échoué');
+              });
+            }}
             className="bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 text-blue-600 hover:text-blue-700"
           >
             <FaInfoCircle className="w-4 h-4" />
