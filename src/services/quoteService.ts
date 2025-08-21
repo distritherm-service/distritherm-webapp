@@ -105,7 +105,7 @@ export const quoteService = {
       const response = await axiosInstance.post<CreateQuoteResponse>('/devis', data);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la création du devis:', error);
+    //  console.error('Erreur lors de la création du devis:', error);
       
       if (error.response?.status === 403) {
         throw new Error('Vous ne pouvez pas créer un devis pour un autre commercial');
@@ -134,7 +134,7 @@ export const quoteService = {
       const response = await axiosInstance.get<GetQuotesResponse>(url);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la récupération des devis:', error);
+  //     console.error('Erreur lors de la récupération des devis:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
     }
   },
@@ -154,7 +154,7 @@ export const quoteService = {
       const response = await axiosInstance.get<GetQuotesResponse>(url);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la récupération des devis:', error);
+    //    console.error('Erreur lors de la récupération des devis:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
     }
   },
@@ -166,7 +166,7 @@ export const quoteService = {
       const response = await axiosInstance.get<Quote>(`/devis/${quoteId}`);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la récupération du devis:', error);
+    //  console.error('Erreur lors de la récupération du devis:', error);
       
       if (error.response?.status === 404) {
         throw new Error('Devis non trouvé');
@@ -184,7 +184,7 @@ export const quoteService = {
       const response = await axiosInstance.patch<Quote>(`/devis/${quoteId}/status`, { status });
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la mise à jour du devis:', error);
+    //  console.error('Erreur lors de la mise à jour du devis:', error);
       
       if (error.response?.status === 404) {
         throw new Error('Devis non trouvé');
@@ -203,7 +203,7 @@ export const quoteService = {
     try {
       await axiosInstance.delete(`/devis/${quoteId}`);
     } catch (error: any) {
-      console.error('Erreur lors de la suppression du devis:', error);
+    //  console.error('Erreur lors de la suppression du devis:', error);
       
       if (error.response?.status === 404) {
         throw new Error('Devis non trouvé');
@@ -230,7 +230,7 @@ export const quoteService = {
       const response = await axiosInstance.get<GetQuotesResponse>(url);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la récupération des devis de l\'utilisateur:', error);
+    //  console.error('Erreur lors de la récupération des devis de l\'utilisateur:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des devis');
     }
   },
@@ -243,7 +243,7 @@ export const quoteService = {
       const response = await axiosInstance.get<Commercial[]>('/users/commercials');
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la récupération des commerciaux:', error);
+    //  console.error('Erreur lors de la récupération des commerciaux:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors de la récupération des commerciaux');
     }
   },
@@ -258,7 +258,7 @@ export const quoteService = {
       });
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors du téléchargement du devis:', error);
+    //  console.error('Erreur lors du téléchargement du devis:', error);
       throw new Error(error.response?.data?.message || 'Erreur lors du téléchargement du devis');
     }
   },
@@ -279,7 +279,7 @@ export const quoteService = {
       const response = await axiosInstance.get<GetQuotesByClientResponse>(url);
       return response.data;
     } catch (error: any) {
-      console.error('Erreur lors de la récupération des devis du client:', error);
+    //  console.error('Erreur lors de la récupération des devis du client:', error);
       
       if (error.response?.status === 401) {
         throw new Error('Utilisateur non authentifié');

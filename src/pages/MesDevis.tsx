@@ -16,6 +16,7 @@ interface Quote {
   status: 'SENDED' | 'PENDING' | 'ACCEPTED' | 'REJECTED';
   totalAmount: number;
   items: QuoteItem[];
+  itemCount: number;
   fileUrl?: string;
   commercial?: {
     firstName: string;
@@ -82,8 +83,9 @@ const MesDevis: React.FC = () => {
           quoteNumber: `DEV-${apiQuote.id.toString().padStart(6, '0')}`,
           date: apiQuote.createdAt,
           status: mapApiStatus(apiQuote.status),
-          totalAmount: apiQuote.cart ? calculateTotalAmount(apiQuote.cart) : 0,
+          totalAmount: apiQuote.totalHt ?? (apiQuote.cart ? calculateTotalAmount(apiQuote.cart) : 0),
           fileUrl: apiQuote.fileUrl,
+          itemCount: apiQuote.cart?.cartItems?.length ?? apiQuote.cart?.totalItems ?? apiQuote.cart?.cartItemsCount ?? 0,
           commercial: apiQuote.commercial?.user ? {
             firstName: apiQuote.commercial.user.firstName,
             lastName: apiQuote.commercial.user.lastName,
@@ -239,8 +241,9 @@ const MesDevis: React.FC = () => {
             quoteNumber: `DEV-${apiQuote.id.toString().padStart(6, '0')}`,
             date: apiQuote.createdAt,
             status: mapApiStatus(apiQuote.status),
-            totalAmount: apiQuote.cart ? calculateTotalAmount(apiQuote.cart) : 0,
+            totalAmount: apiQuote.totalHt ?? (apiQuote.cart ? calculateTotalAmount(apiQuote.cart) : 0),
             fileUrl: apiQuote.fileUrl,
+            itemCount: apiQuote.cart?.cartItems?.length ?? apiQuote.cart?.totalItems ?? apiQuote.cart?.cartItemsCount ?? 0,
             commercial: apiQuote.commercial?.user ? {
               firstName: apiQuote.commercial.user.firstName,
               lastName: apiQuote.commercial.user.lastName,
@@ -575,7 +578,7 @@ const MesDevis: React.FC = () => {
                                 </div>
                                 <span className="text-xs font-medium text-gray-600">Articles</span>
                               </div>
-                              <span className="text-sm font-semibold text-gray-800">{quote.items.length}</span>
+                              <span className="text-sm font-semibold text-gray-800">{quote.itemCount}</span>
                             </div>
 
                             {/* Prix total */}

@@ -110,7 +110,7 @@ export const getPromotions = async (page = 1, limit = 10, categoryId?: string, m
     // Fallback pour l'ancienne structure si elle existe encore
     if ((response as any)?.data?.data && Array.isArray((response as any).data.data)) {
       const data = (response as any).data.data as PromotionAPI[];
-      console.log('Produits en promotion trouvés (ancienne structure):', data.length);
+    //  console.log('Produits en promotion trouvés (ancienne structure):', data.length);
       
       const actualPromotions = data.filter(product => 
         product.isInPromotion === true && 
@@ -122,10 +122,10 @@ export const getPromotions = async (page = 1, limit = 10, categoryId?: string, m
       return actualPromotions.map(mapPromotionAPIToPromotion).filter(Boolean);
     }
     
-    console.warn('Format de réponse inattendu pour les promotions:', response?.data);
+    //  console.warn('Format de réponse inattendu pour les promotions:', response?.data);
     return [];
   } catch (error) {
-    console.error('Erreur lors de la récupération des promotions:', error);
+    //  console.error('Erreur lors de la récupération des promotions:', error);
     return [];
   }
 };

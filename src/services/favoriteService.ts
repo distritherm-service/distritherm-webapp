@@ -35,13 +35,13 @@ export const addToFavorites = async (productId: number, userId: number): Promise
     // console.log(`[FavoritesService] Produit ajouté aux favoris avec succès:`, response.data);
     return response.data;
   } catch (error: any) {
-    console.error(`[FavoritesService] Erreur lors de l'ajout aux favoris:`, {
-      productId,
-      userId,
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message,
-      data: error.response?.data
-    });
+    // console.error(`[FavoritesService] Erreur lors de l'ajout aux favoris:`, {
+    //   productId,
+    //   userId,
+    //   status: error.response?.status,
+    //   message: error.response?.data?.message || error.message,
+    //   data: error.response?.data
+    // });
     
     // Gérer les erreurs spécifiques
     if (error.response?.status === 400) {
@@ -187,7 +187,7 @@ export const getFavoritesCountByProduct = async (productId: number): Promise<Fav
  */
 export const checkFavorite = async (productId: number, userId: number): Promise<FavoriteCheckResponse> => {
   try {
-    console.log(`[FavoritesService] Vérification si le produit ${productId} est dans les favoris de l'utilisateur ${userId}`);
+    //  console.log(`[FavoritesService] Vérification si le produit ${productId} est dans les favoris de l'utilisateur ${userId}`);
     
     const response = await axiosInstance.get<FavoriteCheckResponse>(
       `/favorites/check/${productId}/users/${userId}`
@@ -232,11 +232,11 @@ export const deleteFavorite = async (favoriteId: number): Promise<{ message: str
     // console.log(`[FavoritesService] Favori supprimé avec succès:`, response.data);
     return response.data;
   } catch (error: any) {
-    console.error(`[FavoritesService] Erreur lors de la suppression du favori:`, {
-      favoriteId,
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message
-    });
+    // console.error(`[FavoritesService] Erreur lors de la suppression du favori:`, {
+    //   favoriteId,
+    //   status: error.response?.status,
+    //   message: error.response?.data?.message || error.message
+    // });
     
     if (error.response?.status === 401) {
       throw { message: "Utilisateur non authentifié", error: "Unauthorized" };

@@ -9,6 +9,7 @@ import type { Category } from '@/types/category';
 import type { Postulation } from '@/services/proAccountService';
 import { Spinner } from '../components/common/Spinner';
 import { HiOutlineTrash } from 'react-icons/hi';
+import Breadcrumb from '../components/navigation/Breadcrumb';
 
 const DemandeEspacePro: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
@@ -140,9 +141,49 @@ const DemandeEspacePro: React.FC = () => {
           onClose={() => setToast(null)}
         />
       )}
-      <div className="container mx-auto px-4 py-12 max-w-xl">
-        <h1 className="text-3xl font-bold text-center text-[#007FFF] mb-8">Demande d'accès professionnel</h1>
-        <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-2xl p-8 space-y-6">
+
+      {/* Section héro avec image, titre et breadcrumb */}
+      <section className="relative h-64 md:h-80 lg:h-[420px] w-full overflow-hidden shadow-md">
+        {/* Image d'arrière-plan */}
+        <div className="absolute inset-0">
+          <img
+            src="/image-section-expert.png"
+            alt="Image accès professionnel"
+            className="w-full h-full object-cover object-center"
+          />
+          {/* Dégradé */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-transparent backdrop-blur-sm" />
+        </div>
+
+        {/* Contenu */}
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg mb-4 tracking-tight">
+            Demande d'accès professionnel
+          </h1>
+          <Breadcrumb />
+        </div>
+
+        {/* Vague décorative */}
+        <div className="absolute bottom-0 left-1/2 w-full max-w-none -translate-x-1/2">
+          <svg viewBox="0 0 1600 100" className="w-full h-6 md:h-8" preserveAspectRatio="none">
+            <path d="M0,0 C600,100 1000,100 1600,0 L1600,100 L0,100 Z" fill="#f8f9ff" />
+          </svg>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-16 max-w-4xl">
+        {/* Carte explicative */}
+        <div className="mb-12 mx-auto max-w-5xl bg-white/70 backdrop-blur-lg shadow-xl ring-1 ring-gray-100 rounded-2xl p-6 md:p-10">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-gray-800 mb-4 text-center">Accès professionnel : remises & offers privées</h2>
+          <p className="text-gray-600 leading-relaxed text-center">
+            Sélectionnez la catégorie pour laquelle vous souhaitez profiter de tarifs professionnels. Dès validation par notre
+            équipe, votre compte affichera automatiquement les prix remisés, les opérations privées et un support dédié.
+            Vous pourrez suivre l’avancement de chaque demande directement ci-dessous.
+          </p>
+        </div>
+
+        {/* Formulaire de demande */}
+        <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-xl shadow-2xl ring-1 ring-gray-100 rounded-2xl p-8 md:p-10 space-y-6">
           <div>
             <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 mb-2">
               Catégorie professionnelle souhaitée
@@ -152,7 +193,7 @@ const DemandeEspacePro: React.FC = () => {
               value={selectedCategoryId}
               onChange={handleCategoryChange}
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#007FFF]"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#007FFF] bg-white/90 backdrop-blur"
             >
               <option value="">Sélectionnez une catégorie</option>
               {categories.map((cat) => (
@@ -181,7 +222,7 @@ const DemandeEspacePro: React.FC = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-[#007FFF] text-white py-2 px-4 rounded-lg hover:bg-[#0066cc] transition-colors disabled:opacity-50"
+            className="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-[#007FFF] to-[#005fcc] text-white font-semibold shadow hover:shadow-lg transition disabled:opacity-50"
           >
             {isSubmitting ? 'Envoi…' : 'Envoyer ma demande'}
           </button>

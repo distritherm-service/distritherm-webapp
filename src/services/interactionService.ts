@@ -42,7 +42,7 @@ export const createInteraction = async (
   // Vérifier si le type est supporté par l'API
   const supportedTypes = ['CLICK_PRODUCT', 'LIKE'];
   if (!supportedTypes.includes(type)) {
-    console.warn(`[InteractionService] Type d'interaction "${type}" non supporté par l'API. Types supportés: ${supportedTypes.join(', ')}`);
+    //  console.warn(`[InteractionService] Type d'interaction "${type}" non supporté par l'API. Types supportés: ${supportedTypes.join(', ')}`);
     // Retourner une réponse factice pour ne pas bloquer l'utilisateur
     return {
       message: 'Type d\'interaction non supporté',
@@ -58,7 +58,7 @@ export const createInteraction = async (
   }
 
   try {
-    console.log(`[InteractionService] Enregistrement de l'interaction ${type} pour le produit ${productId} par l'utilisateur ${userId}`);
+    //  console.log(`[InteractionService] Enregistrement de l'interaction ${type} pour le produit ${productId} par l'utilisateur ${userId}`);
     
     const body: CreateInteractionRequest = {
       type,
@@ -66,14 +66,14 @@ export const createInteraction = async (
       userId
     };
     
-    console.log('[InteractionService] Body de la requête:', body);
+    //  console.log('[InteractionService] Body de la requête:', body);
     
     const response = await axiosInstance.post<CreateInteractionResponse>('/interactions', body);
     
-    console.log('[InteractionService] Interaction enregistrée avec succès:', response.data);
+    //  console.log('[InteractionService] Interaction enregistrée avec succès:', response.data);
     return response.data;
   } catch (error: any) {
-    console.error('[InteractionService] Erreur lors de l\'enregistrement de l\'interaction:', error);
+    //  console.error('[InteractionService] Erreur lors de l\'enregistrement de l\'interaction:', error);
     
     if (error.response) {
       const errorData = error.response.data as InteractionErrorResponse;
@@ -82,7 +82,7 @@ export const createInteraction = async (
       switch (error.response.status) {
         case 400:
           // Si l'API retourne 400, logger l'erreur mais ne pas bloquer l'utilisateur
-          console.warn('[InteractionService] Erreur 400:', errorData.message || 'Type d\'interaction invalide');
+          //  console.warn('[InteractionService] Erreur 400:', errorData.message || 'Type d\'interaction invalide');
           // Retourner une réponse factice pour ne pas bloquer l'utilisateur
           return {
             message: 'Interaction non enregistrée',
@@ -96,7 +96,7 @@ export const createInteraction = async (
             }
           };
         case 401:
-          console.warn('[InteractionService] Non autorisé - utilisateur non connecté ou token invalide');
+          //  console.warn('[InteractionService] Non autorisé - utilisateur non connecté ou token invalide');
           // Ne pas lever d'erreur pour ne pas bloquer l'UX
           return {
             message: 'Interaction non enregistrée (non autorisé)',
@@ -110,7 +110,7 @@ export const createInteraction = async (
             }
           };
         case 403:
-          console.warn('[InteractionService] Accès refusé');
+          //  console.warn('[InteractionService] Accès refusé');
           return {
             message: 'Interaction non enregistrée (accès refusé)',
             interaction: {
@@ -123,7 +123,7 @@ export const createInteraction = async (
             }
           };
         case 404:
-          console.warn('[InteractionService] Produit non trouvé');
+          //  console.warn('[InteractionService] Produit non trouvé');
           return {
             message: 'Interaction non enregistrée (produit non trouvé)',
             interaction: {
@@ -136,7 +136,7 @@ export const createInteraction = async (
             }
           };
         case 500:
-          console.error('[InteractionService] Erreur serveur');
+          //  console.error('[InteractionService] Erreur serveur');
           return {
             message: 'Interaction non enregistrée (erreur serveur)',
             interaction: {
@@ -149,7 +149,7 @@ export const createInteraction = async (
             }
           };
         default:
-          console.error('[InteractionService] Erreur inconnue:', error.response.status);
+          //  console.error('[InteractionService] Erreur inconnue:', error.response.status);
           return {
             message: 'Interaction non enregistrée',
             interaction: {
@@ -164,7 +164,7 @@ export const createInteraction = async (
       }
     }
     
-    console.error('[InteractionService] Erreur réseau');
+    //  console.error('[InteractionService] Erreur réseau');
     return {
       message: 'Interaction non enregistrée (erreur réseau)',
       interaction: {
@@ -208,7 +208,7 @@ export const interactionService = {
    */
   trackAddToCart: async (productId: number, userId: number) => {
     // L'API ne supporte pas ADD_TO_CART
-    console.log('[InteractionService] ADD_TO_CART non supporté, retour d\'une réponse factice');
+    //  console.log('[InteractionService] ADD_TO_CART non supporté, retour d\'une réponse factice');
     return Promise.resolve({
       message: 'ADD_TO_CART non supporté',
       interaction: {

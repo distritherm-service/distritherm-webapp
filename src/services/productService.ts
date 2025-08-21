@@ -155,24 +155,62 @@ export const getProducts = async (filters?: FilterOptions): Promise<ProductsResp
 export const getProductById = async (id: string): Promise<Product> => {
   try {
     const response = await axiosInstance.get(`/products/${id}`);
-    
-    // L'API retourne { "message": "...", "product": { ... } }
-    // Il faut accéder à response.data.product pour avoir les vraies données
-    const productData = response.data.product;
-    
+
+    // Tolérer plusieurs structures de réponse possibles
+    let productData: any = undefined;
+    const data = response?.data;
+
+    if (data?.product) {
+      productData = data.product;
+    } else if (data?.data && !Array.isArray(data.data)) {
+      productData = data.data;
+    } else if (data && data.id && data.name) {
+      // Cas où l'API renvoie directement l'objet produit
+      productData = data;
+    } else if (Array.isArray(data?.products)) {
+      // Parfois, l'API peut renvoyer un tableau « products » même pour un seul produit
+      productData = data.products.find((p: any) => p?.id?.toString() === id) || data.products[0];
+    }
+
     if (!productData) {
       throw new Error('Données du produit non trouvées dans la réponse API');
     }
-    
+
     // Normaliser le produit
-    const normalizedProduct = {
+    const normalizedProduct: Product = {
       ...productData,
-      priceHt: productData.priceHt || productData.priceTtc || 0,
-      priceTtc: productData.priceTtc || productData.priceHt || 0,
+      priceHt: Number(productData.priceHt ?? productData.priceTtc ?? 0),
+      priceTtc: Number(productData.priceTtc ?? productData.priceHt ?? 0),
+      imagesUrl: Array.isArray(productData.imagesUrl) ? productData.imagesUrl : [],
     };
-    
+
     return normalizedProduct;
   } catch (error) {
+    // Essayer un fallback via l'endpoint liste si disponible
+    try {
+      const alt = await axiosInstance.get('/products', { params: { id } });
+      const altData = alt?.data;
+      let productData: any = undefined;
+      if (altData?.product) productData = altData.product;
+      else if (Array.isArray(altData?.products)) {
+        productData = altData.products.find((p: any) => p?.id?.toString() === id) || altData.products[0];
+      } else if (altData?.data && !Array.isArray(altData.data)) {
+        productData = altData.data;
+      }
+
+      if (productData) {
+        const normalizedProduct: Product = {
+          ...productData,
+          priceHt: Number(productData.priceHt ?? productData.priceTtc ?? 0),
+          priceTtc: Number(productData.priceTtc ?? productData.priceHt ?? 0),
+          imagesUrl: Array.isArray(productData.imagesUrl) ? productData.imagesUrl : [],
+        };
+        return normalizedProduct;
+      }
+    } catch {
+      // Ignorer et relancer l'erreur initiale
+    }
+
     // console.error('Erreur lors de la récupération du produit:', error);
     throw error;
   }

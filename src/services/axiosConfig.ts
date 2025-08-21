@@ -7,7 +7,6 @@ export const BASE_API_URL = 'https://distritherm-backend.onrender.com';
 // Clés pour le localStorage
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'distritherm_access_token',
-  USER_DATA: 'distritherm_user_data',
 };
 
 // Interface pour la réponse d'authentification
@@ -41,25 +40,7 @@ export { axiosInstance };
 // Fonction pour sauvegarder les données d'authentification
 export const saveAuthData = (data: AuthResponse): void => {
   if (data.accessToken) {
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
-  }
-  
-  if (data.user) {
-    // Vérifier s'il existe déjà des données utilisateur
-    const existingUserData = getUserData();
-    
-    if (existingUserData) {
-      // Préserver companyName et siretNumber s'ils ne sont pas présents dans les nouvelles données
-      if (!data.user.companyName && existingUserData.companyName) {
-        data.user.companyName = existingUserData.companyName;
-      }
-      
-      if (!data.user.siretNumber && existingUserData.siretNumber) {
-        data.user.siretNumber = existingUserData.siretNumber;
-      }
-    }
-    
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data.user));
+    sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.accessToken);
   }
   
   // Log pour débogage
@@ -71,20 +52,18 @@ export const saveAuthData = (data: AuthResponse): void => {
 
 // Fonction pour supprimer les données d'authentification
 export const clearAuthData = (): void => {
-  localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-  localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+  sessionStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
   // console.log('Données d\'authentification supprimées');
 };
 
 // Fonction pour récupérer le token d'accès
 export const getAccessToken = (): string | null => {
-  return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+  return sessionStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
 };
 
 // Fonction pour récupérer les données utilisateur
 export const getUserData = (): any | null => {
-  const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-  return userData ? JSON.parse(userData) : null;
+  return null; // Les données utilisateur ne sont plus stockées côté client
 };
 
 // Indicateur pour éviter plusieurs rafraîchissements simultanés
@@ -111,7 +90,7 @@ const refreshToken = async (): Promise<string> => {
     );
     
     const { accessToken } = response.data;
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+    sessionStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
     // console.log('Token rafraîchi avec succès');
     return accessToken;
   } catch (error) {

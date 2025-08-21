@@ -19,7 +19,7 @@ export const categoryService = {
       console.warn('Format de réponse inattendu pour les catégories:', response.data);
       return [];
     } catch (error) {
-      console.error('Erreur lors de la récupération des catégories:', error);
+    //  console.error('Erreur lors de la récupération des catégories:', error);
       // Retourner un tableau vide au lieu de propager l'erreur
       return [];
     }
@@ -37,7 +37,7 @@ export const categoryService = {
       const categories = await categoryService.getAllCategories();
       return categories.filter(cat => cat.level === 1);
     } catch (error) {
-      console.error('Erreur lors de la récupération des catégories:', error);
+    //  console.error('Erreur lors de la récupération des catégories:', error);
       // Retourner des catégories par défaut avec des images par défaut
       return [
         {
@@ -171,10 +171,10 @@ export const categoryService = {
         return response.data.categories;
       }
       
-      console.warn('Format de réponse inattendu pour les catégories principales:', response.data);
+    //  console.warn('Format de réponse inattendu pour les catégories principales:', response.data);
       return [];
     } catch (error) {
-      console.error('Erreur lors de la récupération des catégories principales:', error);
+    //  console.error('Erreur lors de la récupération des catégories principales:', error);
       return [];
     }
   },
@@ -187,10 +187,10 @@ export const categoryService = {
         return response.data.categories;
       }
       
-      console.warn('Format de réponse inattendu pour les catégories par niveau:', response.data);
+    //  console.warn('Format de réponse inattendu pour les catégories par niveau:', response.data);
       return [];
     } catch (error) {
-      console.error(`Erreur lors de la récupération des catégories de niveau ${level}:`, error);
+    //  console.error(`Erreur lors de la récupération des catégories de niveau ${level}:`, error);
       return [];
     }
   },
@@ -203,7 +203,7 @@ export const categoryService = {
       }
       return null;
     } catch (error) {
-      console.error(`Erreur lors de la récupération de la catégorie ${id}:`, error);
+    //  console.error(`Erreur lors de la récupération de la catégorie ${id}:`, error);
       return null;
     }
   },
@@ -216,7 +216,7 @@ export const categoryService = {
       }
       return [];
     } catch (error) {
-      console.error(`Erreur lors de la récupération des sous-catégories de ${id}:`, error);
+    //  console.error(`Erreur lors de la récupération des sous-catégories de ${id}:`, error);
       return [];
     }
   },
@@ -229,7 +229,7 @@ export const categoryService = {
       }
       return [];
     } catch (error) {
-      console.error('Erreur lors de la recherche des catégories:', error);
+    //  console.error('Erreur lors de la recherche des catégories:', error);
       return [];
     }
   },
@@ -242,7 +242,7 @@ export const categoryService = {
       }
       return [];
     } catch (error) {
-      console.error(`Erreur lors de la récupération des catégories de l'agence ${agencyId}:`, error);
+    //  console.error(`Erreur lors de la récupération des catégories de l'agence ${agencyId}:`, error);
       return [];
     }
   }

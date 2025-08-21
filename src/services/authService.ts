@@ -1,9 +1,10 @@
+import axios from 'axios';
 import axiosInstance, {
   saveAuthData,
   clearAuthData,
   getAccessToken,
   getUserData,
-  STORAGE_KEYS,
+  BASE_API_URL,
 } from './axiosConfig';
 
 // Interface pour les données de connexion
@@ -328,7 +329,10 @@ export const authService = {
       }
       
       const response = await axiosInstance.get('/users/me');
-      return response.data;
+      // Normaliser la réponse éventuelle de l'API (peut renvoyer { user: {...} } ou directement l'objet utilisateur)
+      const data: any = response?.data ?? {};
+      const normalizedUser = data.user ?? data.data?.user ?? data;
+      return normalizedUser;
     } catch (error) {
       throw error;
     }
@@ -385,16 +389,23 @@ export const authService = {
 
       // console.log('Données formatées pour mise à jour:', formattedData);
 
-      // Récupérer l'ID de l'utilisateur actuel
-      const currentUser = this.getCurrentUser();
-      if (!currentUser || !currentUser.id) {
+      // Récupérer l'ID de l'utilisateur actuel via l'API (ne pas dépendre du localStorage)
+      let currentUserId: string | number | undefined;
+      let currentUserFromApi: any = null;
+      try {
+        currentUserFromApi = await this.getCurrentUserFromApi();
+        currentUserId = currentUserFromApi?.id;
+      } catch (e) {
+        // Ignorer, sera géré ci-dessous
+      }
+      if (!currentUserId) {
         throw new Error("Impossible de récupérer l'ID de l'utilisateur");
       }
 
       try {
         // Utiliser l'endpoint correct avec l'ID de l'utilisateur
         const response = await axiosInstance.put(
-          `/users/${currentUser.id}`,
+          `/users/${currentUserId}`,
           formattedData,
           {
             headers: {
@@ -408,16 +419,12 @@ export const authService = {
         // console.log('Statut HTTP:', response.status);
         // console.log('Contenu de la réponse:', response.data);
 
-        // Mettre à jour les données utilisateur en localStorage
+        // Préparer la réponse utilisateur mise à jour sans persistance locale
         if (response.data) {
           const updatedUser = {
-            ...currentUser,
+            ...(currentUserFromApi || {}),
             ...formattedData,
           };
-          localStorage.setItem(
-            STORAGE_KEYS.USER_DATA,
-            JSON.stringify(updatedUser)
-          );
           return { user: updatedUser };
         }
 
@@ -570,16 +577,44 @@ export const authService = {
         }
       );
 
-      // Mettre à jour les données utilisateur en localStorage
-      if (response.data && response.data.user) {
-        localStorage.setItem(
-          STORAGE_KEYS.USER_DATA,
-          JSON.stringify(response.data.user)
-        );
+      // Ne pas stocker de données utilisateur côté client
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async changeProfilePicture(userId: string | number, file: File) {
+    try {
+      const formData = new FormData();
+      formData.append('profilePicture', file, file.name);
+
+      // Récupérer le token pour l'authentification
+      const token = getAccessToken();
+
+      // Utiliser axios brut pour envoyer le FormData correctement
+      const response = await axios.post(
+        `${BASE_API_URL}/users/${userId}/change-picture`, 
+        formData, 
+        {
+          headers: {
+            'x-platform': 'web',
+            'Authorization': token ? `Bearer ${token}` : '',
+            // NE PAS définir Content-Type, axios le fait automatiquement pour FormData
+          },
+          withCredentials: true,
+        }
+      );
+
+      // Si l’API renvoie un user mis à jour, le stocker localement
+      if (response.data?.user) {
+        saveAuthData({ accessToken: getAccessToken() || '', user: response.data.user, message: '', });
       }
 
       return response.data;
     } catch (error) {
+    //  console.error('Erreur changeProfilePicture:', error);
       throw error;
     }
   },

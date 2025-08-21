@@ -3,6 +3,7 @@ import Footer from '../components/layout/Footer';
 import Breadcrumb from '../components/navigation/Breadcrumb';
 import PromotionGrid from '../components/promotions/PromotionGrid';
 import PromotionFilters from '../components/promotions/PromotionFilters';
+import PromotionBanners from '../components/promotions/PromotionBanners';
 import { getPromotions, getPromotionsCount, Promotion } from '../services/promotionService';
 
 // Fonction de tri des promotions (définie en dehors du composant)
@@ -385,15 +386,18 @@ const Promotions: React.FC = () => {
         <section className="bg-gradient-to-br from-white via-blue-50/50 to-orange-50/30 py-20">
           <div className="container mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
                 <span className="bg-gradient-to-r from-[#007FFF] to-[#00BFFF] bg-clip-text text-transparent">
                   Pourquoi profiter de nos promotions ?
                 </span>
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-[#007FFF] to-[#00BFFF] rounded-full mx-auto mb-6"></div>
-              <p className="text-xl text-gray-600 max-w-5xl mx-auto leading-relaxed">
+              <p className="text-lg text-gray-600 max-w-5xl mx-auto leading-relaxed">
                 Découvrez des offres exceptionnelles sur nos meilleurs produits, disponibles pour une durée limitée
               </p>
+
+       
+            
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">

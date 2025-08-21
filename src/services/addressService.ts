@@ -31,12 +31,12 @@ class AddressService {
         postalCode: parseInt(addressData.postalCode.toString(), 10)
       };
 
-      console.log('Création d\'adresse - Données envoyées:', apiData);
+    //  console.log('Création d\'adresse - Données envoyées:', apiData);
       
       const response = await axiosInstance.post(`/addresses/users/${userId}`, apiData);
       return response.data.address;
     } catch (error: any) {
-      console.error('Erreur lors de la création de l\'adresse:', error);
+    //  console.error('Erreur lors de la création de l\'adresse:', error);
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
@@ -54,12 +54,12 @@ class AddressService {
         })
       };
 
-      console.log('Mise à jour d\'adresse - Données envoyées:', apiData);
+    //  console.log('Mise à jour d\'adresse - Données envoyées:', apiData);
 
       const response = await axiosInstance.put(`/addresses/users/${userId}/${addressId}`, apiData);
       return response.data.address;
     } catch (error: any) {
-      console.error('Erreur lors de la mise à jour de l\'adresse:', error);
+    //  console.error('Erreur lors de la mise à jour de l\'adresse:', error);
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
@@ -70,12 +70,12 @@ class AddressService {
   // Définir une adresse comme adresse par défaut
   async setDefaultAddress(userId: string, addressId: number): Promise<Address> {
     try {
-      console.log('Définition d\'adresse par défaut:', addressId);
+    //  console.log('Définition d\'adresse par défaut:', addressId);
       
       const response = await axiosInstance.patch(`/addresses/users/${userId}/${addressId}/default`);
       return response.data.address;
     } catch (error: any) {
-      console.error('Erreur lors de la définition de l\'adresse par défaut:', error);
+    //  console.error('Erreur lors de la définition de l\'adresse par défaut:', error);
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }
@@ -107,11 +107,11 @@ class AddressService {
         throw new Error('Impossible de supprimer une adresse par défaut');
       }
 
-      console.log('Suppression d\'adresse:', addressId);
+    //  console.log('Suppression d\'adresse:', addressId);
       
       await axiosInstance.delete(`/addresses/users/${userId}/${addressId}`);
     } catch (error: any) {
-      console.error('Erreur lors de la suppression de l\'adresse:', error);
+    //  console.error('Erreur lors de la suppression de l\'adresse:', error);
       if (error.response?.data?.message) {
         throw new Error(error.response.data.message);
       }

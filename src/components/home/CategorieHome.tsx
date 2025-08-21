@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Category } from '../../types/category';
 import { categoryService } from '../../services/categoryService';
+import PromotionBanners from '../promotions/PromotionBanners';
 
 const CategorieHome: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +35,10 @@ const CategorieHome: React.FC = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
+        {/* Carrousel bannières promotionnelles */}
+        <div className="mb-16 max-w-5xl mx-auto">
+          <PromotionBanners />
+        </div>
         {/* Titre de la section */}
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-gray-800 mb-4 relative inline-block">

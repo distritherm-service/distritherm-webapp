@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { FaUserEdit, FaKey, FaSignOutAlt, FaMapMarkerAlt, FaHeart, FaBriefcase } from 'react-icons/fa';
+import ProfilePictureUploader from '../components/profile/ProfilePictureUploader';
 import { useAuth } from '../contexts/AuthContext';
 import PersonalInfoForm from '../components/profile/PersonalInfoForm';
 import PasswordChangeForm from '../components/profile/PasswordChangeForm';
@@ -62,11 +63,7 @@ const MonProfil: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
             <div className="bg-gradient-to-r from-[#7CB9E8] to-[#007FFF] px-6 py-8">
               <div className="flex items-center">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
-                  <span className="text-2xl font-bold text-[#007FFF]">
-                    {user?.firstName ? user.firstName[0].toUpperCase() : user?.email?.[0].toUpperCase()}
-                  </span>
-                </div>
+                <ProfilePictureUploader />
                 <div className="ml-6">
                   <h1 className="text-2xl font-bold text-white">{formatUserName()}</h1>
                   <p className="text-[#FFFFFF]/90">{user?.email}</p>

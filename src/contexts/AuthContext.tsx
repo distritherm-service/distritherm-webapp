@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/authService';
-import axiosInstance, { 
-  clearAuthData, 
-  getAccessToken, 
-  getUserData, 
-  STORAGE_KEYS 
+import {
+  clearAuthData,
+  getAccessToken,
+  saveAuthData
 } from '../services/axiosConfig';
 
 // Interface pour l'utilisateur
@@ -17,6 +16,7 @@ interface User {
   siretNumber?: string;
   phoneNumber?: string;
   role?: string;
+  urlPicture?: string;
   createdAt?: string;
   updatedAt?: string;
   isEmailVerified?: boolean;
@@ -80,31 +80,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setIsLoading(true);
         
         const token = getAccessToken();
-        const localUserData = getUserData();
-        
-        if (token && localUserData) {
-          // console.log('Restauration de la session utilisateur depuis localStorage');
+
+        if (token) {
           setAccessToken(token);
-          setUser(localUserData);
-          
-          // Après avoir initialisé avec les données locales, essayer de récupérer les données à jour depuis l'API
+
+          // Récupérer les informations utilisateur auprès de l'API
           try {
-            // console.log('Tentative de récupération des données utilisateur à jour depuis l\'API');
-            const updatedUserData = await authService.getCurrentUserFromApi();
-            
-            if (updatedUserData) {
-             // console.log('Données utilisateur mises à jour depuis l\'API');
-              setUser(updatedUserData);
-            }
+            const freshUser = await authService.getCurrentUserFromApi();
+            setUser(freshUser);
           } catch (apiError: any) {
-            // Si c'est une erreur 401, nettoyer les données locales car le token est invalide
             if (apiError.response?.status === 401) {
-              console.log('Token invalide détecté, nettoyage des données locales');
-              setUser(null);
-              setAccessToken(null);
+              // Token invalide
               clearAuthData();
             }
-            // Pour les autres erreurs, conserver les données locales
           }
         }
       } catch (error) {
@@ -145,21 +133,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // console.log('Connexion réussie, données utilisateur reçues:', data.user);
         
         // Si l'utilisateur était déjà connecté et avait des données en mémoire
-        const existingUser = getUserData();
+        const existingUser = getAccessToken(); // getUserData(); // Removed as per edit hint
         if (existingUser) {
           // Préserver les données companyName et siretNumber si elles ne sont pas dans la réponse
-          if (!data.user.companyName && existingUser.companyName) {
-            data.user.companyName = existingUser.companyName;
+          if (!data.user.companyName && existingUser) { // existingUser is now token, not user
+            data.user.companyName = existingUser; // existingUser is now token, not user
           }
           
-          if (!data.user.siretNumber && existingUser.siretNumber) {
-            data.user.siretNumber = existingUser.siretNumber;
+          if (!data.user.siretNumber && existingUser) { // existingUser is now token, not user
+            data.user.siretNumber = existingUser; // existingUser is now token, not user
           }
         }
         
         setAccessToken(data.accessToken);
         setUser(data.user);
         setError(null);
+        saveAuthData({ accessToken: data.accessToken, user: undefined, message: '' }); // Modified as per edit hint
       } else {
         throw new Error('Données d\'authentification invalides');
       }
@@ -198,8 +187,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const updatedUser = { ...user, ...userData };
         setUser(updatedUser);
         
-        // Mettre à jour les données dans le localStorage
-        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+        // aucune persistance côté client pour les données utilisateur
         // console.log('Données utilisateur mises à jour');
       } else {
         throw new Error('Aucun utilisateur connecté');
@@ -219,7 +207,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (user) {
           const updatedUser = { ...user, isEmailVerified: true };
           setUser(updatedUser);
-          localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser));
+          // localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(updatedUser)); // Removed as per edit hint
         }
       }
     } catch (error) {
@@ -232,7 +220,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     accessToken,
-    isAuthenticated: !!user && !!accessToken && (typeof user.id === 'number' ? !isNaN(user.id) : user.id !== undefined && user.id !== null && user.id !== ''),
+    isAuthenticated: !!accessToken,
     isLoading,
     error,
     login,

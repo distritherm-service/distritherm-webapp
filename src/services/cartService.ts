@@ -28,16 +28,16 @@ export class CartError extends Error {
 }
 
 const handleCartError = (error: any): never => {
-  console.error('Erreur du panier:', error);
+ // console.error('Erreur du panier:', error);
   
   if (error.response) {
     const { status, data } = error.response;
     const message = data?.message || data?.error || `Erreur ${status}`;
-    console.error(`Erreur API Cart - Status: ${status}, Message: ${message}`);
+    //console.error(`Erreur API Cart - Status: ${status}, Message: ${message}`);
     throw new CartError(status, message, error);
   }
   
-  console.error('Erreur de connexion au service panier');
+//  console.error('Erreur de connexion au service panier');
   throw new CartError(0, 'Erreur de connexion au service panier', error);
 };
 
@@ -51,7 +51,7 @@ export const cartService = {
    */
   async createCart(userId: number): Promise<CartApiResponse> {
     try {
-      console.log(`[CartService] Création d'un nouveau panier pour l'utilisateur ${userId}`);
+   //   console.log(`[CartService] Création d'un nouveau panier pour l'utilisateur ${userId}`);
       
       // Créer un panier vide avec le statut IS_ACTIVE
       const response = await extractData<CartApiResponse>(
@@ -62,10 +62,10 @@ export const cartService = {
         })
       );
       
-      console.log(`[CartService] Panier créé avec succès:`, response);
+    //  console.log(`[CartService] Panier créé avec succès:`, response);
       return response;
     } catch (error) {
-      console.error(`[CartService] Erreur lors de la création du panier:`, error);
+    //  console.error(`[CartService] Erreur lors de la création du panier:`, error);
       return handleCartError(error);
     }
   },
@@ -77,18 +77,18 @@ export const cartService = {
    */
   async getActiveCart(userId: number): Promise<CartApiResponse> {
     try {
-      console.log(`[CartService] Récupération du panier actif pour l'utilisateur ${userId}`);
+    //  console.log(`[CartService] Récupération du panier actif pour l'utilisateur ${userId}`);
       
       const response = await extractData<CartApiResponse>(
         axiosInstance.get(`/carts/active/${userId}`)
       );
       
-      console.log(`[CartService] Panier actif récupéré:`, response);
+    //  console.log(`[CartService] Panier actif récupéré:`, response);
       return response;
     } catch (error: any) {
       // Si erreur 404, créer un nouveau panier
       if (error.response?.status === 404) {
-        console.log('[CartService] Aucun panier actif trouvé, création d\'un nouveau panier...');
+    //    console.log('[CartService] Aucun panier actif trouvé, création d\'un nouveau panier...');
         return await this.createCart(userId);
       }
       return handleCartError(error);
@@ -101,13 +101,13 @@ export const cartService = {
    */
   async getCartById(cartId: number): Promise<CartApiResponse> {
     try {
-      console.log(`[CartService] Récupération du panier ${cartId}`);
+    //  console.log(`[CartService] Récupération du panier ${cartId}`);
       
       const response = await extractData<CartApiResponse>(
         axiosInstance.get(`/carts/${cartId}`)
       );
       
-      console.log(`[CartService] Panier récupéré:`, response);
+    //  console.log(`[CartService] Panier récupéré:`, response);
       return response;
     } catch (error) {
       return handleCartError(error);
@@ -120,15 +120,15 @@ export const cartService = {
    */
   async addProductToCart(request: AddCartItemRequest): Promise<CartApiResponse> {
     try {
-      console.log(`[CartService] Ajout du produit ${request.productId} au panier ${request.cartId}`);
-      console.log(`[CartService] Quantité: ${request.quantity}`);
+    //  console.log(`[CartService] Ajout du produit ${request.productId} au panier ${request.cartId}`);
+    //  console.log(`[CartService] Quantité: ${request.quantity}`);
       
       // Appeler l'API pour ajouter le produit
       const response = await extractData<any>(
         axiosInstance.post('/carts/add-cart-item', request)
       );
       
-      console.log(`[CartService] Réponse d'ajout:`, response);
+    //  console.log(`[CartService] Réponse d'ajout:`, response);
       
       // Vérifier si la réponse contient un panier complet
       if (response.cart && response.cart.cartItems) {
@@ -143,7 +143,7 @@ export const cartService = {
         };
       }
     } catch (error) {
-      console.error(`[CartService] Erreur lors de l'ajout du produit:`, error);
+    //  console.error(`[CartService] Erreur lors de l'ajout du produit:`, error);
       return handleCartError(error);
     }
   },
@@ -154,15 +154,15 @@ export const cartService = {
    */
   async updateCartItemQuantity(request: UpdateCartItemRequest): Promise<CartApiResponse> {
     try {
-      console.log(`[CartService] Mise à jour de la quantité pour l'item ${request.cartItemId}`);
-      console.log(`[CartService] Nouvelle quantité: ${request.quantity}`);
+    //  console.log(`[CartService] Mise à jour de la quantité pour l'item ${request.cartItemId}`);
+    //  console.log(`[CartService] Nouvelle quantité: ${request.quantity}`);
       
       // L'API retourne un CartItem, pas un Cart complet
       const updateResponse = await extractData<{ message: string; cart: any }>(
         axiosInstance.post('/carts/update-cart-item', request)
       );
       
-      console.log(`[CartService] Réponse de mise à jour:`, updateResponse);
+    //  console.log(`[CartService] Réponse de mise à jour:`, updateResponse);
       
       // Après la mise à jour, récupérer le panier complet
       // On doit d'abord récupérer l'userId depuis le cartItem retourné
@@ -173,14 +173,14 @@ export const cartService = {
       // Récupérer le panier complet mis à jour
       const fullCartResponse = await this.getCartById(request.cartId);
       
-      console.log(`[CartService] Panier complet après mise à jour:`, fullCartResponse);
+    //    console.log(`[CartService] Panier complet après mise à jour:`, fullCartResponse);
       
       return {
         message: updateResponse.message,
         cart: fullCartResponse.cart
       };
     } catch (error) {
-      console.error(`[CartService] Erreur lors de la mise à jour:`, error);
+    //  console.error(`[CartService] Erreur lors de la mise à jour:`, error);
       return handleCartError(error);
     }
   },
@@ -191,17 +191,17 @@ export const cartService = {
    */
   async removeProductFromCart(request: RemoveCartItemRequest): Promise<CartApiResponse> {
     try {
-      console.log(`[CartService] Suppression du produit ${request.productId} du panier ${request.cartId}`);
+    //  console.log(`[CartService] Suppression du produit ${request.productId} du panier ${request.cartId}`);
       
-      // L'API retourne directement un Cart complet pour remove-cart-item
+      // L'API retourne directem ent un Cart complet pour remove-cart-item
       const response = await extractData<CartApiResponse>(
         axiosInstance.post('/carts/remove-cart-item', request)
       );
       
-      console.log(`[CartService] Produit supprimé:`, response);
+    //  console.log(`[CartService] Produit supprimé:`, response);
       return response;
     } catch (error) {
-      console.error(`[CartService] Erreur lors de la suppression:`, error);
+    //  console.error(`[CartService] Erreur lors de la suppression:`, error);
       return handleCartError(error);
     }
   },

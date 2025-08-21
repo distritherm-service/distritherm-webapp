@@ -8,6 +8,7 @@ import { useFavorites } from '../../contexts/FavoritesContext';
 import { useCart } from '../../contexts/CartContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { agencyService, Agency } from '../../services/agencyService';
 import CallbackForm from '../common/CallbackForm';
 import 'react-toastify/dist/ReactToastify.css';
 import MobileVerticalMenu from './MobileVerticalMenu';
@@ -21,6 +22,9 @@ const Navbar: React.FC = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState('Choisir votre magasin');
+  const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
+  const [agencies, setAgencies] = useState<Agency[]>([]);
+  const [loadingAgencies, setLoadingAgencies] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isCallbackFormOpen, setIsCallbackFormOpen] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -34,9 +38,12 @@ const Navbar: React.FC = () => {
   const { 
     searchQuery, 
     searchResults, 
+    searchHistory,
     isSearching,
+    openSearch,
     setSearchQuery,
-    clearSearch 
+    clearSearch,
+    deleteHistoryEntry 
   } = useSearch();
   const { isAuthenticated, user, logout } = useAuth();
   const location = useLocation();
@@ -48,10 +55,28 @@ const Navbar: React.FC = () => {
   // Calcul du nombre total d'articles dans le panier
   const cartItemsCount = getCartItemCount();
 
-  const handleStoreSelect = (store: string) => {
-    setSelectedStore(store);
+  const handleStoreSelect = (agency: Agency) => {
+    setSelectedAgency(agency);
+    setSelectedStore(agency.name);
     setIsStoreMenuOpen(false);
   };
+
+  // Charger les agences au montage du composant
+  useEffect(() => {
+    const fetchAgencies = async () => {
+      try {
+        setLoadingAgencies(true);
+        const agenciesData = await agencyService.getAgencies();
+        setAgencies(agenciesData);
+      } catch (error) {
+        console.error('Erreur lors du chargement des agences:', error);
+      } finally {
+        setLoadingAgencies(false);
+      }
+    };
+
+    fetchAgencies();
+  }, []);
 
   // Détecter le défilement pour appliquer des effets visuels
   useEffect(() => {
@@ -190,6 +215,8 @@ const Navbar: React.FC = () => {
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
+    // Ouvrir la recherche pour charger l'historique côté contexte
+    openSearch();
   };
 
   const handleLogout = () => {
@@ -237,6 +264,8 @@ const Navbar: React.FC = () => {
   // Gestionnaire de recherche
   const handleSearchFocus = () => {
     setShowSearchResults(true);
+    // Charger l'historique si nécessaire
+    openSearch();
   };
 
   const handleSearchBlur = (e: React.FocusEvent) => {
@@ -251,7 +280,7 @@ const Navbar: React.FC = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchResults.length > 0) {
-      navigate(`/nos-produits/${searchResults[0].id}`);
+      navigate(`/produit/${searchResults[0].id}`);
       setShowSearchResults(false);
       clearSearch();
       if (searchInputRef.current) {
@@ -261,7 +290,7 @@ const Navbar: React.FC = () => {
   };
 
   const handleResultClick = (productId: string) => {
-    navigate(`/nos-produits/${productId}`);
+    navigate(`/produit/${productId}`);
     setShowSearchResults(false);
     clearSearch();
     if (searchInputRef.current) {
@@ -285,7 +314,7 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <div id="main-navbar" className="fixed top-0 left-0 right-0 z-50 flex flex-col w-full">
+      <div id="main-navbar" className={`fixed top-0 left-0 right-0 z-[100] flex flex-col w-full bg-white transition-all duration-500 ${scrolled ? 'shadow-2xl' : 'shadow-xl'}`}>
         <style>{`
           .navbar-spacer {
             height: var(--navbar-height, 0px);
@@ -293,14 +322,14 @@ const Navbar: React.FC = () => {
         `}</style>
 
         {/* Barre supérieure avec informations de contact - Design moderne et agrandi */}
-        <div className={`bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-gray-300 transition-all duration-500 ${scrolled ? 'py-1 lg:py-2' : 'py-2 lg:py-3'}`}>
-          <div className="container mx-auto px-2 sm:px-4 lg:px-6">
+        <div className={`bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-gray-300 transition-all duration-500 ${scrolled ? 'py-1 lg:py-1.5' : 'py-1.5 lg:py-2'}`}>
+          <div className="container mx-auto px-3 sm:px-4 lg:px-6">
             <div className="flex justify-between items-center">
               {/* Partie gauche - Contact agrandi */}
               <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
                 <a 
                   href="tel:0171687212" 
-                  className="hidden md:flex items-center space-x-2 hover:text-white transition-all duration-300 group px-2 py-1 rounded-lg hover:bg-white/10 hover:shadow-md"
+                  className="hidden md:flex items-center space-x-2 hover:text-white transition-all duration-300 group px-3 py-1.5 rounded-lg hover:bg-white/10 hover:shadow-md"
                 >
                   <div className="relative">
                     <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,7 +346,7 @@ const Navbar: React.FC = () => {
                 
                 <a 
                   href="mailto:info@distritherm-services.fr" 
-                  className="hidden lg:flex items-center space-x-2 hover:text-white transition-all duration-300 group px-2 py-1 rounded-lg hover:bg-white/10 hover:shadow-md"
+                  className="hidden lg:flex items-center space-x-2 hover:text-white transition-all duration-300 group px-3 py-1.5 rounded-lg hover:bg-white/10 hover:shadow-md"
                 >
                   <div className="relative">
                     <svg className="w-4 h-4 lg:w-5 lg:h-5 group-hover:scale-110 transition-transform duration-300 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,14 +360,14 @@ const Navbar: React.FC = () => {
                 </a>
                 
                 {/* Version mobile - icônes agrandies */}
-                <div className="flex md:hidden items-center space-x-1">
-                  <a href="tel:0171687212" className="p-1.5 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg">
-                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex md:hidden items-center space-x-2">
+                  <a href="tel:0171687212" className="p-2 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg">
+                    <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                   </a>
-                  <a href="mailto:info@distritherm-services.fr" className="p-1.5 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg">
-                    <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <a href="mailto:info@distritherm-services.fr" className="p-2 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 hover:scale-110 hover:shadow-lg">
+                    <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                   </a>
@@ -383,63 +412,61 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* Barre principale avec logo et navigation - Design moderne */}
-        <div className={`${scrolled ? 'backdrop-blur-sm bg-white shadow-lg' : 'bg-white shadow-sm'} transition-all duration-500`}>
-          <div className="container mx-auto px-3 sm:px-4">
-            <div className={`flex items-center justify-between transition-all duration-500 ${scrolled ? 'h-16 sm:h-20' : 'h-20 sm:h-24'}`}>
+        <div className={`bg-white transition-all duration-500 ${scrolled ? 'shadow-sm' : ''}`}>
+          <div className="container mx-auto px-3 sm:px-4 lg:px-6">
+            <div className={`flex items-center justify-between transition-all duration-500 ${scrolled ? 'py-2' : 'py-3'}`}>
               {/* Logo - Section améliorée */}
               <div className="flex-shrink-0">
                 <Link to="/" className="block group relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-teal-400/20 to-blue-400/20 blur-xl group-hover:blur-2xl transition-all duration-500 rounded-full scale-150 opacity-0 group-hover:opacity-100"></div>
                   <img 
                     src={logo} 
                     alt="DistriTherm Services" 
-                    className={`relative transition-all duration-500 group-hover:scale-110 ${scrolled ? 'h-10 sm:h-14' : 'h-12 sm:h-16'} w-auto drop-shadow-md`} 
+                    className={`transition-all duration-300 group-hover:scale-105 ${scrolled ? 'h-12 sm:h-14' : 'h-14 sm:h-16'} w-auto`} 
                   />
                 </Link>
               </div>
 
               {/* Boutons mobiles - Design amélioré */}
-              <div className="flex items-center space-x-1 sm:space-x-2 sm:hidden">
+              <div className="flex items-center space-x-2 sm:hidden">
                 <button
                   onClick={handleSearchClick}
-                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-gray-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                  className="relative flex items-center justify-center w-10 h-10 text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 rounded-lg transition-all duration-300"
                   aria-label="Rechercher"
                 >
-                  <HiOutlineSearch className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <HiOutlineSearch className="w-5 h-5" />
                 </button>
                 <Link
                   to="/favoris"
-                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                  className="relative flex items-center justify-center w-10 h-10 text-gray-600 hover:text-red-500 bg-gray-50 hover:bg-red-50 rounded-lg transition-all duration-300"
                 >
-                  <HiOutlineHeart className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <HiOutlineHeart className="h-5 w-5" />
                   <FavoritesCounter size="sm" />
                 </Link>
                 <Link
                   to="/panier"
-                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                  className="relative flex items-center justify-center w-10 h-10 text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 rounded-lg transition-all duration-300"
                 >
-                  <HiOutlineShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <HiOutlineShoppingBag className="h-5 w-5" />
                   {cartItemsCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center shadow-md animate-pulse">
-                      <span className="text-[10px] sm:text-xs">{cartItemsCount}</span>
+                    <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md">
+                      {cartItemsCount}
                     </span>
                   )}
                 </Link>
                 <button
                   onClick={toggleMobileMenu}
-                  className="relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-gray-600 hover:text-teal-600 bg-white hover:bg-gray-50 rounded-full transition-all duration-300 shadow-sm border border-gray-200/50"
+                  className="relative flex items-center justify-center w-10 h-10 text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 rounded-lg transition-all duration-300"
                   aria-label="Menu"
                   id="mobile-menu-button"
                 >
-                  {isMobileMenuOpen ? <HiOutlineX className="w-4 h-4 sm:w-5 sm:h-5" /> : <HiOutlineMenu className="w-4 h-4 sm:w-5 sm:h-5" />}
+                  {isMobileMenuOpen ? <HiOutlineX className="w-5 h-5" /> : <HiOutlineMenu className="w-5 h-5" />}
                 </button>
               </div>
 
               {/* Barre de recherche desktop - Design moderne et amélioré */}
               <div className="flex-1 max-w-2xl hidden sm:flex items-center justify-center px-4 lg:px-8">
                 <div ref={searchRef} className="relative w-full">
-                  <form onSubmit={handleSearchSubmit} className="relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-teal-400/20 to-blue-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
+                  <form onSubmit={handleSearchSubmit} className="relative">
                     <input
                       ref={searchInputRef}
                       type="text"
@@ -447,9 +474,9 @@ const Navbar: React.FC = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={handleSearchFocus}
                       placeholder="Rechercher des produits..."
-                      className="relative w-full pl-12 sm:pl-14 pr-4 sm:pr-6 py-2.5 sm:py-3.5 rounded-full bg-gray-50/80 backdrop-blur-sm border border-gray-200/50 focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-transparent focus:bg-white/90 transition-all duration-300 placeholder:text-gray-400 text-gray-700 shadow-sm hover:shadow-md text-sm sm:text-base"
+                      className="w-full pl-12 pr-10 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-300 placeholder:text-gray-400 text-gray-700 text-sm lg:text-base"
                     />
-                    <HiOutlineSearch className="absolute left-3 sm:left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 group-hover:text-teal-600 transition-colors duration-300" />
+                    <HiOutlineSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     {searchQuery && (
                       <button
                         type="button"
@@ -457,26 +484,63 @@ const Navbar: React.FC = () => {
                           setSearchQuery('');
                           clearSearch();
                         }}
-                        className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
                       >
-                        <HiOutlineX className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <HiOutlineX className="w-4 h-4" />
                       </button>
                     )}
                   </form>
 
                   <AnimatePresence>
-                    {showSearchResults && searchQuery.trim() !== '' && (
+                    {showSearchResults && (
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 max-h-[80vh] overflow-y-auto z-50"
+                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-100 max-h-[400px] overflow-y-auto z-[150]"
                       >
                         {isSearching ? (
                           <div className="flex justify-center items-center h-20">
-                            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-teal-600"></div>
+                            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-blue-600"></div>
                           </div>
+                        ) : searchQuery.trim() === '' ? (
+                          searchHistory.length === 0 ? (
+                            <div className="p-6 text-center text-gray-500">
+                              <p>Aucune recherche récente</p>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="px-4 py-2 text-xs uppercase text-gray-400 font-semibold">Recherches récentes</div>
+                              {searchHistory.map((entry) => (
+                                <div
+                                  key={entry.id}
+                                  className="w-full px-4 py-3 hover:bg-gray-50 flex items-center justify-between text-left transition-colors duration-200"
+                                >
+                                  <button
+                                    onClick={() => {
+                                      setSearchQuery(entry.value);
+                                      searchInputRef.current?.focus();
+                                    }}
+                                    className="flex items-center flex-1 min-w-0 text-left"
+                                  >
+                                    <HiOutlineSearch className="w-5 h-5 text-gray-400" />
+                                    <span className="ml-3 text-sm text-gray-700 truncate">{entry.value}</span>
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteHistoryEntry(entry.id);
+                                    }}
+                                    aria-label="Supprimer cette recherche"
+                                    className="ml-3 text-gray-400 hover:text-red-600 transition-colors"
+                                  >
+                                    <HiOutlineX className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </>
+                          )
                         ) : searchResults.length === 0 ? (
                           <div className="p-6 text-center text-gray-500">
                             <HiOutlineSearch className="w-12 h-12 mx-auto mb-3 text-gray-300" />
@@ -501,7 +565,7 @@ const Navbar: React.FC = () => {
                                   <p className="text-sm font-medium text-gray-900 truncate">
                                     {product.name}
                                   </p>
-                                  <p className="text-sm text-teal-600 font-semibold">
+                                  <p className="text-sm text-blue-600 font-semibold">
                                     {product.priceHt.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} HT
                                   </p>
                                 </div>
@@ -514,7 +578,7 @@ const Navbar: React.FC = () => {
                                     navigate('/nos-produits', { state: { searchQuery } });
                                     setShowSearchResults(false);
                                   }}
-                                  className="w-full text-center text-sm text-teal-600 hover:text-teal-700 font-medium"
+                                  className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium"
                                 >
                                   Voir tous les résultats ({searchResults.length})
                                 </button>
@@ -534,34 +598,47 @@ const Navbar: React.FC = () => {
                 <div className="relative" ref={storeMenuRef}>
                   <button
                     onClick={toggleStoreMenu}
-                    className="flex items-center space-x-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-150 transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                    className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 transition-all duration-300 group"
                     aria-expanded={isStoreMenuOpen}
                     aria-haspopup="true"
                   >
-                    <HiOutlineLocationMarker className="text-teal-600 w-5 h-5 group-hover:scale-110 transition-transform" />
+                    <HiOutlineLocationMarker className="text-blue-600 w-5 h-5" />
                     <span className="max-w-[150px] truncate text-sm font-medium text-gray-700">{selectedStore}</span>
                     <FaChevronDown className={`h-3 w-3 text-gray-500 transition-transform duration-300 ${isStoreMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
                   
                   {isStoreMenuOpen && (
                     <div 
-                      className="absolute sm:static right-0 sm:right-auto mt-2 sm:mt-0 w-64 bg-white rounded-2xl shadow-2xl sm:shadow-lg py-2 z-50 border border-gray-100"
+                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-lg shadow-2xl py-2 z-[200] border border-gray-200"
                       onClick={(e) => e.stopPropagation()}
+                      style={{ position: 'absolute' }}
                     >
-                      <button
-                        onClick={() => handleStoreSelect('Magasin Taverny')}
-                        className="block w-full text-left px-6 py-3 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200"
-                      >
-                        <div className="font-medium">Magasin Taverny</div>
-                        <div className="text-xs text-gray-500 mt-1">95150 Taverny</div>
-                      </button>
-                      <button
-                        onClick={() => handleStoreSelect('Magasin Drancy')}
-                        className="block w-full text-left px-6 py-3 text-sm text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors duration-200"
-                      >
-                        <div className="font-medium">Magasin Drancy</div>
-                        <div className="text-xs text-gray-500 mt-1">93700 Drancy</div>
-                      </button>
+                      {loadingAgencies ? (
+                        <div className="flex justify-center items-center py-4">
+                          <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-blue-600"></div>
+                          <span className="ml-2 text-sm text-gray-500">Chargement...</span>
+                        </div>
+                      ) : agencies.length === 0 ? (
+                        <div className="px-6 py-3 text-sm text-gray-500 text-center">
+                          Aucune agence disponible
+                        </div>
+                      ) : (
+                        agencies.map((agency) => (
+                          <button
+                            key={agency.id}
+                            onClick={() => handleStoreSelect(agency)}
+                            className="block w-full text-left px-6 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
+                          >
+                            <div className="font-medium">{agency.name}</div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {agency.postal_code && agency.city 
+                                ? `${agency.postal_code} ${agency.city}`
+                                : agency.address
+                              }
+                            </div>
+                          </button>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
@@ -572,20 +649,20 @@ const Navbar: React.FC = () => {
                 {/* Favoris avec design amélioré */}
                 <Link
                   to="/favoris"
-                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-red-500 bg-white hover:bg-red-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                  className="relative flex items-center justify-center w-11 h-11 text-gray-600 hover:text-red-500 bg-gray-50 hover:bg-red-50 rounded-lg transition-all duration-300 group"
                 >
-                  <HiOutlineHeart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  <HiOutlineHeart className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <FavoritesCounter size="md" />
                 </Link>
                 
                 {/* Panier avec design amélioré */}
                 <Link
                   to="/panier"
-                  className="relative flex items-center justify-center w-12 h-12 text-gray-600 hover:text-teal-600 bg-white hover:bg-teal-50 rounded-full transition-all duration-300 group shadow-sm hover:shadow-md border border-gray-200/50"
+                  className="relative flex items-center justify-center w-11 h-11 text-gray-600 hover:text-blue-600 bg-gray-50 hover:bg-blue-50 rounded-lg transition-all duration-300 group"
                 >
-                  <HiOutlineShoppingBag className="h-6 w-6 group-hover:scale-110 transition-transform" />
+                  <HiOutlineShoppingBag className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   {cartItemsCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-r from-teal-600 to-cyan-600 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg animate-pulse">
+                    <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md">
                       {cartItemsCount}
                     </span>
                   )}
@@ -597,65 +674,65 @@ const Navbar: React.FC = () => {
         
         {/* Barre de navigation catégories - Design moderne et agrandi */}
         <div 
-          className={`relative bg-white border-t border-gray-100 transition-all duration-500 ${
-            scrolled ? 'py-2 sm:py-3' : 'py-3 sm:py-4'
-          } ${isMobileMenuOpen ? 'block shadow-lg' : 'hidden sm:block'}`}
+          className={`bg-white transition-all duration-500 ${
+            scrolled ? 'py-1.5' : 'py-2.5'
+          } ${isMobileMenuOpen ? 'block' : 'hidden sm:block'} border-b border-gray-200`}
         >
-          <div className="container mx-auto px-3 sm:px-4">
+          <div className="container mx-auto px-3 sm:px-4 lg:px-6">
             <div className="flex items-center justify-between gap-4">
               {/* Bouton "Nos Catégories" à gauche - Agrandi et moderne */}
               <div className="hidden sm:block">
                 <button 
                   onClick={toggleProductsMenu}
-                  className="group flex items-center gap-3 px-6 py-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 hover:shadow-md font-medium"
+                  className="group flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-lg transition-all duration-300 hover:shadow-lg hover:from-blue-600 hover:to-sky-600 font-semibold transform hover:scale-105"
                   aria-label="Nos catégories"
                   aria-expanded={isMenuOpen}
                   aria-controls="vertical-menu"
                   data-testid="all-products-button"
                 >
-                  <HiOutlineMenu className={`w-6 h-6 transition-transform duration-300 ${isMenuOpen ? 'rotate-90' : ''}`} />
-                  <span className="hidden lg:inline text-base">Nos Catégories</span>
+                  <HiOutlineMenu className={`w-5 h-5 transition-transform duration-300 ${isMenuOpen ? 'rotate-90' : ''}`} />
+                  <span className="hidden lg:inline text-sm">Nos Catégories</span>
                 </button>
               </div>
               
               {/* Liens de navigation au centre - Agrandis et modernes */}
-              <div className="hidden sm:flex items-center gap-1">
+              <div className="hidden sm:flex items-center gap-2">
                 <Link
                   to="/"
-                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     isActive('/') 
-                      ? 'bg-blue-500 text-white shadow-md' 
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-white/80'
                   }`}
                 >
                   Accueil
                 </Link>
                 <Link
                   to="/nos-produits"
-                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     isActive('/nos-produits') 
-                      ? 'bg-blue-500 text-white shadow-md' 
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-white/80'
                   }`}
                 >
                   Produits
                 </Link>
                 <Link
                   to="/promotions"
-                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     isActive('/promotions') 
-                      ? 'bg-blue-500 text-white shadow-md' 
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-white/80'
                   }`}
                 >
                   Promotions
                 </Link>
                 <Link
                   to="/nous-contact"
-                  className={`px-6 py-4 text-base font-medium rounded-xl transition-all duration-300 ${
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     isActive('/nous-contact') 
-                      ? 'bg-blue-500 text-white shadow-md' 
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-white/80'
                   }`}
                 >
                   Contact
@@ -669,7 +746,7 @@ const Navbar: React.FC = () => {
                     <button
                       ref={userMenuButtonRef}
                       onClick={handleUserMenuButtonClick}
-                      className="flex items-center gap-3 px-6 py-4 bg-gray-50 hover:bg-blue-50 text-gray-700 hover:text-blue-600 border border-gray-200 hover:border-blue-300 rounded-xl transition-all duration-300 hover:shadow-md font-medium"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-sky-500 text-white rounded-lg transition-all duration-300 hover:shadow-lg hover:from-blue-600 hover:to-sky-600 font-semibold transform hover:scale-105"
                       aria-label="Mon compte"
                       aria-expanded={isUserMenuOpen}
                       aria-haspopup="true"
@@ -677,36 +754,43 @@ const Navbar: React.FC = () => {
                       type="button"
                     >
                       <div className="relative">
-                        <HiOutlineUser className="w-6 h-6" />
+                        {user?.urlPicture ? (
+                          <img
+                            src={user.urlPicture}
+                            alt="Photo de profil"
+                            className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                          />
+                        ) : (
+                          <HiOutlineUser className="w-5 h-5" />
+                        )}
                         {user && !user?.client?.emailVerified && (
-                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 rounded-full flex items-center justify-center">
-                            <span className="text-[10px] text-gray-800 font-bold">!</span>
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full flex items-center justify-center border border-white">
+                            <span className="text-[8px] text-gray-800 font-bold">!</span>
                           </div>
                         )}
                       </div>
-                      <span className="text-base">{formatUserName()}</span>
-                      <FaChevronDown className={`h-4 w-4 transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                      <span className="text-sm font-medium">{formatUserName()}</span>
+                      <FaChevronDown className={`h-3 w-3 text-white transition-transform duration-300 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isUserMenuOpen && (
                       <div
                         ref={userMenuContentRef}
-                        className="absolute right-0 mt-3 w-80 bg-gradient-to-br from-white/90 via-slate-50/80 to-blue-50/80 backdrop-blur-xl rounded-3xl shadow-xl ring-1 ring-black/10 border border-white/60 z-50 overflow-hidden animate-fade-in"
+                        className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 z-[200] overflow-hidden"
                         id="user-menu-content"
+                        style={{ position: 'absolute' }}
                       >
-                        {/* Flèche */}
-                        <div className="absolute -top-2 right-8 w-4 h-4 bg-gradient-to-br from-white/90 to-blue-50/80 backdrop-blur-xl rotate-45 shadow-lg ring-1 ring-black/10 border border-white/60"></div>
-                        <div className="px-6 py-4 border-b border-slate-100/80">
-                          <p className="text-base font-bold text-slate-800 tracking-tight">Profil utilisateur</p>
-                          <p className="text-sm text-gray-500 truncate mt-0.5">{user?.email}</p>
+                        <div className="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-sky-50">
+                          <p className="text-sm font-semibold text-gray-800">Profil utilisateur</p>
+                          <p className="text-xs text-gray-500 truncate mt-1">{user?.email}</p>
                           {user && !user?.client?.emailVerified && (
-                            <div className="mt-3 p-3 bg-yellow-50/80 rounded-xl flex items-center justify-between text-xs text-yellow-800 shadow-sm border border-yellow-100/60">
+                            <div className="mt-3 p-2 bg-yellow-50 rounded-lg flex items-center justify-between text-xs text-yellow-800">
                               <div className="flex items-center">
                                 <span className="mr-1">⚠️</span>
                                 <span>Email non vérifié</span>
                               </div>
                               <Link
                                 to="/verification-email"
-                                className="font-semibold text-teal-600 hover:text-teal-700 transition-colors"
+                                className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                                 onClick={closeUserMenu}
                               >
                                 Vérifier →
@@ -716,20 +800,20 @@ const Navbar: React.FC = () => {
                         </div>
                         <Link
                           to="/mon-profil"
-                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-blue-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
+                          className="flex items-center gap-3 w-full px-5 py-3 text-sm text-gray-700 hover:bg-blue-50 transition-all duration-200 group"
                           onClick={closeUserMenu}
                         >
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-100 to-sky-100 text-blue-600">
                             <HiOutlineUser className="w-4 h-4" />
                           </div>
                           <span className="font-medium">Modifier mon profil</span>
                         </Link>
                         <Link
                           to="/favoris"
-                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-pink-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
+                          className="flex items-center gap-3 w-full px-5 py-3 text-sm text-gray-700 hover:bg-red-50 transition-all duration-200 group"
                           onClick={closeUserMenu}
                         >
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-100 text-pink-600">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600">
                             <HiOutlineHeart className="w-4 h-4" />
                           </div>
                           <span className="font-medium">Mes Favoris</span>
@@ -737,10 +821,10 @@ const Navbar: React.FC = () => {
 
                         <Link
                           to="/mes-devis"
-                          className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-green-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
+                          className="flex items-center gap-3 w-full px-5 py-3 text-sm text-gray-700 hover:bg-green-50 transition-all duration-200 group"
                           onClick={closeUserMenu}
                         >
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-600">
                             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -750,10 +834,10 @@ const Navbar: React.FC = () => {
                         {user && user.type !== 'PROVIDER' && (
                           <Link
                             to="/demande-espace-pro"
-                            className="flex items-center gap-3 w-full px-6 py-3 text-[15px] text-gray-700 hover:bg-indigo-50/70 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
+                            className="flex items-center gap-3 w-full px-5 py-3 text-sm text-gray-700 hover:bg-indigo-50 transition-all duration-200 group"
                             onClick={closeUserMenu}
                           >
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-100 to-blue-100 text-indigo-600">
                               <FaBriefcase className="w-4 h-4" />
                             </div>
                             <span className="font-medium">Espace Pro</span>
@@ -765,9 +849,9 @@ const Navbar: React.FC = () => {
                               logout();
                               closeUserMenu();
                             }}
-                            className="flex items-center gap-3 w-full px-6 py-3 text-[15px] font-semibold text-red-600 hover:bg-red-50/80 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 rounded-xl group"
+                            className="flex items-center gap-3 w-full px-5 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition-all duration-200 group"
                           >
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-100 text-red-600">
                               <HiOutlineLogout className="w-4 h-4" />
                             </div>
                             <span className="font-medium">Déconnexion</span>
@@ -779,11 +863,11 @@ const Navbar: React.FC = () => {
                 ) : (
                   <Link
                     to="/connexion"
-                    className="flex items-center gap-3 px-6 py-4 bg-blue-500 text-white hover:bg-blue-600 rounded-xl transition-all duration-300 hover:shadow-md font-medium"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-sky-500 text-white hover:from-blue-600 hover:to-sky-600 rounded-lg transition-all duration-300 hover:shadow-lg font-semibold transform hover:scale-105"
                     aria-label="Connexion"
                   >
-                    <HiOutlineUser className="w-6 h-6" />
-                    <span className="text-base">Connexion</span>
+                    <HiOutlineUser className="w-5 h-5" />
+                    <span className="text-sm">Connexion</span>
                   </Link>
                 )}
               </div>
@@ -802,53 +886,52 @@ const Navbar: React.FC = () => {
                     setIsMobileMenuOpen(false);
                     setIsMenuOpen(true);
                   }}
-                  className="group relative flex w-full items-center justify-between py-3 sm:py-4 px-4 sm:px-5 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-300 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl"
+                  className="group relative flex w-full items-center justify-between py-3 px-4 bg-gradient-to-r from-blue-500 to-sky-500 text-white hover:from-blue-600 hover:to-sky-600 transition-all duration-300 rounded-lg shadow-lg"
                   id="mobile-categories-button"
                   aria-label="Voir toutes les catégories"
                 >
-                  <div className="absolute inset-0 bg-white/10 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <span className="relative z-10 font-bold text-base sm:text-lg">Voir toutes les catégories</span>
-                  <svg className="relative z-10 w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="font-semibold text-sm">Voir toutes les catégories</span>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
 
                 {/* Liens de navigation */}
-                <nav className="bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg overflow-hidden">
+                <nav className="bg-white rounded-lg shadow-lg overflow-hidden">
                   <Link
                     to="/"
-                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
-                      isActive('/') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
+                    className={`flex items-center w-full py-3 px-4 ${
+                      isActive('/') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Accueil
                   </Link>
                   <Link
                     to="/nos-produits"
-                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
-                      isActive('/nos-produits') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
+                    className={`flex items-center w-full py-3 px-4 ${
+                      isActive('/nos-produits') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Produits
                   </Link>
                   <Link
                     to="/promotions"
-                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
-                      isActive('/promotions') ? 'text-teal-600 bg-teal-50 font-semibold' : 'text-gray-700'
-                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
+                    className={`flex items-center w-full py-3 px-4 ${
+                      isActive('/promotions') ? 'text-blue-600 bg-blue-50 font-semibold' : 'text-gray-700'
+                    } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Promotions
                   </Link>
                   <Link
                     to="/nous-contact"
-                    className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
+                    className={`flex items-center w-full py-3 px-4 ${
                       isActive('/nous-contact') 
-                        ? 'text-teal-600 bg-teal-50 font-semibold' 
+                        ? 'text-blue-600 bg-blue-50 font-semibold' 
                         : 'text-gray-700'
-                    } hover:bg-gray-50 transition-all duration-200 text-sm sm:text-base`}
+                    } hover:bg-gray-50 transition-all duration-200 text-sm`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Contact
@@ -856,11 +939,11 @@ const Navbar: React.FC = () => {
                   {isAuthenticated && user && user.type !== 'PROVIDER' && (
                     <Link
                       to="/demande-espace-pro"
-                      className={`flex items-center w-full py-3 sm:py-4 px-4 sm:px-5 ${
+                      className={`flex items-center w-full py-3 px-4 ${
                         isActive('/demande-espace-pro') 
-                          ? 'text-teal-600 bg-teal-50 font-semibold' 
+                          ? 'text-blue-600 bg-blue-50 font-semibold' 
                           : 'text-gray-700'
-                      } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm sm:text-base`}
+                      } hover:bg-gray-50 transition-all duration-200 border-b border-gray-100 text-sm`}
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       Espace Pro
@@ -875,29 +958,27 @@ const Navbar: React.FC = () => {
                       setIsMobileMenuOpen(false);
                       navigate('/mon-profil');
                     }}
-                    className="group relative flex w-full items-center justify-between py-3 sm:py-4 px-4 sm:px-5 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-300 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl"
+                    className="group flex w-full items-center justify-between py-3 px-4 bg-gradient-to-r from-blue-500 to-sky-500 text-white hover:from-blue-600 hover:to-sky-600 transition-all duration-300 rounded-lg shadow-lg"
                   >
-                    <div className="absolute inset-0 bg-white/10 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <span className="relative z-10 flex items-center">
-                      <HiOutlineUser className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                      <span className="font-bold text-base sm:text-lg">{user?.name || 'Mon profil'}</span>
+                    <span className="flex items-center">
+                      <HiOutlineUser className="w-5 h-5 mr-2" />
+                      <span className="font-semibold text-sm">{user?.name || 'Mon profil'}</span>
                     </span>
-                    <svg className="relative z-10 w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 ) : (
                   <Link
                     to="/connexion"
-                    className="group relative flex w-full items-center justify-between py-3 sm:py-4 px-4 sm:px-5 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 text-white hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 transition-all duration-300 rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl"
+                    className="group flex w-full items-center justify-between py-3 px-4 bg-gradient-to-r from-blue-500 to-sky-500 text-white hover:from-blue-600 hover:to-sky-600 transition-all duration-300 rounded-lg shadow-lg"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <div className="absolute inset-0 bg-white/10 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <span className="relative z-10 flex items-center">
-                      <HiOutlineUser className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3" />
-                      <span className="font-bold text-base sm:text-lg">Connexion</span>
+                    <span className="flex items-center">
+                      <HiOutlineUser className="w-5 h-5 mr-2" />
+                      <span className="font-semibold text-sm">Connexion</span>
                     </span>
-                    <svg className="relative z-10 w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
@@ -907,21 +988,27 @@ const Navbar: React.FC = () => {
           </div>
         </div>
         
-        {/* Menu vertical déroulant desktop */}
-        {isMenuOpen && window.innerWidth >= 768 && (
+      </div>
+      
+      {/* Menus verticaux avec z-index élevé */}
+      {/* Menu vertical déroulant desktop */}
+      {isMenuOpen && window.innerWidth >= 768 && (
+        <div className="fixed top-0 left-0 w-full h-full z-[110]">
           <VerticalMenu 
             isOpen={isMenuOpen} 
             onClose={() => setIsMenuOpen(false)} 
           />
-        )}
-      </div>
+        </div>
+      )}
       
       {/* Menu vertical mobile (en dehors du conteneur principal) */}
       {isMenuOpen && window.innerWidth < 768 && (
-        <MobileVerticalMenu 
-          isOpen={isMenuOpen} 
-          onClose={() => setIsMenuOpen(false)} 
-        />
+        <div className="fixed top-0 left-0 w-full h-full z-[110]">
+          <MobileVerticalMenu 
+            isOpen={isMenuOpen} 
+            onClose={() => setIsMenuOpen(false)} 
+          />
+        </div>
       )}
 
       {/* Formulaire de rappel */}
