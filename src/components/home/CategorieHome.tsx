@@ -34,7 +34,7 @@ const CategorieHome: React.FC = () => {
 
   return (
     <section className="py-16 bg-gray-50">
-      <div className="container mx-auto px-4">
+      <div className="w-full max-w-none mx-auto px-0 sm:px-4">
         {/* Carrousel bannières promotionnelles */}
         <div className="mb-16 max-w-5xl mx-auto">
           <PromotionBanners />

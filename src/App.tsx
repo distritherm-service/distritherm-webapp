@@ -6,7 +6,6 @@ import { CartProvider } from './contexts/CartContext';
 import { SearchProvider } from './contexts/SearchContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ScrollToTop from './components/layout/ScrollToTop';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from './contexts/AuthContext';
 import EmailVerification from './pages/EmailVerification';
 import ResetPasswordForm from './components/auth/ResetPasswordForm';
@@ -128,7 +127,6 @@ const AppRoutes = () => {
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <GoogleOAuthProvider clientId="592794634648-38n0hj2dhk0frc5tm2o7c3gol5d06clc.apps.googleusercontent.com">
         <AuthProvider>
           <CartProvider>
             <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -167,7 +165,6 @@ const App: React.FC = () => {
             </Router>
           </CartProvider>
         </AuthProvider>
-      </GoogleOAuthProvider>
     </ErrorBoundary>
   );
 };

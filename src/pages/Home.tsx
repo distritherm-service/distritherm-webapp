@@ -53,8 +53,8 @@ const Home: React.FC = () => {
   return (
     <Layout>
       {/* Section titre et services */}
-      <section className="py-6 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-4">
+      <section className=" bg-gradient-to-b from-gray-50 to-white">
+        <div className="w-full max-w-none mx-auto px-0 sm:px-4">
           {/* Titre principal */}
           <div className="text-center mb-16">
               <h2 className="text-5xl font-bold text-gray-800 mb-4 relative inline-block">
@@ -69,7 +69,7 @@ const Home: React.FC = () => {
             </div>
 
           {/* Grille des services */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-20">
             {/* Nos Agences en France */}
             <div className="group relative overflow-hidden bg-gradient-to-br from-white to-blue-50/30 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 ease-out border border-blue-100/50 hover:border-blue-300/50 transform hover:-translate-y-3">
               {/* Background Pattern */}

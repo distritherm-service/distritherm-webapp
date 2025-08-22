@@ -490,20 +490,7 @@ const MesDevis: React.FC = () => {
 
                     <div className="flex flex-col md:flex-row md:justify-end space-y-3 md:space-y-0 md:space-x-4">
                       {(selectedQuote.status === 'SENDED' || selectedQuote.status === 'PENDING') && (
-                        <>
-                          <button 
-                            onClick={() => handleAcceptQuote(selectedQuote.id)}
-                            className="px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600 transition-colors flex items-center justify-center"
-                          >
-                            Accepter le devis
-                          </button>
-                          <button 
-                            onClick={() => handleRejectQuote(selectedQuote.id)}
-                            className="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors flex items-center justify-center"
-                          >
-                            Refuser le devis
-                          </button>
-                        </>
+                        null
                       )}
                       <button 
                         onClick={() => handleDownloadQuote(selectedQuote)}
@@ -512,13 +499,15 @@ const MesDevis: React.FC = () => {
                         <FaFileDownload className="mr-2" />
                         Télécharger le devis
                       </button>
-                      <button 
-                        onClick={() => setDeleteConfirmation({ show: true, quoteId: selectedQuote.id })}
-                        className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors flex items-center justify-center"
-                      >
-                        <FaTrash className="mr-2" />
-                        Supprimer
-                      </button>
+                      {selectedQuote.status === 'PENDING' && (
+                        <button 
+                          onClick={() => setDeleteConfirmation({ show: true, quoteId: selectedQuote.id })}
+                          className="px-4 py-2 bg-gray-500 text-white rounded-xl hover:bg-gray-600 transition-colors flex items-center justify-center"
+                        >
+                          <FaTrash className="mr-2" />
+                          Supprimer
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -606,32 +595,7 @@ const MesDevis: React.FC = () => {
                             
                             <div className={`grid ${(quote.status === 'SENDED' || quote.status === 'PENDING') ? 'grid-cols-2' : 'grid-cols-1'} gap-2`}>
                               {(quote.status === 'SENDED' || quote.status === 'PENDING') ? (
-                                <>
-                                  <button
-                                    onClick={() => handleAcceptQuote(quote.id)}
-                                    className="group/btn relative w-full text-green-600 border border-green-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-green-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
-                                  >
-                                    <div className="relative z-10 flex items-center justify-center">
-                                      <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                                      </svg>
-                                      Accepter
-                                    </div>
-                                    <div className="absolute inset-0 bg-green-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
-                                  </button>
-                                  <button
-                                    onClick={() => handleRejectQuote(quote.id)}
-                                    className="group/btn relative w-full text-red-600 border border-red-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-red-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
-                                  >
-                                    <div className="relative z-10 flex items-center justify-center">
-                                      <svg className="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                      </svg>
-                                      Refuser
-                                    </div>
-                                    <div className="absolute inset-0 bg-red-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
-                                  </button>
-                                </>
+                                <></>
                               ) : (
                                 <button
                                   onClick={() => handleDownloadQuote(quote)}
@@ -660,16 +624,18 @@ const MesDevis: React.FC = () => {
                             )}
                             
                             {/* Bouton de suppression */}
-                            <button
-                              onClick={() => setDeleteConfirmation({ show: true, quoteId: quote.id })}
-                              className="group/btn relative w-full text-gray-600 border border-gray-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-gray-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
-                            >
-                              <div className="relative z-10 flex items-center justify-center">
-                                <FaTrash className="mr-2 text-xs" />
-                                Supprimer
-                              </div>
-                              <div className="absolute inset-0 bg-gray-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
-                            </button>
+                            {quote.status === 'PENDING' && (
+                              <button
+                                onClick={() => setDeleteConfirmation({ show: true, quoteId: quote.id })}
+                                className="group/btn relative w-full text-gray-600 border border-gray-500 rounded-lg py-2 px-4 text-sm font-medium hover:bg-gray-500 hover:text-white transition-all duration-200 flex items-center justify-center overflow-hidden"
+                              >
+                                <div className="relative z-10 flex items-center justify-center">
+                                  <FaTrash className="mr-2 text-xs" />
+                                  Supprimer
+                                </div>
+                                <div className="absolute inset-0 bg-gray-500 transform scale-x-0 group-hover/btn:scale-x-100 transition-transform origin-left duration-200 z-0"></div>
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>

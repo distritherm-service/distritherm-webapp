@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { authService } from '../../services/authService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -15,16 +14,12 @@ interface LoginFormProps {
   inCart?: boolean;
   onSwitchForm: () => void;
   onShowForgotPassword: () => void;
-  onGoogleSuccess: (credentialResponse: CredentialResponse) => Promise<void>;
-  onGoogleError: () => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ 
   inCart = false, 
   onSwitchForm, 
-  onShowForgotPassword,
-  onGoogleSuccess,
-  onGoogleError 
+  onShowForgotPassword 
 }) => {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -160,31 +155,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
         >
           {loading ? 'Chargement...' : 'Se connecter'}
         </button>
-      </div>
-      
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Ou</span>
-          </div>
-        </div>
-        
-        <div className="mt-6 flex justify-center">
-          <div className="w-full max-w-full">
-            <GoogleLogin
-              width="100%"
-              size="large"
-              text="continue_with"
-              shape="rectangular"
-              onSuccess={onGoogleSuccess}
-              onError={onGoogleError}
-              useOneTap={false}
-            />
-          </div>
-        </div>
       </div>
       
       <div className="mt-4 text-center">

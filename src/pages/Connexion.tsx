@@ -1,26 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import { CredentialResponse } from '@react-oauth/google';
 import { useAuth } from '../contexts/AuthContext';
 import { authService } from '../services/authService';
 import {
   LoginForm,
   RegisterForm,
   ForgotPasswordForm,
-  ResetPasswordForm,
-  AdditionalInfoForm
+  ResetPasswordForm
 } from '../components/auth';
-
-// Interface pour l'utilisateur Google décodé
-interface GoogleUser {
-  email: string;
-  name: string;
-  picture: string;
-  sub: string;
-  given_name?: string;
-  family_name?: string;
-}
 
 // Interface pour la réponse de connexion réussie
 interface LoginResponse {
@@ -39,8 +27,6 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
   const { isAuthenticated, error: authError, clearError } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState('');
-  const [googleUser, setGoogleUser] = useState<GoogleUser | null>(null);
-  const [googleCredential, setGoogleCredential] = useState<string | null>(null);
   const [showAdditionalInfoForm, setShowAdditionalInfoForm] = useState(false);
   const [showForgotPasswordForm, setShowForgotPasswordForm] = useState(false);
   const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
@@ -80,37 +66,6 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
     }
   }, []);
 
-  // Gestion de la réponse Google réussie
-  const handleGoogleLogin = async (credentialResponse: CredentialResponse) => {
-    try {
-      setError('');
-      
-      if (!credentialResponse.credential) {
-        throw new Error('Aucun credential Google reçu');
-      }
-
-      setGoogleCredential(credentialResponse.credential);
-      
-      await authService.loginWithGoogle(credentialResponse.credential);
-      
-      // La redirection se fera automatiquement via le useEffect qui surveille isAuthenticated
-    } catch (error: any) {
-     // console.error('Erreur Google Login:', error);
-      
-      if (error.response?.status === 404) {
-        // Utilisateur non trouvé, afficher le formulaire d'informations supplémentaires
-        setShowAdditionalInfoForm(true);
-      } else {
-        setError(error.response?.data?.message || 'Une erreur est survenue lors de la connexion avec Google.');
-      }
-    }
-  };
-  
-  // Gestion de l'erreur Google
-  const handleGoogleError = () => {
-    setError('La connexion avec Google a échoué. Veuillez réessayer ou utiliser le formulaire de connexion classique.');
-  };
-
   // Fonction pour basculer entre connexion et inscription
   const toggleLoginMode = () => {
     setIsLogin(!isLogin);
@@ -141,13 +96,6 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
     setIsLogin(true);
   };
 
-  // Annuler le formulaire d'informations supplémentaires
-  const cancelAdditionalInfo = () => {
-    setShowAdditionalInfoForm(false);
-    setGoogleCredential(null);
-    setError('');
-  };
-
   // Rendu du contenu principal
   const renderContent = () => (
     <section className={`relative ${!inCart ? 'py-20' : 'py-4'} overflow-hidden`}>
@@ -170,15 +118,11 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
                 inCart={inCart}
                 onSwitchForm={toggleLoginMode}
                 onShowForgotPassword={showForgotPassword}
-                onGoogleSuccess={handleGoogleLogin}
-                onGoogleError={handleGoogleError}
               />
             ) : (
               <RegisterForm 
                 inCart={inCart}
                 onSwitchForm={toggleLoginMode}
-                onGoogleSuccess={handleGoogleLogin}
-                onGoogleError={handleGoogleError}
               />
             )}
           </div>
@@ -191,15 +135,6 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
   if (inCart) {
     return (
       <>
-        {/* Affichage du formulaire d'informations supplémentaires */}
-        {showAdditionalInfoForm && googleCredential && (
-          <AdditionalInfoForm
-            googleCredential={googleCredential}
-            onCancel={cancelAdditionalInfo}
-            inCart={inCart}
-          />
-        )}
-        
         {/* Formulaire de mot de passe oublié */}
         {showForgotPasswordForm && (
           <ForgotPasswordForm 
@@ -224,15 +159,6 @@ const Connexion: React.FC<ConnexionProps> = ({ inCart = false, onSuccess }) => {
   // Sinon, inclure le Layout normalement
   return (
     <Layout>
-      {/* Affichage du formulaire d'informations supplémentaires */}
-      {showAdditionalInfoForm && googleCredential && (
-        <AdditionalInfoForm
-          googleCredential={googleCredential}
-          onCancel={cancelAdditionalInfo}
-          inCart={inCart}
-        />
-      )}
-      
       {/* Formulaire de mot de passe oublié */}
       {showForgotPasswordForm && (
         <ForgotPasswordForm 
